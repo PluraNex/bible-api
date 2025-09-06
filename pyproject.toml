@@ -81,8 +81,8 @@ ignore = [
 
 [tool.ruff.isort]
 known-first-party = ["bible", "config", "common"]
-known-django = ["django"]
-section-order = ["future", "standard-library", "django", "third-party", "first-party", "local-folder"]
+known-third-party = ["django"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.black]
 line-length = 120
