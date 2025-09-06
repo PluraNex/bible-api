@@ -1,7 +1,7 @@
 ---
 id: T-000-dev-setup
 title: "[infra] Setup Development Environment — Docker, Dependencies & Tooling"
-status: ready
+status: pr_draft
 created: 2025-09-06
 updated: 2025-09-06
 owner: "@claude-agent"
@@ -15,7 +15,7 @@ related: ["T-001-django-setup"]
 epic: "fase-0-boot"
 branch: "feat/dev-environment-setup"
 pr: ""
-github_issue: ""
+github_issue: "https://github.com/PluraNex/bible-api/issues/1"
 due: null
 ---
 
