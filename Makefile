@@ -47,6 +47,20 @@ test-verbose: ## Run tests with verbose output
 	@echo "🔍 Running tests with verbose output..."
 	pytest -v
 
+# Coverage commands
+coverage: ## Run tests with coverage report
+	@echo "📊 Running tests with coverage..."
+	pytest --cov=bible --cov=config --cov=common --cov-report=term-missing --cov-report=html --cov-report=xml
+
+coverage-html: ## Generate HTML coverage report
+	@echo "🌐 Generating HTML coverage report..."
+	pytest --cov=bible --cov=config --cov=common --cov-report=html
+	@echo "📊 Coverage report generated at htmlcov/index.html"
+
+coverage-xml: ## Generate XML coverage report for CI
+	@echo "📄 Generating XML coverage report..."
+	pytest --cov=bible --cov=config --cov=common --cov-report=xml
+
 # Code quality commands
 lint: ## Run linter (ruff)
 	@echo "🔍 Running linter..."
@@ -94,7 +108,7 @@ install-hooks: ## Install pre-commit hooks
 	pre-commit install
 
 # CI simulation
-ci: format-check lint test ## Run all CI checks locally
+ci: format-check lint coverage ## Run all CI checks locally
 
 # Development helpers
 dev-setup: setup install-hooks ## Complete setup for new developers

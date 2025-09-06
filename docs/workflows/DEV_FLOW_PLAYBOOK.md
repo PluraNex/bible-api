@@ -43,38 +43,47 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
 
 ## 3) Ciclo Padrão de Tarefa
 
-1. **Issue**: defina objetivo, user story, critérios de aceite, riscos e impacto (API/DB/cache/throttle).
-2. **Branch**: crie `feat/...` (ou `fix/...`) referenciando a issue.
-3. **PR em rascunho (Draft)**: abra cedo para rodar CI e coletar feedback.
-4. **Desenvolvimento iterativo** (vertical slice):
-   - Leitura simples → **View → Serializer → QuerySet/Selector**.
-   - Escrita/regras → **View → Serializer → Service → Manager/Selector**.
-   - **Nunca** coloque regra de negócio no Serializer.
-5. **Qualidade local**: executar `make fmt lint test`.
-6. **Docs/Schema**: gere/valide OpenAPI; se mudar, **commite** o `docs/openapi-v1.yaml` e atualize exemplos.
-7. **Revisão**: tire do Draft quando cobertura e checklists ok; PR com contexto e riscos.
-8. **Merge**: squash & merge (histórico limpo); tag se for release.
-9. **Pós-merge**: monitore `health/` e `metrics/`, latência e erros.
+1. **Task Definition**: estruture em `tasks/YYYY-MM-DD--area--title.md` com:
+   - Status: backlog → ready → in_progress → pr_draft → in_review → merged → done
+   - 8 critérios de aceite claros e testáveis
+   - Impacto em API/DB, riscos e dependências
+   - Atualização do INDEX.md com status
+2. **Issue Creation**: crie GitHub issue linkando a task e aplicando labels apropriadas
+3. **Branch**: crie `feat/T-XXX-slug` referenciando task e issue
+4. **PR em rascunho (Draft)**: abra cedo para rodar CI e coletar feedback
+5. **Desenvolvimento iterativo** (vertical slice):
+   - Leitura simples → **View → Serializer → QuerySet/Selector**
+   - Escrita/regras → **View → Serializer → Service → Manager/Selector**
+   - **Nunca** coloque regra de negócio no Serializer
+6. **Validação contínua**: 
+   - Execute `make fmt lint test` localmente
+   - CI com jobs condicionais (adapta-se ao estado do projeto)
+   - Verifique todos os 8 critérios de aceite
+7. **Docs/Schema**: quando Django estiver ativo, gere/valide OpenAPI
+8. **Revisão**: tire do Draft quando todos critérios atendidos
+9. **Merge**: squash & merge com mensagem conventional commit
+10. **Completion**: atualize task status para "done" e INDEX.md
 
 ---
 
-## 4) CI no GitHub — Regras (sem YAML por enquanto)
+## 4) CI no GitHub — Pipeline Inteligente
 
 **Disparos**:
-- Em `push` para `main`.
-- Em PRs para `main`.
+- Em `push` para `main`
+- Em PRs para `main`
 
-**Jobs obrigatórios** (bloqueiam merge):
-1) **lint-and-format** — `ruff` e `black` (modo *check only*).  
-2) **migrations-check** — falha se existirem migrações pendentes.  
-3) **tests** — `pytest` contra Postgres e Redis; cobertura publicada como artefato.  
-4) **openapi-schema-check** — gerar `docs/openapi-v1.yaml` e falhar se houver diferença não commitada.
+**Jobs adaptativos** (executam condicionalmente):
+1) **lint-and-format** — `ruff` e `black` (executa apenas se existirem arquivos .py)
+2) **migrations-check** — verifica migrações pendentes (apenas se manage.py existir)  
+3) **tests** — `pytest` com cobertura (apenas se diretório tests/ tiver arquivos)
+4) **openapi-schema-check** — valida schema API (apenas se Django estiver configurado)
 
-**Boas práticas de pipeline**:
-- Cache de dependências Python.
-- **Concurrency** por branch (cancela execuções anteriores do mesmo ref).
-- Publicar artefatos de **cobertura** e do **schema**.
-- Tornar os 4 jobs **status obrigatórios** nas proteções de branch.
+**Características especiais**:
+- **Pipeline inteligente**: adapta-se ao estado atual do projeto
+- **Falhas controladas**: jobs "skipam" graciosamente quando pré-requisitos não existem
+- **Concurrency**: cancela execuções anteriores do mesmo branch
+- **Cache de dependências**: Python pip cache para performance
+- **Transição suave**: conforme projeto evolui, jobs se ativam automaticamente
 
 ---
 
@@ -160,7 +169,23 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
 
 ---
 
-## 12) Próximos Passos
-- Formalizar os **templates** (Issue/PR) e proteção de branch.
-- Configurar **workflow de CI** conforme §4 (em uma task separada).
-- Socializar este playbook com o time e mantê‑lo atualizado.
+## 12) Lições Aprendidas (T-000)
+
+**Fluxo de task bem-sucedido**:
+- ✅ Task estruturada com 8 critérios claros
+- ✅ CI inteligente que se adapta ao estado do projeto  
+- ✅ GitHub integration completo (issue → branch → PR)
+- ✅ Conventional commits sem atribuição AI
+- ✅ Validação contínua com múltiplas iterações
+
+**Melhorias identificadas**:
+- 📁 Reorganizar estrutura de documentação em diretórios lógicos
+- 📋 Templates de issue/PR mais detalhados
+- 🔧 Scripts de automação para criação de tasks
+- 📊 Dashboard de acompanhamento de tasks mais visual
+
+## 13) Próximos Passos
+- Implementar reorganização de documentação (próxima ação)
+- Criar templates formais de Issue/PR
+- Desenvolver automações para workflow de tasks
+- Socializar playbook atualizado com o time
