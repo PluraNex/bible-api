@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The project uses a Django-based Bible API with comprehensive development workflows:
 
-- **Development setup**: Check `BIBLE_API_BASE_PROJECT.py` for complete architecture
+- **Development setup**: Check `BIBLE_API_BASE_PROJECT.md` for complete architecture
 - **Workflow management**: Follow `DEV_FLOW_PLAYBOOK.md` for branch, commit, and CI practices  
 - **Testing standards**: Apply `API_TESTING_BEST_PRACTICES.md` for endpoint testing
 - **Task orchestration**: Use `BIBLE_API_ORCHESTRATOR.md` for task planning and execution

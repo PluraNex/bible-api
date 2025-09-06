@@ -13,7 +13,7 @@
 
 | ID | Título | Status | Assignee | Epic | Priority | GitHub Issue | Created |
 |---|---|---|---|---|---|---|---|
-| [T-000](./2025-09-06--infra--dev-environment-setup.md) | Setup Development Environment | 🟡 ready | @claude-agent | fase-0-boot | urgent | [#TBD]() | 2025-09-06 |
+| [T-000](./2025-09-06--infra--dev-environment-setup.md) | Setup Development Environment | 🟣 pr_draft | @claude-agent | fase-0-boot | urgent | [#1](https://github.com/PluraNex/bible-api/issues/1) | 2025-09-06 |
 | [T-001](./2025-09-06--api--django-project-setup.md) | Setup Django Project Structure | 🟡 ready | @claude-agent | fase-0-boot | medium | [#TBD]() | 2025-09-06 |
 
 ## Completed Tasks
