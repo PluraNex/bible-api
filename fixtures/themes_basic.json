@@ -3,4 +3,3 @@
   {"model": "bible.theme", "pk": 2, "fields": {"name": "Faith", "description": "Trust and belief in God"}},
   {"model": "bible.theme", "pk": 3, "fields": {"name": "Salvation", "description": "God's redemptive work"}}
 ]
-

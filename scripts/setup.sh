@@ -56,11 +56,11 @@ print_success "Docker is ready!"
 if [ ! -f .env ]; then
     print_status "Creating .env file from .env.example..."
     cp .env.example .env
-    
+
     # Generate a random secret key
     SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
     sed -i "s/your-secret-key-change-in-production/$SECRET_KEY/" .env
-    
+
     print_success ".env file created with random secret key"
 else
     print_warning ".env file already exists, skipping..."

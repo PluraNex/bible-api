@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The project uses a Django-based Bible API with comprehensive development workflows:
 
 - **Development setup**: Check `docs/architecture/BIBLE_API_BASE_PROJECT.md` for complete architecture
-- **Workflow management**: Follow `docs/workflows/DEV_FLOW_PLAYBOOK.md` for branch, commit, and CI practices  
+- **Workflow management**: Follow `docs/workflows/DEV_FLOW_PLAYBOOK.md` for branch, commit, and CI practices
 - **Testing standards**: Apply `docs/api/API_TESTING_BEST_PRACTICES.md` for endpoint testing
 - **Task orchestration**: Use `docs/workflows/BIBLE_API_ORCHESTRATOR.md` for task planning and execution
 - **Documentation index**: See `docs/README.md` for complete documentation organization
@@ -18,7 +18,7 @@ This is a Django REST Framework-based Bible API with the following key architect
 
 ### Application Structure
 - **Domain-driven design** with apps organized by business domain
-- **Service layer pattern**: Views → Serializers → Services (write operations) or direct to QuerySets/Managers (read operations) 
+- **Service layer pattern**: Views → Serializers → Services (write operations) or direct to QuerySets/Managers (read operations)
 - **Modular organization**: `bible/apps/` contains domain-specific applications (auth, audio, resources)
 - **Centralized models**: Core models in `bible/models/` with domain-specific models in respective apps
 
@@ -30,7 +30,7 @@ This is a Django REST Framework-based Bible API with the following key architect
 
 ### Key Domains
 1. **Bible Core**: Books, verses, themes, cross-references
-2. **Authentication**: API key-based auth with scope-based permissions  
+2. **Authentication**: API key-based auth with scope-based permissions
 3. **Audio**: Text-to-speech with cache-first, on-demand synthesis
 4. **AI Integration**: Agent registry with tool execution and approval workflows
 5. **External Resources**: Integration with external content providers
@@ -96,7 +96,7 @@ This is a Django REST Framework-based Bible API with the following key architect
 
 The project implements several key architectural patterns:
 - **Cache-first audio synthesis** with job-based async processing
-- **Agent-based AI integration** with human approval workflows  
+- **Agent-based AI integration** with human approval workflows
 - **External resource aggregation** with provider abstraction
 - **Canonical biblical referencing** supporting multiple versifications
 - **Comprehensive audit logging** without PII exposure

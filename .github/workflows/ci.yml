@@ -25,13 +25,13 @@ jobs:
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Install dependencies (pinned)
       run: |
         python -m pip install --upgrade pip
@@ -42,7 +42,7 @@ jobs:
         python -V
         black --version
         ruff --version
-    
+
     - name: Check if Python files exist
       id: check_python
       run: |
@@ -51,16 +51,16 @@ jobs:
         else
           echo "python_files_exist=false" >> $GITHUB_OUTPUT
         fi
-    
+
     - name: Run ruff linter
       if: steps.check_python.outputs.python_files_exist == 'true'
       run: ruff check . --output-format=github
-    
+
     - name: Check black formatting
       if: steps.check_python.outputs.python_files_exist == 'true'
       run: |
         black --check . || (echo "Black formatting differences detected:" && black --diff . && exit 1)
-      
+
     - name: Skip linting (no Python files)
       if: steps.check_python.outputs.python_files_exist == 'false'
       run: echo "No Python files found, skipping linting checks"
@@ -83,7 +83,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
+
       redis:
         image: redis:7-alpine
         options: >-
@@ -93,13 +93,13 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-    
+
     steps:
     - name: Checkout source (PR-safe)
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
-    
+
     - name: Check if Django project exists
       id: check_django
       run: |
@@ -108,20 +108,20 @@ jobs:
         else
           echo "django_exists=false" >> $GITHUB_OUTPUT
         fi
-    
+
     - name: Set up Python
       if: steps.check_django.outputs.django_exists == 'true'
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Install dependencies
       if: steps.check_django.outputs.django_exists == 'true'
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    
+
     - name: Run Django system check
       if: steps.check_django.outputs.django_exists == 'true'
       env:
@@ -129,7 +129,7 @@ jobs:
         REDIS_URL: redis://localhost:6379/1
         SECRET_KEY: django-insecure-ci-key-for-testing-only
       run: python manage.py check --deploy
-    
+
     - name: Check for missing migrations
       if: steps.check_django.outputs.django_exists == 'true'
       env:
@@ -138,7 +138,7 @@ jobs:
         SECRET_KEY: django-insecure-ci-key-for-testing-only
       run: |
         python manage.py makemigrations --check --dry-run --verbosity=2
-    
+
     - name: Apply migrations
       if: steps.check_django.outputs.django_exists == 'true'
       env:
@@ -147,7 +147,7 @@ jobs:
         SECRET_KEY: django-insecure-ci-key-for-testing-only
       run: |
         python manage.py migrate --verbosity=2
-    
+
     - name: Skip migrations check (Django not implemented yet)
       if: steps.check_django.outputs.django_exists == 'false'
       run: echo "Django project not implemented yet, skipping migrations check"
@@ -170,7 +170,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
+
       redis:
         image: redis:7-alpine
         options: >-
@@ -180,19 +180,19 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-    
+
     steps:
     - name: Checkout source (PR-safe)
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Check if tests directory exists
       id: check_tests
       run: |
@@ -201,14 +201,14 @@ jobs:
         else
           echo "tests_exist=false" >> $GITHUB_OUTPUT
         fi
-    
+
     - name: Install test dependencies
       if: steps.check_tests.outputs.tests_exist == 'true'
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-    
+
     - name: Apply migrations for tests
       if: steps.check_tests.outputs.tests_exist == 'true'
       env:
@@ -217,7 +217,7 @@ jobs:
         SECRET_KEY: django-insecure-ci-key-for-testing-only
       run: |
         python manage.py migrate --verbosity=2
-    
+
     - name: Run tests with coverage
       if: steps.check_tests.outputs.tests_exist == 'true'
       env:
@@ -226,14 +226,14 @@ jobs:
         SECRET_KEY: django-insecure-ci-key-for-testing-only
       run: |
         pytest --cov=bible --cov=config --cov=common --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=80 -v
-    
+
     - name: Upload coverage reports to Codecov
       if: steps.check_tests.outputs.tests_exist == 'true'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         fail_ci_if_error: false
-    
+
     - name: Upload coverage HTML report
       if: steps.check_tests.outputs.tests_exist == 'true'
       uses: actions/upload-artifact@v4
@@ -241,7 +241,7 @@ jobs:
         name: coverage-report
         path: htmlcov/
         retention-days: 30
-    
+
     - name: Skip tests (no test files found)
       if: steps.check_tests.outputs.tests_exist == 'false'
       run: echo "No test files found, skipping test execution"
@@ -264,7 +264,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
+
       redis:
         image: redis:7-alpine
         options: >-
@@ -274,10 +274,10 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Check if Django project exists
       id: check_django
       run: |
@@ -286,21 +286,21 @@ jobs:
         else
           echo "django_exists=false" >> $GITHUB_OUTPUT
         fi
-    
+
     - name: Set up Python
       if: steps.check_django.outputs.django_exists == 'true'
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Install dependencies
       if: steps.check_django.outputs.django_exists == 'true'
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install PyYAML
-    
+
     - name: Apply migrations for schema
       if: steps.check_django.outputs.django_exists == 'true'
       env:
@@ -309,7 +309,7 @@ jobs:
         SECRET_KEY: django-insecure-ci-key-for-testing-only
       run: |
         python manage.py migrate --verbosity=2
-    
+
     - name: Generate OpenAPI schema
       if: steps.check_django.outputs.django_exists == 'true'
       env:
@@ -319,7 +319,7 @@ jobs:
       run: |
         python manage.py spectacular --color --file schema.yml
         echo "OpenAPI schema generated successfully"
-    
+
     - name: Validate OpenAPI schema
       if: steps.check_django.outputs.django_exists == 'true'
       run: |
@@ -334,7 +334,7 @@ jobs:
         assert path_count >= 5, f'Expected at least 5 endpoints, found {path_count}'
         print(f'✅ Schema validation passed: {path_count} endpoints found')
         "
-    
+
     - name: Upload schema artifact
       if: steps.check_django.outputs.django_exists == 'true'
       uses: actions/upload-artifact@v4
@@ -342,7 +342,7 @@ jobs:
         name: openapi-schema
         path: schema.yml
         retention-days: 30
-    
+
     - name: Skip schema check (Django not implemented yet)
       if: steps.check_django.outputs.django_exists == 'false'
       run: echo "Django project not implemented yet, skipping OpenAPI schema check"
@@ -355,7 +355,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-    
+
     - name: Check if Python files exist
       id: check_python
       run: |
@@ -364,20 +364,20 @@ jobs:
         else
           echo "python_files_exist=false" >> $GITHUB_OUTPUT
         fi
-    
+
     - name: Set up Python
       if: steps.check_python.outputs.python_files_exist == 'true'
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Install dependencies
       if: steps.check_python.outputs.python_files_exist == 'true'
       run: |
         python -m pip install --upgrade pip
         pip install pytest pytest-cov pytest-django coverage
-    
+
     - name: Run tests for SonarQube
       if: steps.check_python.outputs.python_files_exist == 'true'
       run: |
@@ -388,7 +388,7 @@ jobs:
           coverage run --source=bible,config,common -m pytest tests/ || true
           coverage xml
         fi
-    
+
     - name: SonarQube Scan
       if: steps.check_python.outputs.python_files_exist == 'true'
       uses: sonarsource/sonarqube-quality-gate-action@v1
@@ -396,7 +396,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: https://sonarcloud.io
-    
+
     - name: Skip SonarQube (no Python files)
       if: steps.check_python.outputs.python_files_exist == 'false'
       run: echo "No Python files found, skipping SonarQube analysis"

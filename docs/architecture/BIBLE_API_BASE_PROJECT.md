@@ -12,7 +12,7 @@ urlpatterns = [
     path("api/v1/bible/", include(("bible.urls", "bible"), namespace="bible")),
     path("api/v1/ai/", include(("bible.ai.urls", "ai"), namespace="ai")),
     path("api/v1/bible/audio/", include(("bible.apps.audio.urls", "audio"), namespace="audio")),
-    path("api/v1/bible/resources/", include(("bible.apps.resources.urls", "resources"), namespace="resources")), 
+    path("api/v1/bible/resources/", include(("bible.apps.resources.urls", "resources"), namespace="resources")),
 
     # ✅ Schema agregado da v1
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="v1_schema"),
@@ -301,7 +301,7 @@ project_root/
 │  │  │  ├─ client.py          # HTTP p/ blog (API externa)
 │  │  │  ├─ selectors.py       # leitura + cache + join com client
 │  │  │  └─ tests/
-│  │  │  
+│  │  │
 │  │  ├─ books/
 │  │  │  ├─ __init__.py
 │  │  │  ├─ views.py         # DRF views/viewsets
@@ -449,11 +449,11 @@ class AgentRun(models.Model):
 
 class PendingApproval(models.Model):
     run = models.ForeignKey(AgentRun, on_delete=models.CASCADE, related_name="approvals")
-    tool = models.ForeignKey(                
+    tool = models.ForeignKey(
         AITool,
         on_delete=models.PROTECT,
         related_name="approvals",
-        null=True,                          
+        null=True,
         blank=True,
     )
     tool_name = models.CharField(
@@ -1672,4 +1672,3 @@ LOGGING = {
 
 # --- PROMETHEUS (se for expor /metrics) -------------------------------------
 # DATABASES["default"]["ENGINE"] = "django_prometheus.db.backends.postgresql"
-

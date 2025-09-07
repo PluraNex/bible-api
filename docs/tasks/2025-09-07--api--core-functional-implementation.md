@@ -79,7 +79,7 @@ due: null
 
 ## Plano de Testes
 - Models: validações de constraints, relacionamentos ForeignKey
-- API: 
+- API:
   - 401: todos endpoints sem `Api-Key`
   - 200: endpoints list/detail com dados válidos
   - 404: recursos não encontrados

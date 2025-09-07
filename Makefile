@@ -1,6 +1,6 @@
 # Bible API - Development Makefile
 
-.PHONY: help setup-repo check-protection fmt lint test coverage clean install dev migrate migrations schema docker-build docker-logs docker-shell ci-lint ci-test ci-schema ci-all release-check ready dev-cycle
+.PHONY: help setup-repo check-protection fmt lint test coverage clean install dev migrate migrations schema docker-build docker-logs docker-shell ci-lint ci-test ci-schema ci-all release-check ready dev-cycle hooks-setup hooks-run
 
 # Default target
 help: ## Show this help message

@@ -1,10 +1,10 @@
 # T-002: Quality Tools Integration
 
-**Status**: 🟡 ready  
-**Created**: 2025-09-06  
-**Epic**: fase-0-boot  
-**Area**: infra  
-**Priority**: medium  
+**Status**: 🟡 ready
+**Created**: 2025-09-06
+**Epic**: fase-0-boot
+**Area**: infra
+**Priority**: medium
 
 ## Objetivo
 Integrar ferramentas de qualidade de código (Coverage, SonarQube) e consolidar melhorias na estrutura de documentação, elevando os padrões de qualidade do projeto antes da implementação do Django.
@@ -14,7 +14,7 @@ Como desenvolvedor, quero ter visibilidade completa da qualidade do código atra
 
 ## Contexto
 Após a implementação bem-sucedida do T-000 e reorganização da documentação, identificamos oportunidades para elevar ainda mais a qualidade:
-- Coverage reporting para transparência da cobertura de testes  
+- Coverage reporting para transparência da cobertura de testes
 - SonarQube para análise de qualidade de código
 - Consolidação das melhorias de documentação implementadas
 
@@ -26,7 +26,7 @@ Após a implementação bem-sucedida do T-000 e reorganização da documentaçã
 - [ ] Badge de coverage no README.md
 - [ ] Threshold de cobertura configurado (80% mínimo)
 
-### 2. SonarQube Integration  
+### 2. SonarQube Integration
 - [ ] SonarQube configurado no CI pipeline
 - [ ] Quality gate configurado com métricas apropriadas
 - [ ] Análise de código executando em PRs e pushes para main
@@ -99,7 +99,7 @@ Após a implementação bem-sucedida do T-000 e reorganização da documentaçã
 - [ ] Task marcada como done no INDEX.md
 
 ---
-**Assignee**: @iuryeng  
-**GitHub Issue**: [#3](https://github.com/PluraNex/bible-api/issues/3)  
-**GitHub PR**: [#4](https://github.com/PluraNex/bible-api/pull/4)  
+**Assignee**: @iuryeng
+**GitHub Issue**: [#3](https://github.com/PluraNex/bible-api/issues/3)
+**GitHub PR**: [#4](https://github.com/PluraNex/bible-api/pull/4)
 **Epic**: fase-0-boot
