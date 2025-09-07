@@ -20,10 +20,10 @@ chmod +x scripts/setup-repo.sh
    ```bash
    # macOS
    brew install gh
-   
+
    # Windows
    winget install --id GitHub.cli
-   
+
    # Linux
    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
    ```
@@ -46,7 +46,7 @@ The following rules are automatically applied to the `main` branch:
 
 ### Required Status Checks
 - ✅ `lint-and-format` - Code formatting with ruff + black
-- ✅ `migrations-check` - Django migrations validation  
+- ✅ `migrations-check` - Django migrations validation
 - ✅ `tests` - Test suite with 80% minimum coverage
 - ✅ `openapi-schema-check` - API documentation validation
 - ✅ `sonarqube` - Code quality analysis
@@ -69,7 +69,7 @@ Automatically creates standardized labels for issue/PR categorization:
 
 ### Area Labels
 - `area/api` - API endpoints and business logic
-- `area/auth` - Authentication and authorization  
+- `area/auth` - Authentication and authorization
 - `area/ai` - AI agents and tools
 - `area/audio` - Audio synthesis and management
 - `area/resources` - External resources integration

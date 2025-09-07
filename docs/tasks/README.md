@@ -18,7 +18,7 @@ tasks/
 ```
 
 ### Nome de arquivo
-Use o padrão: `YYYY-MM-DD--area--slug.md`  
+Use o padrão: `YYYY-MM-DD--area--slug.md`
 Ex.: `2025-09-06--api--versions-listing.md`
 
 ### Status (workflow)
@@ -32,7 +32,7 @@ Ex.: `2025-09-06--api--versions-listing.md`
 
 ### Branch e PR
 - Branch: `feat/<slug>` (ou `fix/...`), referencie a Task e Issue no título/descrição.
-- PR: siga o template do **Orchestrator §8**. 
+- PR: siga o template do **Orchestrator §8**.
 - Link: conecte PR à Issue GitHub usando "Closes #123" na descrição.
 - CI precisa estar **verde** antes do merge.
 
@@ -43,9 +43,9 @@ Ex.: `2025-09-06--api--versions-listing.md`
 ### Fluxo Completo (Task Local + Issue GitHub)
 1. **Crie a task local**: Copie o **TASK_TEMPLATE.md** para `tasks/YYYY-MM-DD--area--slug.md`.
 2. **Preencha completamente**: front-matter, critérios de aceite, impacto técnico, plano de testes.
-3. **Crie issue no GitHub**: 
+3. **Crie issue no GitHub**:
    - Título: use o mesmo da task (`title` field)
-   - Labels: aplique as mesmas labels (`labels` field)  
+   - Labels: aplique as mesmas labels (`labels` field)
    - Descrição: copie as seções principais (Contexto, Objetivo, Critérios de Aceite)
    - Milestone: defina conforme epic
 4. **Sincronize referências**:

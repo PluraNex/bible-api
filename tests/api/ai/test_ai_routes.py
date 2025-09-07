@@ -15,7 +15,7 @@ class AiRoutesTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(username="ai_tester")
-        self.api_key = APIKey.objects.create(name="AI Test Key", user=self.user, scopes=["read", "ai"]) 
+        self.api_key = APIKey.objects.create(name="AI Test Key", user=self.user, scopes=["read", "ai"])
 
     def test_agents_requires_auth(self):
         response = self.client.get("/api/v1/ai/agents/")
@@ -57,4 +57,3 @@ class AiRoutesTest(TestCase):
 
         cancel = self.client.delete("/api/v1/ai/runs/123/cancel/")
         self.assertEqual(cancel.status_code, status.HTTP_501_NOT_IMPLEMENTED)
-

@@ -34,7 +34,11 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
 ### DoD — Definition of Done
 - [ ] **CI verde** (lint/format, migrations-check, tests, schema-diff).
 - [ ] Testes **unitários** e **API** cobrindo caminho feliz e erros.
-- [ ] **Swagger/OpenAPI** atualizado e arquivo versionado em `docs/`.
+- [ ] **OpenAPI Schema MANDATORY**: Generate and commit `docs/openapi-v1.yaml` after ANY endpoint changes:
+  ```bash
+  python manage.py spectacular --file docs/openapi-v1.yaml
+  git add docs/openapi-v1.yaml
+  ```
 - [ ] Logs/erros revisados (**sem PII**) e padronizados pelo handler.
 - [ ] **Migrations** pequenas, idempotentes (1 mudança → 1 migration).
 - [ ] PR documenta impacto, rollout/rollback e métricas a observar.
@@ -62,7 +66,7 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
    - Leitura simples → **View → Serializer → QuerySet/Selector**
    - Escrita/regras → **View → Serializer → Service → Manager/Selector**
    - **Nunca** coloque regra de negócio no Serializer
-7. **Validação contínua**: 
+7. **Validação contínua**:
    - Execute `make fmt lint test` localmente
    - CI com jobs condicionais (adapta-se ao estado do projeto)
    - Verifique todos os 8 critérios de aceite
@@ -81,7 +85,7 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
 
 **Jobs adaptativos** (executam condicionalmente):
 1) **lint-and-format** — `ruff` e `black` (executa apenas se existirem arquivos .py)
-2) **migrations-check** — verifica migrações pendentes (apenas se manage.py existir)  
+2) **migrations-check** — verifica migrações pendentes (apenas se manage.py existir)
 3) **tests** — `pytest` com cobertura (apenas se diretório tests/ tiver arquivos)
 4) **openapi-schema-check** — valida schema API (apenas se Django estiver configurado)
 
@@ -202,19 +206,19 @@ Antes de qualquer implementação, siga este checklist:
 4. **📝 Documentação de Divergências**:
    ```markdown
    ### Validação Arquitetural - T-XXX
-   
+
    **✅ Conforme arquitetura:**
    - Modelos em bible/models/
    - Estrutura de URLs correta
-   
+
    **❌ Divergências identificadas:**
    - Modelo Chapter não existe na spec (criado por necessidade)
    - Nome de tabela bible_books vs books
-   
+
    **🔧 Correções aplicadas:**
-   - Removido modelo Chapter 
+   - Removido modelo Chapter
    - Corrigido nome de tabela para books
-   
+
    **✋ Aguardando aprovação:** N/A
    ```
 
@@ -237,7 +241,7 @@ Durante T-001, identificamos:
 
 **Fluxo de task bem-sucedido**:
 - ✅ Task estruturada com 8 critérios claros
-- ✅ CI inteligente que se adapta ao estado do projeto  
+- ✅ CI inteligente que se adapta ao estado do projeto
 - ✅ GitHub integration completo (issue → branch → PR)
 - ✅ Conventional commits sem atribuição AI
 - ✅ Validação contínua com múltiplas iterações

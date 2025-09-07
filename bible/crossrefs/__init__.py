@@ -1,2 +1,1 @@
 """Cross-references domain package."""
-

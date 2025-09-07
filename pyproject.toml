@@ -78,7 +78,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"*/migrations/*" = ["E501", "DJ01"]
+"*/migrations/*" = ["E501", "DJ01", "I001"]
 "*/settings/*" = ["F403", "F405"]
 
 [tool.ruff.lint.isort]
@@ -130,6 +130,14 @@ omit = [
     "*/settings/*",
     "*/tests/*",
     "*/__pycache__/*",
+    # Django structural files
+    "*/apps.py",
+    "*/asgi.py",
+    "*/wsgi.py",
+    # Import aggregator files
+    "bible/serializers.py",
+    # URL configuration files
+    "**/urls.py",
 ]
 
 [tool.coverage.report]

@@ -5,16 +5,15 @@ from django.urls import include, path
 
 from . import views
 from .books.views import BookInfoView, BookListView, ChaptersByBookView
-from .verses.views import VerseDetailView, VersesByChapterView, VersesByThemeView
+from .crossrefs.views import CrossReferencesByThemeView, CrossReferencesByVerseView
 from .themes.views import ThemeDetailView, ThemeListView
-from .crossrefs.views import CrossReferencesByVerseView, CrossReferencesByThemeView
+from .verses.views import VerseDetailView, VersesByChapterView, VersesByThemeView
 
 app_name = "bible"
 
 urlpatterns = [
     # Overview
     path("overview/", views.BibleOverviewAPIView.as_view(), name="overview"),
-
     # Books
     path(
         "books/",
@@ -26,7 +25,6 @@ urlpatterns = [
             ]
         ),
     ),
-
     # Verses
     path(
         "verses/",
@@ -46,7 +44,6 @@ urlpatterns = [
             ]
         ),
     ),
-
     # Themes
     path(
         "themes/",
@@ -57,7 +54,6 @@ urlpatterns = [
             ]
         ),
     ),
-
     # Cross-references
     path(
         "cross-references/",

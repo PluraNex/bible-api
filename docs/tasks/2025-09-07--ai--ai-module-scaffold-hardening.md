@@ -70,4 +70,3 @@ due: null
 - [ ] Testes suficientes (401/200/501) e determinísticos.
 - [ ] OpenAPI claro (summaries/responses).
 - [ ] Sem mudanças em DB; sem quebra de contrato.
-

@@ -2,7 +2,7 @@
 CrossReference model for Bible API.
 """
 from django.db import models
-from django.db.models import Q, F
+from django.db.models import F, Q
 
 from .verses import Verse
 
@@ -37,14 +37,9 @@ class CrossReference(models.Model):
             models.Index(fields=["relationship_type"]),
         ]
         constraints = [
-            models.UniqueConstraint(
-                fields=["from_verse", "to_verse", "source"], name="crossref_unique_from_to_source"
-            ),
-            models.CheckConstraint(
-                check=~Q(from_verse=F("to_verse")), name="crossref_no_self_reference"
-            ),
+            models.UniqueConstraint(fields=["from_verse", "to_verse", "source"], name="crossref_unique_from_to_source"),
+            models.CheckConstraint(check=~Q(from_verse=F("to_verse")), name="crossref_no_self_reference"),
         ]
 
     def __str__(self):
         return f"{self.from_verse_id} -> {self.to_verse_id} ({self.relationship_type})"
-

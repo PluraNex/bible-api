@@ -27,9 +27,9 @@ Fase 0 - Boot
 - [ ] CA8 — Validação funciona: `make setup && make test` executa sem erros
 
 ### Impacto Técnico
-**OpenAPI**: Nenhum impacto (pré-código)  
-**Database**: PostgreSQL configurado, pronto para migrations  
-**Performance**: Containers otimizados para desenvolvimento  
+**OpenAPI**: Nenhum impacto (pré-código)
+**Database**: PostgreSQL configurado, pronto para migrations
+**Performance**: Containers otimizados para desenvolvimento
 **Security**: Secrets via .env, PostgreSQL com credenciais seguras
 
 ### Acceptance Tests
@@ -41,7 +41,7 @@ Fase 0 - Boot
 - [ ] `make test` executa sem falhas
 
 ---
-**Task Local**: `tasks/2025-09-06--infra--dev-environment-setup.md`  
-**Epic**: Fase 0 - Boot  
-**Priority**: urgent  
+**Task Local**: `tasks/2025-09-06--infra--dev-environment-setup.md`
+**Epic**: Fase 0 - Boot
+**Priority**: urgent
 **Effort**: M

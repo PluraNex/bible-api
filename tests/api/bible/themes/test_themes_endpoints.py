@@ -29,4 +29,3 @@ class ThemesApiTest(TestCase):
         detail = self.client.get(f"/api/v1/bible/themes/{self.t1.id}/detail/")
         self.assertEqual(detail.status_code, status.HTTP_200_OK)
         self.assertEqual(detail.json().get("name"), "Faith")
-

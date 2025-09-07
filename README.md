@@ -21,13 +21,15 @@ A comprehensive RESTful Bible API with AI integration, built with Django REST Fr
 ### Quality Metrics
 
 - **CI Status**: Automated tests, linting, and quality checks
-- **Code Coverage**: Percentage of code covered by tests  
+- **Code Coverage**: Percentage of code covered by tests
 - **Quality Gate**: Overall project quality assessment
 - **Maintainability**: Code complexity and maintainability rating
 - **Security**: Security vulnerability assessment
 - **Bugs**: Number of identified bugs and issues
 - **Code Smells**: Code quality issues and potential improvements
 - **Lines of Code**: Total codebase size
+
+<!-- chore: CI PR trigger verification -->
 
 ## Features
 
@@ -49,6 +51,17 @@ A comprehensive RESTful Bible API with AI integration, built with Django REST Fr
 - [Python 3.11+](https://www.python.org/downloads/) (optional, for local development)
 - [Make](https://www.gnu.org/software/make/) (optional, for convenience commands)
 
+### Pre-commit (Local)
+
+- Install hooks once:
+  - `pip install pre-commit`
+  - `pre-commit install`
+- Run on all files before the first commit:
+  - `pre-commit run --all-files`
+- Typical flow:
+  - `git add -A && pre-commit run` (repeat until clean), then `git commit -m "..."`
+
+
 ### Setup
 
 1. **Clone the repository**:
@@ -61,10 +74,10 @@ A comprehensive RESTful Bible API with AI integration, built with Django REST Fr
    ```bash
    # Option 1: Using the setup script (recommended)
    ./scripts/setup.sh
-   
+
    # Option 2: Using Make
    make dev-setup
-   
+
    # Option 3: Manual setup
    cp .env.example .env
    docker-compose build
@@ -82,7 +95,7 @@ A comprehensive RESTful Bible API with AI integration, built with Django REST Fr
    ```bash
    # Check service health
    curl http://localhost:8000/health
-   
+
    # View API documentation
    open http://localhost:8000/api/v1/schema/swagger-ui/
    ```

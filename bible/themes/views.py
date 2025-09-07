@@ -23,4 +23,3 @@ class ThemeDetailView(generics.RetrieveAPIView):
     @extend_schema(summary="Get theme detail")
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-

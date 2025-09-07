@@ -8,4 +8,3 @@ class CrossReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrossReference
         fields = ["id", "from_verse", "to_verse", "relationship_type", "source"]
-
