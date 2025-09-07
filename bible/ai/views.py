@@ -1,9 +1,9 @@
 """
 AI Agent and Tool views for Bible API.
-Skeleton implementation for T-001.
+Skeleton implementation with auth and schema annotations.
 """
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,8 +11,28 @@ from rest_framework.views import APIView
 class AgentListView(generics.ListAPIView):
     """List available AI agents."""
 
-    permission_classes = [AllowAny]
-
+    @extend_schema(
+        summary="List AI agents",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "agents": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {"type": "string"},
+                                "description": {"type": "string"},
+                                "enabled": {"type": "boolean"},
+                                "status": {"type": "string"},
+                            },
+                        },
+                    }
+                },
+            }
+        },
+    )
     def get(self, request, *args, **kwargs):
         return Response(
             {
@@ -38,8 +58,28 @@ class AgentListView(generics.ListAPIView):
 class ToolListView(generics.ListAPIView):
     """List available AI tools."""
 
-    permission_classes = [AllowAny]
-
+    @extend_schema(
+        summary="List AI tools",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {"type": "string"},
+                                "description": {"type": "string"},
+                                "requires_approval": {"type": "boolean"},
+                                "status": {"type": "string"},
+                            },
+                        },
+                    }
+                },
+            }
+        },
+    )
     def get(self, request, *args, **kwargs):
         return Response(
             {
@@ -65,6 +105,19 @@ class ToolListView(generics.ListAPIView):
 class ToolTestView(APIView):
     """Test an AI tool (skeleton)."""
 
+    @extend_schema(
+        summary="Test an AI tool",
+        responses={
+            501: {
+                "type": "object",
+                "properties": {
+                    "tool": {"type": "string"},
+                    "status": {"type": "string"},
+                    "message": {"type": "string"},
+                },
+            }
+        },
+    )
     def post(self, request, tool, *args, **kwargs):
         return Response(
             {
@@ -79,6 +132,19 @@ class ToolTestView(APIView):
 class AgentRunCreateView(generics.CreateAPIView):
     """Create a new agent run."""
 
+    @extend_schema(
+        summary="Create agent run",
+        responses={
+            501: {
+                "type": "object",
+                "properties": {
+                    "agent": {"type": "string"},
+                    "status": {"type": "string"},
+                    "message": {"type": "string"},
+                },
+            }
+        },
+    )
     def post(self, request, name, *args, **kwargs):
         return Response(
             {
@@ -93,6 +159,19 @@ class AgentRunCreateView(generics.CreateAPIView):
 class AgentRunDetailView(generics.RetrieveAPIView):
     """Get details of an agent run."""
 
+    @extend_schema(
+        summary="Get agent run details",
+        responses={
+            501: {
+                "type": "object",
+                "properties": {
+                    "run_id": {"type": "integer"},
+                    "status": {"type": "string"},
+                    "message": {"type": "string"},
+                },
+            }
+        },
+    )
     def get(self, request, run_id, *args, **kwargs):
         return Response(
             {
@@ -107,6 +186,19 @@ class AgentRunDetailView(generics.RetrieveAPIView):
 class AgentRunApproveView(APIView):
     """Approve an agent run."""
 
+    @extend_schema(
+        summary="Approve agent run",
+        responses={
+            501: {
+                "type": "object",
+                "properties": {
+                    "run_id": {"type": "integer"},
+                    "status": {"type": "string"},
+                    "message": {"type": "string"},
+                },
+            }
+        },
+    )
     def post(self, request, run_id, *args, **kwargs):
         return Response(
             {
@@ -121,6 +213,19 @@ class AgentRunApproveView(APIView):
 class AgentRunCancelView(APIView):
     """Cancel an agent run."""
 
+    @extend_schema(
+        summary="Cancel agent run",
+        responses={
+            501: {
+                "type": "object",
+                "properties": {
+                    "run_id": {"type": "integer"},
+                    "status": {"type": "string"},
+                    "message": {"type": "string"},
+                },
+            }
+        },
+    )
     def delete(self, request, run_id, *args, **kwargs):
         return Response(
             {
