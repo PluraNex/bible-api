@@ -53,6 +53,32 @@ jobs:
   migrations-check:
     name: Migrations Check
     runs-on: ubuntu-latest
+    needs: lint-and-format
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: bible_pass
+          POSTGRES_USER: bible_user
+          POSTGRES_DB: bible_api
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
     steps:
     - uses: actions/checkout@v4
     
@@ -65,6 +91,45 @@ jobs:
           echo "django_exists=false" >> $GITHUB_OUTPUT
         fi
     
+    - name: Set up Python
+      if: steps.check_django.outputs.django_exists == 'true'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      if: steps.check_django.outputs.django_exists == 'true'
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Django system check
+      if: steps.check_django.outputs.django_exists == 'true'
+      env:
+        DATABASE_URL: postgresql://bible_user:bible_pass@localhost:5432/bible_api
+        REDIS_URL: redis://localhost:6379/1
+        SECRET_KEY: django-insecure-ci-key-for-testing-only
+      run: python manage.py check --deploy
+    
+    - name: Check for missing migrations
+      if: steps.check_django.outputs.django_exists == 'true'
+      env:
+        DATABASE_URL: postgresql://bible_user:bible_pass@localhost:5432/bible_api
+        REDIS_URL: redis://localhost:6379/1
+        SECRET_KEY: django-insecure-ci-key-for-testing-only
+      run: |
+        python manage.py makemigrations --check --dry-run --verbosity=2
+    
+    - name: Apply migrations
+      if: steps.check_django.outputs.django_exists == 'true'
+      env:
+        DATABASE_URL: postgresql://bible_user:bible_pass@localhost:5432/bible_api
+        REDIS_URL: redis://localhost:6379/1
+        SECRET_KEY: django-insecure-ci-key-for-testing-only
+      run: |
+        python manage.py migrate --verbosity=2
+    
     - name: Skip migrations check (Django not implemented yet)
       if: steps.check_django.outputs.django_exists == 'false'
       run: echo "Django project not implemented yet, skipping migrations check"
@@ -72,6 +137,32 @@ jobs:
   tests:
     name: Tests & Coverage
     runs-on: ubuntu-latest
+    needs: migrations-check
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: bible_pass
+          POSTGRES_USER: bible_user
+          POSTGRES_DB: bible_api
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
     steps:
     - uses: actions/checkout@v4
     
@@ -94,12 +185,26 @@ jobs:
       if: steps.check_tests.outputs.tests_exist == 'true'
       run: |
         python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-django coverage
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+    
+    - name: Apply migrations for tests
+      if: steps.check_tests.outputs.tests_exist == 'true'
+      env:
+        DATABASE_URL: postgresql://bible_user:bible_pass@localhost:5432/bible_api
+        REDIS_URL: redis://localhost:6379/1
+        SECRET_KEY: django-insecure-ci-key-for-testing-only
+      run: |
+        python manage.py migrate --verbosity=2
     
     - name: Run tests with coverage
       if: steps.check_tests.outputs.tests_exist == 'true'
+      env:
+        DATABASE_URL: postgresql://bible_user:bible_pass@localhost:5432/bible_api
+        REDIS_URL: redis://localhost:6379/1
+        SECRET_KEY: django-insecure-ci-key-for-testing-only
       run: |
-        pytest --cov=bible --cov=config --cov=common --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=80
+        pytest --cov=bible --cov=config --cov=common --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=80 -v
     
     - name: Upload coverage reports to Codecov
       if: steps.check_tests.outputs.tests_exist == 'true'
@@ -123,6 +228,32 @@ jobs:
   openapi-schema-check:
     name: OpenAPI Schema Check
     runs-on: ubuntu-latest
+    needs: migrations-check
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: bible_pass
+          POSTGRES_USER: bible_user
+          POSTGRES_DB: bible_api
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
     steps:
     - uses: actions/checkout@v4
     
@@ -135,6 +266,62 @@ jobs:
           echo "django_exists=false" >> $GITHUB_OUTPUT
         fi
     
+    - name: Set up Python
+      if: steps.check_django.outputs.django_exists == 'true'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      if: steps.check_django.outputs.django_exists == 'true'
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install PyYAML
+    
+    - name: Apply migrations for schema
+      if: steps.check_django.outputs.django_exists == 'true'
+      env:
+        DATABASE_URL: postgresql://bible_user:bible_pass@localhost:5432/bible_api
+        REDIS_URL: redis://localhost:6379/1
+        SECRET_KEY: django-insecure-ci-key-for-testing-only
+      run: |
+        python manage.py migrate --verbosity=2
+    
+    - name: Generate OpenAPI schema
+      if: steps.check_django.outputs.django_exists == 'true'
+      env:
+        DATABASE_URL: postgresql://bible_user:bible_pass@localhost:5432/bible_api
+        REDIS_URL: redis://localhost:6379/1
+        SECRET_KEY: django-insecure-ci-key-for-testing-only
+      run: |
+        python manage.py spectacular --color --file schema.yml
+        echo "OpenAPI schema generated successfully"
+    
+    - name: Validate OpenAPI schema
+      if: steps.check_django.outputs.django_exists == 'true'
+      run: |
+        python -c "
+        import yaml
+        with open('schema.yml', 'r') as f:
+            schema = yaml.safe_load(f)
+        assert 'openapi' in schema, 'Missing openapi field'
+        assert 'info' in schema, 'Missing info field'
+        assert 'paths' in schema, 'Missing paths field'
+        path_count = len(schema['paths'])
+        assert path_count >= 5, f'Expected at least 5 endpoints, found {path_count}'
+        print(f'✅ Schema validation passed: {path_count} endpoints found')
+        "
+    
+    - name: Upload schema artifact
+      if: steps.check_django.outputs.django_exists == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: openapi-schema
+        path: schema.yml
+        retention-days: 30
+    
     - name: Skip schema check (Django not implemented yet)
       if: steps.check_django.outputs.django_exists == 'false'
       run: echo "Django project not implemented yet, skipping OpenAPI schema check"
@@ -142,6 +329,7 @@ jobs:
   sonarqube:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
+    needs: tests
     steps:
     - uses: actions/checkout@v4
       with:
