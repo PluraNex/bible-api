@@ -43,7 +43,7 @@ class HasAPIScopesTest(TestCase):
     def test_authenticated_user_without_api_key_denied(self):
         """Test that user without API key is denied."""
         request = Mock()
-        request.user = self.user
+        request.user = Mock()
         request.user.is_authenticated = True
         request.auth = None
 
@@ -55,7 +55,7 @@ class HasAPIScopesTest(TestCase):
     def test_api_key_with_required_scope_allowed(self):
         """Test that API key with required scope is allowed."""
         request = Mock()
-        request.user = self.user
+        request.user = Mock()
         request.user.is_authenticated = True
         request.auth = self.api_key
 
@@ -67,7 +67,7 @@ class HasAPIScopesTest(TestCase):
     def test_api_key_missing_required_scope_denied(self):
         """Test that API key missing required scope is denied."""
         request = Mock()
-        request.user = self.user
+        request.user = Mock()
         request.user.is_authenticated = True
         request.auth = self.api_key
 
@@ -79,7 +79,7 @@ class HasAPIScopesTest(TestCase):
     def test_api_key_with_multiple_required_scopes_allowed(self):
         """Test that API key with all required scopes is allowed."""
         request = Mock()
-        request.user = self.user
+        request.user = Mock()
         request.user.is_authenticated = True
         request.auth = self.api_key
 
@@ -91,7 +91,7 @@ class HasAPIScopesTest(TestCase):
     def test_api_key_missing_one_of_multiple_scopes_denied(self):
         """Test that API key missing one of multiple required scopes is denied."""
         request = Mock()
-        request.user = self.user
+        request.user = Mock()
         request.user.is_authenticated = True
         request.auth = self.api_key
 
@@ -103,7 +103,7 @@ class HasAPIScopesTest(TestCase):
     def test_object_permission_delegates_to_has_permission(self):
         """Test that object permission uses same logic as has_permission."""
         request = Mock()
-        request.user = self.user
+        request.user = Mock()
         request.user.is_authenticated = True
         request.auth = self.api_key
 
