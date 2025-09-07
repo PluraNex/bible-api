@@ -22,8 +22,7 @@ due: null
 - **Problema**: O projeto Bible API precisa de uma estrutura Django funcional para servir como base para toda a API
 - **Valor**: Estabelece a fundação técnica que permitirá desenvolvimento incremental de todos os domínios (books, verses, themes, etc.)
 - **Hipóteses**: Django REST Framework como escolha arquitetural definida; PostgreSQL como DB principal
-- **Restrições**: Deve seguir a estrutura definida em `BIBLE_API_BASE_PROJECT.py`
-
+- **Restrições**: Deve seguir a estrutura definida em `BIBLE_API_BASE_PROJECT.md`
 ## Objetivo e Critérios de Aceite
 - [ ] CA1 — Django project criado com estrutura modular (config/, bible/, common/)
 - [ ] CA2 — Apps principais configurados: bible, bible.ai, bible.apps.auth
@@ -64,7 +63,7 @@ due: null
 **Segurança**: API Key authentication, CORS desabilitado inicialmente, sem PII em logs
 
 ## Plano de Testes
-**API**: 
+**API**:
 - 200: GET /health, GET /api/v1/bible/overview/
 - 401: Endpoints protegidos sem API key
 - 404: Rotas inexistentes
