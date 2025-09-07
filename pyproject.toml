@@ -136,6 +136,8 @@ omit = [
     "*/wsgi.py",
     # Import aggregator files
     "bible/serializers.py",
+    # URL configuration files
+    "**/urls.py",
 ]
 
 [tool.coverage.report]
