@@ -143,9 +143,14 @@ Cada fase é um **épico**; decomponha em **Tasks** “vertical slice”.
 
 ## 14) Como o Agente de IA deve atuar
 - **Antes de qualquer alteração**, criar/atualizar a **Task** com o template do §7.
+- **OBRIGATÓRIO: Validação Arquitetural** conforme DEV_FLOW_PLAYBOOK.md §11.5:
+  - Consultar BIBLE_API_BASE_PROJECT.md antes da implementação
+  - Identificar e documentar divergências arquiteturais
+  - Explicar justificativas para mudanças propostas
+  - **Aguardar aprovação explícita** antes de prosseguir
 - **Executar apenas** o que estiver descrito e aprovado na Task.
 - **Anexar** ao PR: listas de verificação atendidas e referências ao Playbook/Testes.
-- **Não** extrapolar escopo (sem “mágica”). Qualquer lacuna → abrir nova Task.
+- **Não** extrapolar escopo (sem "mágica"). Qualquer lacuna → abrir nova Task.
 
 ---
 
