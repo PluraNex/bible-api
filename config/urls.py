@@ -31,6 +31,7 @@ urlpatterns = [
         include(
             [
                 path("bible/", include("bible.urls")),
+                path("ai/", include("bible.ai.urls")),
                 path("auth/", include("bible.apps.auth.urls")),
                 # OpenAPI schema
                 path("schema/", SpectacularAPIView.as_view(), name="schema"),
