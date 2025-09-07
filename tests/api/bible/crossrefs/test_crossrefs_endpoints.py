@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from bible.models import APIKey, Book, CrossReference, Verse, Version, Theme, VerseTheme
+from bible.models import APIKey, Book, CrossReference, Theme, Verse, VerseTheme, Version
 
 
 class CrossRefsApiTest(TestCase):

@@ -78,7 +78,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"*/migrations/*" = ["E501", "DJ01"]
+"*/migrations/*" = ["E501", "DJ01", "I001"]
 "*/settings/*" = ["F403", "F405"]
 
 [tool.ruff.lint.isort]

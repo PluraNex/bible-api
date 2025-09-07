@@ -2,7 +2,7 @@
 CrossReference model for Bible API.
 """
 from django.db import models
-from django.db.models import Q, F
+from django.db.models import F, Q
 
 from .verses import Verse
 
@@ -47,4 +47,3 @@ class CrossReference(models.Model):
 
     def __str__(self):
         return f"{self.from_verse_id} -> {self.to_verse_id} ({self.relationship_type})"
-
