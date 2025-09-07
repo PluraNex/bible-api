@@ -49,3 +49,6 @@ class BibleOverviewAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+# Domain-specific views live under bible/<domain>/views.py

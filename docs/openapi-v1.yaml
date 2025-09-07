@@ -1,0 +1,679 @@
+openapi: 3.0.3
+info:
+  title: Bible API
+  version: 1.0.0
+  description: A comprehensive RESTful Bible API with AI integration
+paths:
+  /api/v1/ai/agents/:
+    get:
+      operationId: ai_agents_list
+      description: List available AI agents.
+      summary: List AI agents
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - ai
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agents:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              description:
+                                type: string
+                              enabled:
+                                type: boolean
+                              status:
+                                type: string
+          description: ''
+  /api/v1/ai/agents/{name}/runs/:
+    post:
+      operationId: ai_agents_runs_create
+      description: Create a new agent run (skeleton).
+      summary: Create agent run
+      parameters:
+      - in: path
+        name: name
+        schema:
+          type: string
+        required: true
+      tags:
+      - ai
+      responses:
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent:
+                    type: string
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+  /api/v1/ai/runs/{run_id}/:
+    get:
+      operationId: ai_runs_retrieve
+      description: Get details of an agent run (skeleton).
+      summary: Get agent run details
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ai
+      responses:
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: integer
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+  /api/v1/ai/runs/{run_id}/approve/:
+    post:
+      operationId: ai_runs_approve_create
+      description: Approve an agent run.
+      summary: Approve agent run
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ai
+      responses:
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: integer
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+  /api/v1/ai/runs/{run_id}/cancel/:
+    delete:
+      operationId: ai_runs_cancel_destroy
+      description: Cancel an agent run.
+      summary: Cancel agent run
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ai
+      responses:
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: integer
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+  /api/v1/ai/tools/:
+    get:
+      operationId: ai_tools_list
+      description: List available AI tools.
+      summary: List AI tools
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - ai
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tools:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              description:
+                                type: string
+                              requires_approval:
+                                type: boolean
+                              status:
+                                type: string
+          description: ''
+  /api/v1/ai/tools/{tool}/test/:
+    post:
+      operationId: ai_tools_test_create
+      description: Test an AI tool (skeleton).
+      summary: Test an AI tool
+      parameters:
+      - in: path
+        name: tool
+        schema:
+          type: string
+        required: true
+      tags:
+      - ai
+      responses:
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tool:
+                    type: string
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+  /api/v1/auth/status/:
+    get:
+      operationId: auth_status_retrieve
+      description: Check current authentication status
+      summary: Authentication Status
+      tags:
+      - auth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated:
+                    type: boolean
+                  user:
+                    type: string
+                  api_key_status:
+                    type: string
+          description: ''
+  /api/v1/bible/books/:
+    get:
+      operationId: bible_books_list
+      summary: List books
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookList'
+          description: ''
+  /api/v1/bible/books/{book_name}/chapters/:
+    get:
+      operationId: bible_books_chapters_retrieve
+      summary: List chapters by book
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  book:
+                    type: string
+                  chapters:
+                    type: array
+                    items:
+                      type: integer
+          description: ''
+  /api/v1/bible/books/{book_name}/info/:
+    get:
+      operationId: bible_books_info_retrieve
+      summary: Get book info
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+  /api/v1/bible/cross-references/verse/{verse_id}/:
+    get:
+      operationId: bible_cross_references_verse_list
+      summary: List cross-references for a verse
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: verse_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCrossReferenceList'
+          description: ''
+  /api/v1/bible/overview/:
+    get:
+      operationId: bible_overview_retrieve
+      description: Get basic information about the Bible API
+      summary: Bible API Overview
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_name:
+                    type: string
+                  version:
+                    type: string
+                  description:
+                    type: string
+                  endpoints:
+                    type: object
+                    properties:
+                      books:
+                        type: string
+                      verses:
+                        type: string
+                      auth:
+                        type: string
+          description: ''
+  /api/v1/bible/themes/:
+    get:
+      operationId: bible_themes_list
+      summary: List themes
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedThemeList'
+          description: ''
+  /api/v1/bible/themes/{id}/detail/:
+    get:
+      operationId: bible_themes_detail_retrieve
+      summary: Get theme detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+          description: ''
+  /api/v1/bible/verses/{id}/:
+    get:
+      operationId: bible_verses_retrieve
+      summary: Get verse by id
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verse'
+          description: ''
+  /api/v1/bible/verses/by-chapter/{book_name}/{chapter}/:
+    get:
+      operationId: bible_verses_by_chapter_list
+      summary: List verses by chapter
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: chapter
+        schema:
+          type: integer
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVerseList'
+          description: ''
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        abbreviation:
+          type: string
+          maxLength: 10
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        testament:
+          $ref: '#/components/schemas/TestamentEnum'
+        chapter_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - abbreviation
+      - chapter_count
+      - id
+      - name
+      - order
+      - testament
+    CrossReference:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        from_verse:
+          type: integer
+        to_verse:
+          type: integer
+        relationship_type:
+          $ref: '#/components/schemas/RelationshipTypeEnum'
+        source:
+          type: string
+          maxLength: 50
+      required:
+      - from_verse
+      - id
+      - to_verse
+    PaginatedBookList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
+    PaginatedCrossReferenceList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrossReference'
+    PaginatedThemeList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Theme'
+    PaginatedVerseList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Verse'
+    RelationshipTypeEnum:
+      enum:
+      - parallel
+      - prophecy
+      - quote
+      - theme
+      - other
+      type: string
+      description: |-
+        * `parallel` - Parallel
+        * `prophecy` - Prophecy
+        * `quote` - Quote
+        * `theme` - Theme Related
+        * `other` - Other
+    TestamentEnum:
+      enum:
+      - OLD
+      - NEW
+      type: string
+      description: |-
+        * `OLD` - Old Testament
+        * `NEW` - New Testament
+    Theme:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        color:
+          type: string
+          maxLength: 20
+        icon:
+          type: string
+          maxLength: 50
+      required:
+      - id
+      - name
+    Verse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        book:
+          type: integer
+        version:
+          type: integer
+        chapter:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        text:
+          type: string
+        reference:
+          type: string
+          readOnly: true
+      required:
+      - book
+      - chapter
+      - id
+      - number
+      - reference
+      - text
+      - version
