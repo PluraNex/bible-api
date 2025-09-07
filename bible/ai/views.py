@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 class AgentListView(generics.ListAPIView):
     """List available AI agents."""
+
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -59,6 +60,7 @@ class AgentListView(generics.ListAPIView):
 
 class ToolListView(generics.ListAPIView):
     """List available AI tools."""
+
     permission_classes = [AllowAny]
 
     @extend_schema(
