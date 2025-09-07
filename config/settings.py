@@ -37,6 +37,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "bible",
     "bible.apps.auth.apps.AuthConfig",
+    "bible.ai",
     "common",
 ]
 
