@@ -183,6 +183,16 @@ static_collected/
 # Generated files
 docs/openapi-v1-generated.yaml
 
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+test-results.xml
+
+# SonarQube
+.scannerwork/
+
 # Local data
 *.sqlite3
 data/

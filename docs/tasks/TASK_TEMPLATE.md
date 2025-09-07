@@ -33,15 +33,15 @@ due: null
 - Não inclui: …
 
 ## Impacto Técnico
-**Contrato (OpenAPI)**: muda? (rotas, campos, exemplos, deprecated)  
-**DB/Migrations**: quais? backward-compat? volume/tempo?  
-**Throttle/Cache**: escopos e política  
-**Performance**: orçamento (p95 local), risco de N+1  
+**Contrato (OpenAPI)**: muda? (rotas, campos, exemplos, deprecated)
+**DB/Migrations**: quais? backward-compat? volume/tempo?
+**Throttle/Cache**: escopos e política
+**Performance**: orçamento (p95 local), risco de N+1
 **Segurança**: PII, auth, permissões, rate limit
 
 ## Plano de Testes
-**API**: casos (+ códigos 200/201/204/400/401/403/404/422/429 conforme)  
-**Contrato**: exemplos e validação do schema  
+**API**: casos (+ códigos 200/201/204/400/401/403/404/422/429 conforme)
+**Contrato**: exemplos e validação do schema
 **Dados**: fábricas mínimas, constraints do DB
 
 ## Observabilidade
@@ -62,7 +62,7 @@ due: null
 
 ## Checklist Operacional (Revisor)
 - [ ] Contrato estável ou depreciação formal
-- [ ] Testes suficientes (felizes + erros + auth + throttle + paginação/ordenção/filtros)
+- [ ] Testes suficientes (felizes + erros + auth + throttle + paginação/ordenação/filtros)
 - [ ] Sem N+1; p95 dentro do orçamento
 - [ ] Migrations pequenas e reversíveis
 - [ ] Segurança: sem PII em logs; escopos e rate adequados

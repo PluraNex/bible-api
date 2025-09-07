@@ -2,6 +2,33 @@
 
 A comprehensive RESTful Bible API with AI integration, built with Django REST Framework.
 
+## Status & Quality
+
+[![CI](https://github.com/PluraNex/bible-api/workflows/CI/badge.svg)](https://github.com/PluraNex/bible-api/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/PluraNex/bible-api/branch/main/graph/badge.svg)](https://codecov.io/gh/PluraNex/bible-api)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=PluraNex_bible-api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=PluraNex_bible-api)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=PluraNex_bible-api&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=PluraNex_bible-api)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=PluraNex_bible-api&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=PluraNex_bible-api)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=PluraNex_bible-api&metric=bugs)](https://sonarcloud.io/summary/new_code?id=PluraNex_bible-api)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=PluraNex_bible-api&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=PluraNex_bible-api)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=PluraNex_bible-api&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=PluraNex_bible-api)
+
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Django](https://img.shields.io/badge/django-4.2+-green.svg)](https://www.djangoproject.com/)
+[![DRF](https://img.shields.io/badge/drf-3.14+-red.svg)](https://www.django-rest-framework.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+### Quality Metrics
+
+- **CI Status**: Automated tests, linting, and quality checks
+- **Code Coverage**: Percentage of code covered by tests  
+- **Quality Gate**: Overall project quality assessment
+- **Maintainability**: Code complexity and maintainability rating
+- **Security**: Security vulnerability assessment
+- **Bugs**: Number of identified bugs and issues
+- **Code Smells**: Code quality issues and potential improvements
+- **Lines of Code**: Total codebase size
+
 ## Features
 
 - 📖 **Complete Bible Data**: Books, verses, themes, and cross-references
@@ -74,6 +101,8 @@ make logs                # Show logs from all services
 # Testing and quality
 make test                # Run all tests with coverage
 make test-fast           # Run tests without coverage
+make coverage            # Run tests with detailed coverage report
+make coverage-html       # Generate HTML coverage report
 make lint                # Run linter (ruff)
 make format              # Format code with black and ruff
 make ci                  # Run all CI checks locally

@@ -6,10 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The project uses a Django-based Bible API with comprehensive development workflows:
 
-- **Development setup**: Check `BIBLE_API_BASE_PROJECT.md` for complete architecture
-- **Workflow management**: Follow `DEV_FLOW_PLAYBOOK.md` for branch, commit, and CI practices  
-- **Testing standards**: Apply `API_TESTING_BEST_PRACTICES.md` for endpoint testing
-- **Task orchestration**: Use `BIBLE_API_ORCHESTRATOR.md` for task planning and execution
+- **Development setup**: Check `docs/architecture/BIBLE_API_BASE_PROJECT.md` for complete architecture
+- **Workflow management**: Follow `docs/workflows/DEV_FLOW_PLAYBOOK.md` for branch, commit, and CI practices  
+- **Testing standards**: Apply `docs/api/API_TESTING_BEST_PRACTICES.md` for endpoint testing
+- **Task orchestration**: Use `docs/workflows/BIBLE_API_ORCHESTRATOR.md` for task planning and execution
+- **Documentation index**: See `docs/README.md` for complete documentation organization
 
 ## Architecture Overview
 
@@ -43,8 +44,9 @@ This is a Django REST Framework-based Bible API with the following key architect
 ## Development Workflow
 
 ### Task Management
-- **Always start with a TASK**: Create issues using the template in `BIBLE_API_ORCHESTRATOR.md` §7
-- **Definition of Ready (DoR)** and **Definition of Done (DoD)** in `DEV_FLOW_PLAYBOOK.md` §2
+- **Always start with a TASK**: Create issues using the template in `docs/workflows/BIBLE_API_ORCHESTRATOR.md` §7
+- **Track progress**: Check active tasks in `docs/tasks/INDEX.md`
+- **Definition of Ready (DoR)** and **Definition of Done (DoD)** in `docs/workflows/DEV_FLOW_PLAYBOOK.md` §2
 - **Vertical slice implementation**: View → Serializer → Service/Selector pattern
 
 ### Code Quality Standards
