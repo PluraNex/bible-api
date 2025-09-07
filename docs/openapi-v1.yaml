@@ -331,6 +331,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/Book'
           description: ''
+  /api/v1/bible/cross-references/by-theme/{theme_id}/:
+    get:
+      operationId: bible_cross_references_by_theme_list
+      description: GET /api/v1/bible/cross-references/by-theme/<theme_id>/
+      summary: List cross-references by theme
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: theme_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCrossReferenceList'
+          description: ''
   /api/v1/bible/cross-references/verse/{verse_id}/:
     get:
       operationId: bible_cross_references_verse_list
@@ -465,6 +491,32 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      tags:
+      - bible
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVerseList'
+          description: ''
+  /api/v1/bible/verses/by-theme/{theme_id}/:
+    get:
+      operationId: bible_verses_by_theme_list
+      description: GET /api/v1/bible/verses/by-theme/<theme_id>/
+      summary: List verses by theme
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: theme_id
+        schema:
+          type: integer
+        required: true
       tags:
       - bible
       responses:
@@ -637,12 +689,6 @@ components:
           maxLength: 100
         description:
           type: string
-        color:
-          type: string
-          maxLength: 20
-        icon:
-          type: string
-          maxLength: 50
       required:
       - id
       - name

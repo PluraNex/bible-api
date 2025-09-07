@@ -25,7 +25,8 @@ class VersesApiTest(TestCase):
 
     def test_by_chapter_and_detail(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        by_chapter = self.client.get(f"/api/v1/bible/verses/by-chapter/{self.book.name}/3/")
+        with self.assertNumQueries(3):
+            by_chapter = self.client.get(f"/api/v1/bible/verses/by-chapter/{self.book.name}/3/")
         self.assertEqual(by_chapter.status_code, status.HTTP_200_OK)
         self.assertEqual(len(by_chapter.json().get("results", [])), 2)
 

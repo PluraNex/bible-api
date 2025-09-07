@@ -4,12 +4,15 @@ Skeleton implementation with auth and schema annotations.
 """
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
 class AgentListView(generics.ListAPIView):
     """List available AI agents."""
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     @extend_schema(
         summary="List AI agents",
@@ -57,6 +60,8 @@ class AgentListView(generics.ListAPIView):
 
 class ToolListView(generics.ListAPIView):
     """List available AI tools."""
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     @extend_schema(
         summary="List AI tools",
@@ -104,9 +109,12 @@ class ToolListView(generics.ListAPIView):
 
 class ToolTestView(APIView):
     """Test an AI tool (skeleton)."""
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     @extend_schema(
         summary="Test an AI tool",
+        request=None,
         responses={
             501: {
                 "type": "object",
@@ -131,9 +139,12 @@ class ToolTestView(APIView):
 
 class AgentRunCreateView(APIView):
     """Create a new agent run (skeleton)."""
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     @extend_schema(
         summary="Create agent run",
+        request=None,
         responses={
             501: {
                 "type": "object",
@@ -158,6 +169,8 @@ class AgentRunCreateView(APIView):
 
 class AgentRunDetailView(APIView):
     """Get details of an agent run (skeleton)."""
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     @extend_schema(
         summary="Get agent run details",
@@ -185,9 +198,12 @@ class AgentRunDetailView(APIView):
 
 class AgentRunApproveView(APIView):
     """Approve an agent run."""
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     @extend_schema(
         summary="Approve agent run",
+        request=None,
         responses={
             501: {
                 "type": "object",
@@ -212,9 +228,12 @@ class AgentRunApproveView(APIView):
 
 class AgentRunCancelView(APIView):
     """Cancel an agent run."""
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     @extend_schema(
         summary="Cancel agent run",
+        request=None,
         responses={
             501: {
                 "type": "object",

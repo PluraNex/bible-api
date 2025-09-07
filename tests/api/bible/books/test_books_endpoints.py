@@ -22,7 +22,8 @@ class BooksApiTest(TestCase):
 
     def test_list_books(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/books/")
+        with self.assertNumQueries(2):
+            resp = self.client.get("/api/v1/bible/books/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(resp.json().get("results", [])), 2)
 
@@ -40,4 +41,3 @@ class BooksApiTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
         resp = self.client.get("/api/v1/bible/books/Fake/chapters/")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
