@@ -130,6 +130,12 @@ omit = [
     "*/settings/*",
     "*/tests/*",
     "*/__pycache__/*",
+    # Django structural files
+    "*/apps.py",
+    "*/asgi.py",
+    "*/wsgi.py",
+    # Import aggregator files
+    "bible/serializers.py",
 ]
 
 [tool.coverage.report]
