@@ -16,9 +16,17 @@ class VersesByChapterView(generics.ListAPIView):
         book = Book.objects.filter(name__iexact=book_name).first()
         if not book:
             return Verse.objects.none()
-        return Verse.objects.filter(book=book, chapter=chapter).order_by("number")
+        return Verse.objects.filter(book=book, chapter=chapter).select_related("book", "version").order_by("number")
 
-    @extend_schema(summary="List verses by chapter")
+    @extend_schema(
+        summary="List verses by chapter",
+        tags=["verses"],
+        responses={
+            200: VerseSerializer(many=True),
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        },
+    )
     def get(self, request, *args, **kwargs):
         qs = self.get_queryset()
         if not qs.exists():
@@ -33,7 +41,15 @@ class VerseDetailView(generics.RetrieveAPIView):
     serializer_class = VerseSerializer
     lookup_field = "pk"
 
-    @extend_schema(summary="Get verse by id")
+    @extend_schema(
+        summary="Get verse by id",
+        tags=["verses"],
+        responses={
+            200: VerseSerializer,
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        },
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
@@ -51,6 +67,13 @@ class VersesByThemeView(generics.ListAPIView):
             .order_by("book__order", "chapter", "number")
         )
 
-    @extend_schema(summary="List verses by theme")
+    @extend_schema(
+        summary="List verses by theme",
+        tags=["verses"],
+        responses={
+            200: VerseSerializer(many=True),
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        },
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
