@@ -50,19 +50,26 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
    - Atualização do INDEX.md com status
 2. **Issue Creation**: crie GitHub issue linkando a task e aplicando labels apropriadas
 3. **Branch**: crie `feat/T-XXX-slug` referenciando task e issue
-4. **PR em rascunho (Draft)**: abra cedo para rodar CI e coletar feedback
-5. **Desenvolvimento iterativo** (vertical slice):
+4. **Validação Arquitetural** (OBRIGATÓRIA antes da implementação):
+   - **Consultar BIBLE_API_BASE_PROJECT.md** para verificar conformidade
+   - **Verificar estrutura de modelos**: `bible/models/*.py`, nomes de tabela, relacionamentos
+   - **Validar organização**: apps, URLs, estrutura de diretórios conforme arquitetura
+   - **Identificar divergências**: listar inconsistências ou melhorias sugeridas
+   - **Explicar justificativas**: documentar razões para mudanças ou adaptações
+   - **Aguardar aprovação**: não prosseguir sem validação arquitetural ✅
+5. **PR em rascunho (Draft)**: abra cedo para rodar CI e coletar feedback
+6. **Desenvolvimento iterativo** (vertical slice):
    - Leitura simples → **View → Serializer → QuerySet/Selector**
    - Escrita/regras → **View → Serializer → Service → Manager/Selector**
    - **Nunca** coloque regra de negócio no Serializer
-6. **Validação contínua**: 
+7. **Validação contínua**: 
    - Execute `make fmt lint test` localmente
    - CI com jobs condicionais (adapta-se ao estado do projeto)
    - Verifique todos os 8 critérios de aceite
-7. **Docs/Schema**: quando Django estiver ativo, gere/valide OpenAPI
-8. **Revisão**: tire do Draft quando todos critérios atendidos
-9. **Merge**: squash & merge com mensagem conventional commit
-10. **Completion**: atualize task status para "done" e INDEX.md
+8. **Docs/Schema**: quando Django estiver ativo, gere/valide OpenAPI
+9. **Revisão**: tire do Draft quando todos critérios atendidos
+10. **Merge**: squash & merge com mensagem conventional commit
+11. **Completion**: atualize task status para "done" e INDEX.md
 
 ---
 
@@ -166,6 +173,63 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
 - **Service**: regra de negócio para escrita/processos (anti‑corrupção da camada API).
 - **Throttle scope**: rótulo para aplicar limites distintos por tipo de endpoint.
 - **OpenAPI**: fonte de verdade da documentação; mudanças devem ser versionadas em `docs/`.
+
+---
+
+## 11.5) Validação Arquitetural - Fluxo Detalhado
+
+### Processo Obrigatório de Validação
+Antes de qualquer implementação, siga este checklist:
+
+**📋 Checklist de Validação Arquitetural:**
+
+1. **📖 Consulta da Arquitetura Base**:
+   - Abrir `docs/architecture/BIBLE_API_BASE_PROJECT.md`
+   - Identificar seção relevante (models, apps, URLs, etc.)
+   - Verificar estrutura definida vs. implementação planejada
+
+2. **🔍 Verificação de Modelos**:
+   - Localização correta: `bible/models/*.py`
+   - Nomes de tabela: sem prefixos desnecessários (`books` vs `bible_books`)
+   - Relacionamentos e campos conforme especificação
+   - Índices e constraints apropriados
+
+3. **🏗️ Estrutura de Apps**:
+   - Organização: `bible/apps/<domain>/`
+   - URLs: padrão `/api/v1/<domain>/`
+   - Views, serializers, services em locais corretos
+
+4. **📝 Documentação de Divergências**:
+   ```markdown
+   ### Validação Arquitetural - T-XXX
+   
+   **✅ Conforme arquitetura:**
+   - Modelos em bible/models/
+   - Estrutura de URLs correta
+   
+   **❌ Divergências identificadas:**
+   - Modelo Chapter não existe na spec (criado por necessidade)
+   - Nome de tabela bible_books vs books
+   
+   **🔧 Correções aplicadas:**
+   - Removido modelo Chapter 
+   - Corrigido nome de tabela para books
+   
+   **✋ Aguardando aprovação:** N/A
+   ```
+
+5. **⏳ Processo de Aprovação**:
+   - Apresentar análise completa
+   - Explicar justificativas para mudanças
+   - **NÃO PROSSEGUIR** sem aprovação explícita
+   - Aplicar correções solicitadas
+
+### Exemplo Prático (T-001)
+Durante T-001, identificamos:
+- ❌ Criamos `CanonicalBook` (spec define `Book`)
+- ❌ Modelo `Chapter` não especificado na arquitetura
+- ❌ Nomes de tabela com prefixos desnecessários
+- ✅ Correções aplicadas após validação
 
 ---
 

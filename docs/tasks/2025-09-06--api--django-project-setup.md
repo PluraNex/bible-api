@@ -94,6 +94,29 @@ due: null
 - Rollback migrations se necessário
 - Projeto novo, reversão é reset completo
 
+## Validação Arquitetural - T-001
+
+**✅ Conforme arquitetura BIBLE_API_BASE_PROJECT.md:**
+- ✅ Modelos organizados em `bible/models/` separada
+- ✅ Estrutura de apps: `bible/apps/auth/`
+- ✅ URLs padrão: `/api/v1/bible/`, `/api/v1/auth/`
+- ✅ Sistema de autenticação API Key customizado
+- ✅ DRF + drf-spectacular configurado
+
+**❌ Divergências identificadas e corrigidas:**
+- ❌ Inicialmente criamos `CanonicalBook` (spec define `Book`)
+- ❌ Modelo `Chapter` não especificado na arquitetura base
+- ❌ Nomes de tabela com prefixos: `bible_books` vs `books`
+- ❌ Testes não organizados hierarquicamente
+
+**🔧 Correções aplicadas:**
+- ✅ Renomeado para `Book` (sem CanonicalBook)
+- ✅ Removido modelo `Chapter` (não na spec)
+- ✅ Corrigidos nomes de tabela: `books`, `verses`, `versions`, `api_keys`
+- ✅ Reorganizados testes: `tests/models/{books,verses,auth}/`, `tests/api/{bible,health}/`
+
+**✋ Validação:** Arquitetura verificada e correções aplicadas ✅
+
 ## Checklist Operacional (Autor)
 - [ ] OpenAPI gerado/commitado em `docs/` (primeira versão)
 - [ ] `make fmt lint test` ok local (criar Makefile básico)
