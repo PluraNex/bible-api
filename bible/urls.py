@@ -15,4 +15,5 @@ urlpatterns = [
     path("verses/", include(("bible.verses.urls", "verses"), namespace="verses")),
     path("themes/", include(("bible.themes.urls", "themes"), namespace="themes")),
     path("cross-references/", include(("bible.crossrefs.urls", "crossrefs"), namespace="crossrefs")),
+    path("versions/", include(("bible.versions.urls", "versions"), namespace="versions")),
 ]
