@@ -41,6 +41,7 @@ class Verse(models.Model):
     chapter = models.PositiveIntegerField()
     number = models.PositiveIntegerField()
     text = models.TextField()
+    themes = models.ManyToManyField('Theme', through='bible.VerseTheme', related_name='verses', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

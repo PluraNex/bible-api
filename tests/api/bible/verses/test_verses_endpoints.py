@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from bible.models import APIKey, Book, Verse, Version
+from bible.models import APIKey, Book, Verse, Version, Theme, VerseTheme
 
 
 class VersesApiTest(TestCase):
@@ -38,3 +38,16 @@ class VersesApiTest(TestCase):
         resp = self.client.get("/api/v1/bible/verses/by-chapter/Fake/1/")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_verses_by_theme(self):
+        theme = Theme.objects.create(name="Love")
+        VerseTheme.objects.create(verse=self.v1, theme=theme)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
+        resp = self.client.get(f"/api/v1/bible/verses/by-theme/{theme.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.json().get("results", [])), 1)
+
+    def test_verses_by_theme_not_found(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
+        resp = self.client.get("/api/v1/bible/verses/by-theme/999/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.json().get("results", [])), 0)

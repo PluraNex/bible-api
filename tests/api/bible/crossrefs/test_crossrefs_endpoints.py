@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from bible.models import APIKey, Book, CrossReference, Verse, Version
+from bible.models import APIKey, Book, CrossReference, Verse, Version, Theme, VerseTheme
 
 
 class CrossRefsApiTest(TestCase):
@@ -30,3 +30,10 @@ class CrossRefsApiTest(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(resp.json().get("results", [])), 1)
 
+    def test_crossrefs_by_theme(self):
+        theme = Theme.objects.create(name="Faith")
+        VerseTheme.objects.create(verse=self.v1, theme=theme)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
+        resp = self.client.get(f"/api/v1/bible/cross-references/by-theme/{theme.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(resp.json().get("results", [])), 1)

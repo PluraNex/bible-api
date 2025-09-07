@@ -5,9 +5,9 @@ from django.urls import include, path
 
 from . import views
 from .books.views import BookInfoView, BookListView, ChaptersByBookView
-from .verses.views import VerseDetailView, VersesByChapterView
+from .verses.views import VerseDetailView, VersesByChapterView, VersesByThemeView
 from .themes.views import ThemeDetailView, ThemeListView
-from .crossrefs.views import CrossReferencesByVerseView
+from .crossrefs.views import CrossReferencesByVerseView, CrossReferencesByThemeView
 
 app_name = "bible"
 
@@ -37,6 +37,11 @@ urlpatterns = [
                     VersesByChapterView.as_view(),
                     name="verses_by_chapter",
                 ),
+                path(
+                    "by-theme/<int:theme_id>/",
+                    VersesByThemeView.as_view(),
+                    name="verses_by_theme",
+                ),
                 path("<int:pk>/", VerseDetailView.as_view(), name="verse_detail"),
             ]
         ),
@@ -62,6 +67,11 @@ urlpatterns = [
                     "verse/<int:verse_id>/",
                     CrossReferencesByVerseView.as_view(),
                     name="crossrefs_by_verse",
+                ),
+                path(
+                    "by-theme/<int:theme_id>/",
+                    CrossReferencesByThemeView.as_view(),
+                    name="crossrefs_by_theme",
                 ),
             ]
         ),
