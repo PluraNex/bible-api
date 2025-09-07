@@ -14,7 +14,6 @@ app_name = "bible"
 urlpatterns = [
     # Overview
     path("overview/", views.BibleOverviewAPIView.as_view(), name="overview"),
-
     # Books
     path(
         "books/",
@@ -26,7 +25,6 @@ urlpatterns = [
             ]
         ),
     ),
-
     # Verses
     path(
         "verses/",
@@ -46,7 +44,6 @@ urlpatterns = [
             ]
         ),
     ),
-
     # Themes
     path(
         "themes/",
@@ -57,7 +54,6 @@ urlpatterns = [
             ]
         ),
     ),
-
     # Cross-references
     path(
         "cross-references/",

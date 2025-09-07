@@ -1,2 +1,1 @@
 """Verses domain package."""
-

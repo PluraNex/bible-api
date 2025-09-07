@@ -18,7 +18,9 @@ class CrossRefsApiTest(TestCase):
         ver = Version.objects.create(name="KJV", abbreviation="KJV", language="en")
         self.v1 = Verse.objects.create(book=book, version=ver, chapter=1, number=1, text="Blessed is the man...")
         self.v2 = Verse.objects.create(book=book, version=ver, chapter=1, number=2, text="But his delight...")
-        CrossReference.objects.create(from_verse=self.v1, to_verse=self.v2, relationship_type="parallel", source="manual")
+        CrossReference.objects.create(
+            from_verse=self.v1, to_verse=self.v2, relationship_type="parallel", source="manual"
+        )
 
     def test_requires_auth(self):
         resp = self.client.get(f"/api/v1/bible/cross-references/verse/{self.v1.id}/")

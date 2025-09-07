@@ -40,4 +40,3 @@ class BooksApiTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
         resp = self.client.get("/api/v1/bible/books/Fake/chapters/")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-

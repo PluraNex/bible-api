@@ -17,11 +17,18 @@ class VersesApiTest(TestCase):
 
         self.book = Book.objects.create(name="John", abbreviation="Joh", order=43, testament="NEW", chapter_count=21)
         self.version = Version.objects.create(name="King James Version", abbreviation="KJV", language="en")
-        self.v1 = Verse.objects.create(book=self.book, version=self.version, chapter=3, number=16, text="For God so loved...")
-        self.v2 = Verse.objects.create(book=self.book, version=self.version, chapter=3, number=17, text="For God sent not...")
+        self.v1 = Verse.objects.create(
+            book=self.book, version=self.version, chapter=3, number=16, text="For God so loved..."
+        )
+        self.v2 = Verse.objects.create(
+            book=self.book, version=self.version, chapter=3, number=17, text="For God sent not..."
+        )
 
     def test_requires_auth(self):
-        self.assertEqual(self.client.get(f"/api/v1/bible/verses/by-chapter/{self.book.name}/3/").status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            self.client.get(f"/api/v1/bible/verses/by-chapter/{self.book.name}/3/").status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
 
     def test_by_chapter_and_detail(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")

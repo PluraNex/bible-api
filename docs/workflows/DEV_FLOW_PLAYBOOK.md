@@ -34,7 +34,11 @@ Aplica-se ao repositório da *Bible API v1* e pode ser seguido por humanos e age
 ### DoD — Definition of Done
 - [ ] **CI verde** (lint/format, migrations-check, tests, schema-diff).
 - [ ] Testes **unitários** e **API** cobrindo caminho feliz e erros.
-- [ ] **Swagger/OpenAPI** atualizado e arquivo versionado em `docs/`.
+- [ ] **OpenAPI Schema MANDATORY**: Generate and commit `docs/openapi-v1.yaml` after ANY endpoint changes:
+  ```bash
+  python manage.py spectacular --file docs/openapi-v1.yaml
+  git add docs/openapi-v1.yaml
+  ```
 - [ ] Logs/erros revisados (**sem PII**) e padronizados pelo handler.
 - [ ] **Migrations** pequenas, idempotentes (1 mudança → 1 migration).
 - [ ] PR documenta impacto, rollout/rollback e métricas a observar.

@@ -17,7 +17,7 @@ class Theme(models.Model):
     class Meta:
         db_table = "themes"
         ordering = ["name"]
-        indexes = [models.Index(fields=["name"]) ]
+        indexes = [models.Index(fields=["name"])]
 
     def __str__(self):
         return self.name

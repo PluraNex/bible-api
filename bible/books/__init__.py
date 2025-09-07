@@ -1,2 +1,1 @@
 """Books domain package."""
-

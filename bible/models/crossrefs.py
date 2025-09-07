@@ -37,12 +37,8 @@ class CrossReference(models.Model):
             models.Index(fields=["relationship_type"]),
         ]
         constraints = [
-            models.UniqueConstraint(
-                fields=["from_verse", "to_verse", "source"], name="crossref_unique_from_to_source"
-            ),
-            models.CheckConstraint(
-                check=~Q(from_verse=F("to_verse")), name="crossref_no_self_reference"
-            ),
+            models.UniqueConstraint(fields=["from_verse", "to_verse", "source"], name="crossref_unique_from_to_source"),
+            models.CheckConstraint(check=~Q(from_verse=F("to_verse")), name="crossref_no_self_reference"),
         ]
 
     def __str__(self):
