@@ -1,19 +1,19 @@
 ---
-id: T-001
+id: T-ARCH
 title: "[api] Refatoração para Alinhamento Arquitetural"
-status: backlog
+status: in_progress
 created: 2025-09-07
 updated: 2025-09-07
-owner: "@gemini"
+owner: "@iuryeng"
 reviewers: ["@IuryAlves"]
 labels: ["area/api", "type/refactor"]
 priority: high
-effort: L
+effort: XL
 risk: medium
 depends_on: []
 related: ["docs/architecture/BIBLE_API_BASE_PROJECT.md"]
 epic: "Fundação da API"
-branch: "refactor/architecture-alignment"
+branch: "feat/architecture-alignment"
 pr: ""
 github_issue: ""
 due: null
@@ -21,6 +21,23 @@ due: null
 
 ## Contexto
 A implementação atual da API, embora funcional, diverge da arquitetura de referência documentada em `docs/architecture/BIBLE_API_BASE_PROJECT.md`. Para garantir a escalabilidade, manutenibilidade e consistência do projeto, é necessário refatorar a estrutura atual para alinhá-la com a visão arquitetural.
+
+## Status das Subtasks Completadas
+
+### ✅ T-007: Versions API (COMPLETO - Mergeado em main via PR#15)
+- VersionSerializer com todos campos necessários
+- VersionListView com filtros por language e is_active
+- VersionDetailView com lookup case-insensitive por abbreviation
+- URLs organizadas: `/api/v1/bible/versions/` e `/api/v1/bible/versions/{abbreviation}/`
+- Testes 100% cobertura incluindo edge cases
+- Integrada com HasAPIScopes (scope: 'read')
+
+### ✅ T-012: HasAPIScopes Permission System (COMPLETO - Mergeado em main via PR#15)
+- Permission class implementada em `bible/apps/auth/permissions.py`
+- Suporte para escopos: 'read', 'write', 'admin', 'ai', 'audio'
+- Aplicada aos endpoints de versions
+- Testes unitários e de integração completos
+- Documentação e exemplos de uso
 
 ## Objetivo e Critérios de Aceite
 O objetivo desta tarefa é reestruturar o projeto para seguir o padrão DDD-like proposto, com separação clara de domínios e camadas de serviço.
