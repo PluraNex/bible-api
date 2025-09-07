@@ -1,6 +1,7 @@
 """Views for books domain."""
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,13 +12,18 @@ from .serializers import BookSerializer
 class BookListView(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []  # uses default ApiKeyAuthentication
 
-    @extend_schema(summary="List books")
+    @extend_schema(summary="List books", responses={200: BookSerializer(many=True)})
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
 
 class BookInfoView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+
     @extend_schema(summary="Get book info", responses={200: BookSerializer})
     def get(self, request, book_name):
         book = Book.objects.filter(name__iexact=book_name).first()
@@ -27,6 +33,9 @@ class BookInfoView(APIView):
 
 
 class ChaptersByBookView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+
     @extend_schema(
         summary="List chapters by book",
         responses={

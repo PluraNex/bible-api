@@ -1,6 +1,7 @@
 """Views for verses domain."""
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from ..models import Book, Verse
@@ -9,6 +10,8 @@ from .serializers import VerseSerializer
 
 class VersesByChapterView(generics.ListAPIView):
     serializer_class = VerseSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     def get_queryset(self):
         book_name = self.kwargs["book_name"]
@@ -18,7 +21,7 @@ class VersesByChapterView(generics.ListAPIView):
             return Verse.objects.none()
         return Verse.objects.filter(book=book, chapter=chapter).order_by("number")
 
-    @extend_schema(summary="List verses by chapter")
+    @extend_schema(summary="List verses by chapter", responses={200: VerseSerializer(many=True)})
     def get(self, request, *args, **kwargs):
         qs = self.get_queryset()
         if not qs.exists():
@@ -32,8 +35,10 @@ class VerseDetailView(generics.RetrieveAPIView):
     queryset = Verse.objects.all()
     serializer_class = VerseSerializer
     lookup_field = "pk"
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
-    @extend_schema(summary="Get verse by id")
+    @extend_schema(summary="Get verse by id", responses={200: VerseSerializer})
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
@@ -42,6 +47,8 @@ class VersesByThemeView(generics.ListAPIView):
     """GET /api/v1/bible/verses/by-theme/<theme_id>/"""
 
     serializer_class = VerseSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     def get_queryset(self):
         theme_id = self.kwargs["theme_id"]
@@ -51,6 +58,6 @@ class VersesByThemeView(generics.ListAPIView):
             .order_by("book__order", "chapter", "number")
         )
 
-    @extend_schema(summary="List verses by theme")
+    @extend_schema(summary="List verses by theme", responses={200: VerseSerializer(many=True)})
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
