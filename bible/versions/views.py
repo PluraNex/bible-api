@@ -2,12 +2,15 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import generics
 
+from ..apps.auth.permissions import HasAPIScopes
 from ..models import Version
 from .serializers import VersionSerializer
 
 
 class VersionListView(generics.ListAPIView):
     serializer_class = VersionSerializer
+    permission_classes = [HasAPIScopes]
+    required_scopes = ["read"]
 
     def get_queryset(self):
         qs = Version.objects.all().order_by("name")
@@ -63,7 +66,13 @@ class VersionListView(generics.ListAPIView):
 class VersionDetailView(generics.RetrieveAPIView):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
-    lookup_field = "abbreviation"
+    permission_classes = [HasAPIScopes]
+    required_scopes = ["read"]
+
+    def get_object(self):
+        """Get version by abbreviation (case-insensitive)."""
+        abbreviation = self.kwargs["abbreviation"]
+        return generics.get_object_or_404(self.get_queryset(), abbreviation__iexact=abbreviation)
 
     @extend_schema(
         summary="Get version by abbreviation",

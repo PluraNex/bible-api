@@ -85,8 +85,9 @@ urlpatterns = [
 
     # 📖 VERSIONS
     path("versions/", include([
+        path("", views.VersionListView.as_view(), name="versions_list"),
+        path("<str:abbreviation>/", views.VersionDetailView.as_view(), name="version_detail"),
         path("by-language/<str:language_code>/", views.VersionsByLanguageView.as_view(), name="versions_by_language"),
-        path("<int:version_id>/detail/", views.VersionDetailView.as_view(), name="version_detail"),
         path("comparison/<str:reference>/", views.VersionComparisonView.as_view(), name="version_comparison"),
         path("language-comparison/<str:reference>/", views.LanguageComparisonView.as_view(), name="language_comparison"),
     ])),
