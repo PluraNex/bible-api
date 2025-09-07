@@ -13,7 +13,14 @@ class CrossReferencesByVerseView(generics.ListAPIView):
         verse_id = self.kwargs["verse_id"]
         return CrossReference.objects.filter(from_verse_id=verse_id).order_by("to_verse_id")
 
-    @extend_schema(summary="List cross-references for a verse")
+    @extend_schema(
+        summary="List cross-references for a verse",
+        tags=["cross-references"],
+        responses={
+            200: CrossReferenceSerializer(many=True),
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        },
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
@@ -31,6 +38,13 @@ class CrossReferencesByThemeView(generics.ListAPIView):
             .order_by("from_verse_id", "to_verse_id")
         )
 
-    @extend_schema(summary="List cross-references by theme")
+    @extend_schema(
+        summary="List cross-references by theme",
+        tags=["cross-references"],
+        responses={
+            200: CrossReferenceSerializer(many=True),
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        },
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)

@@ -12,13 +12,28 @@ class BookListView(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
 
-    @extend_schema(summary="List books")
+    @extend_schema(
+        summary="List books",
+        tags=["books"],
+        responses={
+            200: BookSerializer(many=True),
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        },
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
 
 class BookInfoView(APIView):
-    @extend_schema(summary="Get book info", responses={200: BookSerializer})
+    @extend_schema(
+        summary="Get book info",
+        tags=["books"],
+        responses={
+            200: BookSerializer,
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        },
+    )
     def get(self, request, book_name):
         book = Book.objects.filter(name__iexact=book_name).first()
         if not book:
@@ -29,6 +44,7 @@ class BookInfoView(APIView):
 class ChaptersByBookView(APIView):
     @extend_schema(
         summary="List chapters by book",
+        tags=["books"],
         responses={
             200: {
                 "type": "object",
@@ -36,7 +52,9 @@ class ChaptersByBookView(APIView):
                     "book": {"type": "string"},
                     "chapters": {"type": "array", "items": {"type": "integer"}},
                 },
-            }
+            },
+            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
         },
     )
     def get(self, request, book_name):
