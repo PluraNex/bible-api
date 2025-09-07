@@ -129,8 +129,8 @@ class ToolTestView(APIView):
         )
 
 
-class AgentRunCreateView(generics.CreateAPIView):
-    """Create a new agent run."""
+class AgentRunCreateView(APIView):
+    """Create a new agent run (skeleton)."""
 
     @extend_schema(
         summary="Create agent run",
@@ -156,8 +156,8 @@ class AgentRunCreateView(generics.CreateAPIView):
         )
 
 
-class AgentRunDetailView(generics.RetrieveAPIView):
-    """Get details of an agent run."""
+class AgentRunDetailView(APIView):
+    """Get details of an agent run (skeleton)."""
 
     @extend_schema(
         summary="Get agent run details",
