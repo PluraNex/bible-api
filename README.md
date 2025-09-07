@@ -29,6 +29,8 @@ A comprehensive RESTful Bible API with AI integration, built with Django REST Fr
 - **Code Smells**: Code quality issues and potential improvements
 - **Lines of Code**: Total codebase size
 
+<!-- chore: CI PR trigger verification -->
+
 ## Features
 
 - 📖 **Complete Bible Data**: Books, verses, themes, and cross-references
