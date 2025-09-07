@@ -100,5 +100,6 @@ Após a implementação bem-sucedida do T-000 e reorganização da documentaçã
 
 ---
 **Assignee**: @iuryeng  
-**GitHub Issue**: [#TBD]()  
+**GitHub Issue**: [#3](https://github.com/PluraNex/bible-api/issues/3)  
+**GitHub PR**: [#4](https://github.com/PluraNex/bible-api/pull/4)  
 **Epic**: fase-0-boot

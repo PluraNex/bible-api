@@ -14,7 +14,7 @@
 | ID | Título | Status | Assignee | Epic | Priority | GitHub Issue | Created |
 |---|---|---|---|---|---|---|---|
 | [T-001](./2025-09-06--api--django-project-setup.md) | Setup Django Project Structure | 🟡 ready | @iuryeng | fase-0-boot | medium | [#TBD]() | 2025-09-06 |
-| [T-002](./2025-09-06--infra--quality-tools-integration.md) | Quality Tools Integration | 🟡 ready | @iuryeng | fase-0-boot | medium | [#TBD]() | 2025-09-06 |
+| [T-002](./2025-09-06--infra--quality-tools-integration.md) | Quality Tools Integration | 🟠 in_review | @iuryeng | fase-0-boot | medium | [#3](https://github.com/PluraNex/bible-api/issues/3) / [PR#4](https://github.com/PluraNex/bible-api/pull/4) | 2025-09-06 |
 
 ## Completed Tasks
 | ID | Título | Status | Assignee | Epic | GitHub Issue | Completed |
