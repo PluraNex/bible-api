@@ -4,15 +4,12 @@ Skeleton implementation with auth and schema annotations.
 """
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
 class AgentListView(generics.ListAPIView):
     """List available AI agents."""
-
-    permission_classes = [AllowAny]
 
     @extend_schema(
         summary="List AI agents",
@@ -60,8 +57,6 @@ class AgentListView(generics.ListAPIView):
 
 class ToolListView(generics.ListAPIView):
     """List available AI tools."""
-
-    permission_classes = [AllowAny]
 
     @extend_schema(
         summary="List AI tools",
