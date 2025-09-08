@@ -131,7 +131,7 @@ class VersionsEndpointsPermissionIntegrationTest(APITestCase):
         self.assertEqual(response.status_code, 401)
         # Verify WWW-Authenticate header is present
         self.assertIn("WWW-Authenticate", response.headers)
-        self.assertEqual(response.headers["WWW-Authenticate"], "Api-Key")
+        self.assertEqual(response.headers["WWW-Authenticate"], 'Api-Key realm="bible-api"')
 
     def test_versions_list_with_read_scope_allowed(self):
         """Test that versions list works with read scope."""
