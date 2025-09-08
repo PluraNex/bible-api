@@ -1,10 +1,7 @@
 """
 Middleware for Bible API.
 """
-import logging
 import uuid
-
-logger = logging.getLogger(__name__)
 
 
 class RequestIDMiddleware:
@@ -14,7 +11,6 @@ class RequestIDMiddleware:
     The request ID is added to:
     - Request object (request.request_id)
     - Response headers (X-Request-ID)
-    - Logging context
     """
 
     def __init__(self, get_response):
@@ -38,38 +34,11 @@ class RequestIDMiddleware:
             request_id = str(uuid.uuid4())
 
         request.request_id = request_id
-
-        # Add to logging context
-        with logging_context(request_id=request_id):
-            response = self.get_response(request)
-
+        response = self.get_response(request)
         # Always add to response headers (either reused or generated)
         response["X-Request-ID"] = request_id
-
         return response
 
 
-class _LoggingContext:
-    """Thread-local context for logging."""
-
-    def __init__(self):
-        self.request_id = None
-
-
-_context = _LoggingContext()
-
-
-class logging_context:
-    """Context manager for logging context."""
-
-    def __init__(self, request_id=None):
-        self.request_id = request_id
-        self.old_request_id = None
-
-    def __enter__(self):
-        self.old_request_id = getattr(_context, "request_id", None)
-        _context.request_id = self.request_id
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        _context.request_id = self.old_request_id
+# Note: logging context helpers removed to keep middleware minimal. Logs include
+# request_id via the centralized exception handler.
