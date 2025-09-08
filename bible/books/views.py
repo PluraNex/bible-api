@@ -4,6 +4,8 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from common.openapi import get_error_responses
+
 from ..models import Book
 from .serializers import BookSerializer
 
@@ -17,7 +19,7 @@ class BookListView(generics.ListAPIView):
         tags=["books"],
         responses={
             200: BookSerializer(many=True),
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
@@ -30,8 +32,7 @@ class BookInfoView(APIView):
         tags=["books"],
         responses={
             200: BookSerializer,
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
-            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, book_name):
@@ -53,8 +54,7 @@ class ChaptersByBookView(APIView):
                     "chapters": {"type": "array", "items": {"type": "integer"}},
                 },
             },
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
-            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, book_name):

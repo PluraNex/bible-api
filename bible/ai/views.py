@@ -7,6 +7,8 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from common.openapi import get_error_responses
+
 
 class AgentListView(generics.ListAPIView):
     """List available AI agents."""
@@ -30,7 +32,8 @@ class AgentListView(generics.ListAPIView):
                         },
                     }
                 },
-            }
+            },
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
@@ -77,7 +80,8 @@ class ToolListView(generics.ListAPIView):
                         },
                     }
                 },
-            }
+            },
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
@@ -115,7 +119,8 @@ class ToolTestView(APIView):
                     "status": {"type": "string"},
                     "message": {"type": "string"},
                 },
-            }
+            },
+            **get_error_responses(),
         },
     )
     def post(self, request, tool, *args, **kwargs):
@@ -142,7 +147,8 @@ class AgentRunCreateView(APIView):
                     "status": {"type": "string"},
                     "message": {"type": "string"},
                 },
-            }
+            },
+            **get_error_responses(),
         },
     )
     def post(self, request, name, *args, **kwargs):
@@ -169,7 +175,8 @@ class AgentRunDetailView(APIView):
                     "status": {"type": "string"},
                     "message": {"type": "string"},
                 },
-            }
+            },
+            **get_error_responses(),
         },
     )
     def get(self, request, run_id, *args, **kwargs):
@@ -196,7 +203,8 @@ class AgentRunApproveView(APIView):
                     "status": {"type": "string"},
                     "message": {"type": "string"},
                 },
-            }
+            },
+            **get_error_responses(),
         },
     )
     def post(self, request, run_id, *args, **kwargs):
@@ -223,7 +231,8 @@ class AgentRunCancelView(APIView):
                     "status": {"type": "string"},
                     "message": {"type": "string"},
                 },
-            }
+            },
+            **get_error_responses(),
         },
     )
     def delete(self, request, run_id, *args, **kwargs):

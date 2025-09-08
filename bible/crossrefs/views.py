@@ -2,6 +2,8 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 
+from common.openapi import get_error_responses
+
 from ..models import CrossReference
 from .serializers import CrossReferenceSerializer
 
@@ -18,7 +20,7 @@ class CrossReferencesByVerseView(generics.ListAPIView):
         tags=["cross-references"],
         responses={
             200: CrossReferenceSerializer(many=True),
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
@@ -43,7 +45,7 @@ class CrossReferencesByThemeView(generics.ListAPIView):
         tags=["cross-references"],
         responses={
             200: CrossReferenceSerializer(many=True),
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):

@@ -2,6 +2,8 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import generics
 
+from common.openapi import get_error_responses
+
 from ..apps.auth.permissions import HasAPIScopes
 from ..models import Version
 from .serializers import VersionSerializer
@@ -26,10 +28,7 @@ class VersionListView(generics.ListAPIView):
     @extend_schema(
         summary="List Bible versions",
         tags=["versions"],
-        responses={
-            200: VersionSerializer(many=True),
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
-        },
+        responses={200: VersionSerializer(many=True), **get_error_responses()},
         examples=[
             OpenApiExample(
                 "List versions",
@@ -77,11 +76,7 @@ class VersionDetailView(generics.RetrieveAPIView):
     @extend_schema(
         summary="Get version by abbreviation",
         tags=["versions"],
-        responses={
-            200: VersionSerializer,
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
-            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
-        },
+        responses={200: VersionSerializer, **get_error_responses()},
         examples=[
             OpenApiExample(
                 "Version detail",

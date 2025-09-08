@@ -2,6 +2,8 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 
+from common.openapi import get_error_responses
+
 from ..models import Theme
 from .serializers import ThemeSerializer
 
@@ -15,7 +17,7 @@ class ThemeListView(generics.ListAPIView):
         tags=["themes"],
         responses={
             200: ThemeSerializer(many=True),
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
@@ -32,8 +34,7 @@ class ThemeDetailView(generics.RetrieveAPIView):
         tags=["themes"],
         responses={
             200: ThemeSerializer,
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
-            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
