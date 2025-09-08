@@ -57,6 +57,48 @@ paths:
                               status:
                                 type: string
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/v1/ai/agents/{name}/runs/:
     post:
       operationId: ai_agents_runs_create
@@ -83,6 +125,48 @@ paths:
                     type: string
                   message:
                     type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /api/v1/ai/runs/{run_id}/:
     get:
@@ -111,6 +195,48 @@ paths:
                   message:
                     type: string
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/v1/ai/runs/{run_id}/approve/:
     post:
       operationId: ai_runs_approve_create
@@ -138,6 +264,48 @@ paths:
                   message:
                     type: string
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/v1/ai/runs/{run_id}/cancel/:
     delete:
       operationId: ai_runs_cancel_destroy
@@ -164,6 +332,48 @@ paths:
                     type: string
                   message:
                     type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /api/v1/ai/tools/:
     get:
@@ -218,6 +428,48 @@ paths:
                               status:
                                 type: string
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/v1/ai/tools/{tool}/test/:
     post:
       operationId: ai_tools_test_create
@@ -244,6 +496,48 @@ paths:
                     type: string
                   message:
                     type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /api/v1/auth/status/:
     get:
@@ -278,13 +572,22 @@ paths:
         schema:
           type: integer
       tags:
-      - bible
+      - books
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedBookList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
           description: ''
   /api/v1/bible/books/{book_name}/chapters/:
     get:
@@ -297,7 +600,7 @@ paths:
           type: string
         required: true
       tags:
-      - bible
+      - books
       responses:
         '200':
           content:
@@ -312,6 +615,24 @@ paths:
                     items:
                       type: integer
           description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
   /api/v1/bible/books/{book_name}/info/:
     get:
       operationId: bible_books_info_retrieve
@@ -323,13 +644,66 @@ paths:
           type: string
         required: true
       tags:
-      - bible
+      - books
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+  /api/v1/bible/cross-references/by-theme/{theme_id}/:
+    get:
+      operationId: bible_cross_references_by_theme_list
+      description: GET /api/v1/bible/cross-references/by-theme/<theme_id>/
+      summary: List cross-references by theme
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: theme_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - cross-references
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCrossReferenceList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
           description: ''
   /api/v1/bible/cross-references/verse/{verse_id}/:
     get:
@@ -348,13 +722,22 @@ paths:
           type: integer
         required: true
       tags:
-      - bible
+      - cross-references
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedCrossReferenceList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
           description: ''
   /api/v1/bible/overview/:
     get:
@@ -398,13 +781,22 @@ paths:
         schema:
           type: integer
       tags:
-      - bible
+      - themes
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedThemeList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
           description: ''
   /api/v1/bible/themes/{id}/detail/:
     get:
@@ -417,13 +809,31 @@ paths:
           type: integer
         required: true
       tags:
-      - bible
+      - themes
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Theme'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
           description: ''
   /api/v1/bible/verses/{id}/:
     get:
@@ -436,13 +846,31 @@ paths:
           type: integer
         required: true
       tags:
-      - bible
+      - verses
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Verse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
           description: ''
   /api/v1/bible/verses/by-chapter/{book_name}/{chapter}/:
     get:
@@ -466,13 +894,223 @@ paths:
         schema:
           type: integer
       tags:
-      - bible
+      - verses
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedVerseList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+  /api/v1/bible/verses/by-theme/{theme_id}/:
+    get:
+      operationId: bible_verses_by_theme_list
+      description: GET /api/v1/bible/verses/by-theme/<theme_id>/
+      summary: List verses by theme
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: theme_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - verses
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVerseList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+          description: ''
+  /api/v1/bible/versions/:
+    get:
+      operationId: bible_versions_list
+      summary: List Bible versions
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - versions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVersionList'
+              examples:
+                ListVersions:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - count: 2
+                      next: null
+                      previous: null
+                      results:
+                      - id: 1
+                        name: King James Version
+                        abbreviation: KJV
+                        language: en
+                        description: Classic English translation
+                        is_active: true
+                      - id: 2
+                        name: Nova Versão Internacional
+                        abbreviation: NVI
+                        language: pt
+                        description: Tradução em português
+                        is_active: true
+                  summary: List versions
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/versions/{abbreviation}/:
+    get:
+      operationId: bible_versions_retrieve
+      summary: Get version by abbreviation
+      parameters:
+      - in: path
+        name: abbreviation
+        schema:
+          type: string
+        required: true
+      tags:
+      - versions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+              examples:
+                VersionDetail:
+                  value:
+                    id: 1
+                    name: King James Version
+                    abbreviation: KJV
+                    language: en
+                    description: Classic English translation
+                    is_active: true
+                  summary: Version detail
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
           description: ''
 components:
   schemas:
@@ -524,6 +1162,30 @@ components:
       - from_verse
       - id
       - to_verse
+    ErrorResponse:
+      type: object
+      description: Standard error response format for all API endpoints.
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message describing what went wrong
+        code:
+          type: string
+          description: Machine-readable error code for programmatic handling
+        request_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this request, useful for debugging and
+            support
+        errors:
+          type: object
+          additionalProperties: {}
+          description: Additional error details, typically validation errors with
+            field-specific messages
+      required:
+      - code
+      - detail
+      - request_id
     PaginatedBookList:
       type: object
       properties:
@@ -604,6 +1266,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Verse'
+    PaginatedVersionList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Version'
     RelationshipTypeEnum:
       enum:
       - parallel
@@ -637,12 +1319,6 @@ components:
           maxLength: 100
         description:
           type: string
-        color:
-          type: string
-          maxLength: 20
-        icon:
-          type: string
-          maxLength: 50
       required:
       - id
       - name
@@ -677,3 +1353,26 @@ components:
       - reference
       - text
       - version
+    Version:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        abbreviation:
+          type: string
+          maxLength: 10
+        language:
+          type: string
+          maxLength: 10
+        description:
+          type: string
+        is_active:
+          type: boolean
+      required:
+      - abbreviation
+      - id
+      - name
