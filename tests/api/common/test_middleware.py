@@ -78,27 +78,6 @@ class RequestIDMiddlewareTests(TestCase):
         uuid.UUID(request.request_id)
         self.assertEqual(response["X-Request-ID"], request.request_id)
 
-    def test_logging_context_integration(self):
-        """Test that request ID is available in logging context."""
-        test_uuid = str(uuid.uuid4())
-        request = self.factory.get("/test/", HTTP_X_REQUEST_ID=test_uuid)
-
-        # Mock get_response to check logging context
-        def mock_get_response(req):
-            from common.middleware import _context
-
-            # During request processing, context should have request_id
-            self.assertEqual(_context.request_id, test_uuid)
-            return HttpResponse("OK")
-
-        middleware = RequestIDMiddleware(mock_get_response)
-        middleware(request)
-
-        # After request processing, context should be restored
-        from common.middleware import _context
-
-        self.assertIsNone(_context.request_id)
-
     def test_preserves_response_from_view(self):
         """Test that middleware preserves response from view."""
         test_response = HttpResponse("Custom response", status=201)

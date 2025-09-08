@@ -1,12 +1,12 @@
 ---
 id: T-014
 title: "[api] Error Model Standardization"
-status: in_progress
+status: done
 created: 2025-09-07
-updated: 2025-09-07
+updated: 2025-09-08
 owner: "@iuryeng"
 reviewers: ["@IuryAlves"]
-labels: ["area/api", "type/feature"]
+labels: ["area/api", "type/feature", "type/docs", "type/test"]
 priority: high
 effort: M
 risk: low
@@ -14,7 +14,7 @@ depends_on: []
 related: ["T-007", "T-012"]
 epic: "Fundação da API"
 branch: "feat/T-014-error-model"
-pr: ""
+pr: "PR#TBD"
 github_issue: ""
 due: null
 ---
@@ -25,26 +25,22 @@ Atualmente, a API retorna diferentes formatos de erro dependendo do tipo de exce
 ## Objetivo e Critérios de Aceite
 Implementar sistema de error handling padronizado que forneça respostas consistentes e rastreabilidade para todas as APIs.
 
-- [ ] **CA1:** Implementar formato padronizado de error response com code, message, details e request_id
-- [ ] **CA2:** Criar custom exception handler que intercepta todas as exceções da API
-- [ ] **CA3:** Implementar middleware para Request ID tracking em todas as requests
-- [ ] **CA4:** Definir códigos de erro padronizados (validation_error, not_found, permission_denied, etc.)
-- [ ] **CA5:** Integrar com sistema de logging para rastreabilidade sem exposição de dados sensíveis
-- [ ] **CA6:** Atualizar todos endpoints existentes para usar o novo formato
-- [ ] **CA7:** Criar testes para diferentes cenários de erro
-- [ ] **CA8:** Documentar formato de erro na OpenAPI specification
+- [x] **CA1:** Implementar formato padronizado de error response com `detail`, `code`, `errors`, `request_id`
+- [x] **CA2:** Criar custom exception handler que intercepta todas as exceções da API
+- [x] **CA3:** Implementar middleware para Request ID tracking em todas as requests
+- [x] **CA4:** Definir códigos de erro padronizados (validation_error, not_found, permission_denied, authentication_failed, throttled, method_not_allowed, internal_server_error)
+- [x] **CA5:** Integrar com sistema de logging para rastreabilidade sem exposição de dados sensíveis
+- [x] **CA6:** Atualizar endpoints existentes para usar o novo formato (via handler global)
+- [x] **CA7:** Criar testes para diferentes cenários de erro (unit e integração)
+- [x] **CA8:** Documentar formato de erro na OpenAPI (aplicado ao domínio Versions; demais domínios serão cobertos na T-015)
 
 ## Formato de Error Response
 ```json
 {
-  "error": {
-    "code": "validation_error",
-    "message": "Validation failed",
-    "details": {
-      "field_name": ["This field is required"]
-    },
-    "request_id": "550e8400-e29b-41d4-a716-446655440000"
-  }
+  "detail": "Invalid input",
+  "code": "validation_error",
+  "errors": { "field_name": ["This field is required"] },
+  "request_id": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 

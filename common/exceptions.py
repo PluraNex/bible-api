@@ -77,139 +77,144 @@ class RateLimitError(APIError):
         )
 
 
-def custom_exception_handler(exc, context):
-    """
-    Custom exception handler that returns standardized error responses.
-    Follows blueprint format: top-level detail, code, errors, request_id fields.
-    """
-    # Get request ID from context
+def _request_id_from_context(context: dict) -> str:
     request = context.get("request")
-    request_id = getattr(request, "request_id", str(uuid.uuid4()))
+    return getattr(request, "request_id", str(uuid.uuid4()))
 
-    # Handle APIError instances
-    if isinstance(exc, APIError):
-        error_response = {
-            "detail": exc.message,
-            "code": exc.code,
-            "request_id": request_id,
-        }
 
-        # Add errors field if details exist
-        if exc.details:
-            error_response["errors"] = exc.details
+def _log(
+    level: str,
+    fmt: str,
+    *args,
+    context: dict,
+    request,
+    status_code: int,
+    error_code: str | None = None,
+    exc_info: bool = False,
+) -> None:
+    meta = {
+        "request_id": getattr(request, "request_id", None),
+        "error_code": error_code,
+        "status_code": status_code,
+        "path": getattr(request, "path", None),
+        "method": getattr(request, "method", None),
+        "user_id": getattr(getattr(request, "user", None), "id", None),
+        "view": context.get("view").__class__.__name__ if context.get("view") else None,
+    }
+    log = logger.error if level == "error" else logger.warning
+    # Lazy logging with formatting args
+    log(fmt, *args, extra=meta, exc_info=exc_info)
 
-        # Log error (without sensitive data)
-        logger.error(
-            f"API Error: {exc.code} - {exc.message}",
-            extra={
-                "request_id": request_id,
-                "error_code": exc.code,
-                "status_code": exc.status_code,
-                "path": request.path if request else None,
-                "method": request.method if request else None,
-                "user_id": getattr(request.user, "id", None) if request and hasattr(request, "user") else None,
-                "view": context.get("view").__class__.__name__ if context.get("view") else None,
-            },
-        )
 
-        # Set response with appropriate headers
-        response = Response(error_response, status=exc.status_code)
+def _response_payload(detail: str, code: str, request_id: str, errors: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload: dict[str, Any] = {"detail": detail, "code": code, "request_id": request_id}
+    if errors:
+        payload["errors"] = errors
+    return payload
 
-        # Add specific headers
-        if exc.status_code == 401:
-            response["WWW-Authenticate"] = 'Api-Key realm="bible-api"'
-        elif exc.status_code == 429 and "retry_after" in exc.details:
-            response["Retry-After"] = str(exc.details["retry_after"])
 
-        return response
+def _apply_headers(resp: Response, *, www_auth: bool = False, retry_after: str | None = None) -> None:
+    if www_auth:
+        resp["WWW-Authenticate"] = 'Api-Key realm="bible-api"'
+    if retry_after:
+        resp["Retry-After"] = retry_after
 
-    # Handle DRF validation errors
-    response = exception_handler(exc, context)
-    if response is not None:
-        # Standardize DRF errors to blueprint format
-        error_code = "api_error"
-        detail = "An error occurred"
-        errors = {}
 
-        # Handle specific HTTP errors
-        if response.status_code == 404:
-            error_code = "not_found"
-            detail = "Resource not found"
-        elif response.status_code == 401:
-            error_code = "authentication_failed"
-            detail = "Authentication credentials were not provided"
-        elif response.status_code == 403:
-            error_code = "permission_denied"
-            detail = "You do not have permission to perform this action"
-        elif response.status_code == 405:
-            error_code = "method_not_allowed"
-            detail = f"Method '{request.method}' not allowed"
-        elif response.status_code == 429:
-            error_code = "throttled"
-            detail = "Request was throttled"
-        elif response.status_code == 400:
-            error_code = "validation_error"
-            detail = "Invalid input"
-            # Preserve DRF validation structure in errors field
-            if isinstance(response.data, dict):
-                errors = response.data
-
-        standardized_response = {
-            "detail": detail,
-            "code": error_code,
-            "request_id": request_id,
-        }
-
-        # Add errors field if we have validation errors
-        if errors:
-            standardized_response["errors"] = errors
-
-        # Log error
-        logger.warning(
-            f"HTTP Error: {response.status_code} - {detail}",
-            extra={
-                "request_id": request_id,
-                "error_code": error_code,
-                "status_code": response.status_code,
-                "path": request.path if request else None,
-                "method": request.method if request else None,
-                "user_id": getattr(request.user, "id", None) if request and hasattr(request, "user") else None,
-                "view": context.get("view").__class__.__name__ if context.get("view") else None,
-            },
-        )
-
-        # Create response with appropriate headers
-        new_response = Response(standardized_response, status=response.status_code)
-
-        # Add specific headers
-        if response.status_code == 401:
-            new_response["WWW-Authenticate"] = 'Api-Key realm="bible-api"'
-        elif response.status_code == 429:
-            # Try to get retry-after from original response headers
-            retry_after = response.get("Retry-After")
-            if retry_after:
-                new_response["Retry-After"] = retry_after
-
-        return new_response
-
-    # Handle unexpected errors
-    logger.error(
-        f"Unhandled exception: {exc}",
-        exc_info=True,
-        extra={
-            "request_id": request_id,
-            "path": request.path if request else None,
-            "method": request.method if request else None,
-            "user_id": getattr(request.user, "id", None) if request and hasattr(request, "user") else None,
-            "view": context.get("view").__class__.__name__ if context.get("view") else None,
-        },
+def _handle_api_error(exc: APIError, *, request_id: str, request, context: dict) -> Response:
+    payload = _response_payload(exc.message, exc.code, request_id, errors=exc.details or None)
+    _log(
+        "error",
+        "API Error: %s - %s",
+        exc.code,
+        exc.message,
+        context=context,
+        request=request,
+        status_code=exc.status_code,
+        error_code=exc.code,
     )
+    resp = Response(payload, status=exc.status_code)
+    www = exc.status_code == 401
+    ra = (
+        str(exc.details.get("retry_after"))
+        if exc.status_code == 429 and exc.details and exc.details.get("retry_after") is not None
+        else None
+    )
+    _apply_headers(resp, www_auth=www, retry_after=ra)
+    return resp
 
+
+# Status code to error mapping
+_STATUS_CODE_MAPPING = {
+    404: ("not_found", "Resource not found"),
+    401: ("authentication_failed", "Authentication credentials were not provided"),
+    403: ("permission_denied", "You do not have permission to perform this action"),
+    405: ("method_not_allowed", "Method not allowed"),  # Will be customized below
+    429: ("throttled", "Request was throttled"),
+    400: ("validation_error", "Invalid input"),
+}
+
+
+def _map_drf_response(response: Response, request) -> tuple[str, str, dict[str, Any] | None, str | None]:
+    """Return (detail, code, errors, retry_after) from DRF response."""
+    status_code = response.status_code
+    errors: dict[str, Any] | None = None
+    retry_after: str | None = None
+
+    if status_code in _STATUS_CODE_MAPPING:
+        code, detail = _STATUS_CODE_MAPPING[status_code]
+
+        # Handle special cases
+        if status_code == 405:
+            detail = f"Method '{getattr(request, 'method', 'UNKNOWN')}' not allowed"
+        elif status_code == 429:
+            retry_after = response.get("Retry-After")
+        elif status_code == 400 and isinstance(response.data, dict):
+            errors = response.data  # preserve DRF shape
+    else:
+        code, detail = "api_error", "An error occurred"
+
+    return detail, code, errors, retry_after
+
+
+def _handle_drf_response(response: Response, *, request_id: str, request, context: dict) -> Response:
+    detail, code, errors, retry_after = _map_drf_response(response, request)
+    payload = _response_payload(detail, code, request_id, errors=errors)
+    _log(
+        "warning",
+        "HTTP Error: %s",
+        response.status_code,
+        context=context,
+        request=request,
+        status_code=response.status_code,
+        error_code=code,
+    )
+    new_resp = Response(payload, status=response.status_code)
+    _apply_headers(new_resp, www_auth=response.status_code == 401, retry_after=retry_after)
+    return new_resp
+
+
+def custom_exception_handler(exc, context):
+    """Standardized error responses for the API."""
+    request = context.get("request")
+    request_id = _request_id_from_context(context)
+
+    if isinstance(exc, APIError):
+        return _handle_api_error(exc, request_id=request_id, request=request, context=context)
+
+    drf_resp = exception_handler(exc, context)
+    if drf_resp is not None:
+        return _handle_drf_response(drf_resp, request_id=request_id, request=request, context=context)
+
+    _log(
+        "error",
+        "Unhandled exception: %s",
+        exc,
+        context=context,
+        request=request,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        exc_info=True,
+    )
     return Response(
-        {
-            "detail": "An internal server error occurred",
-            "code": "internal_server_error",
-            "request_id": request_id,
-        },
+        _response_payload("An internal server error occurred", "internal_server_error", request_id),
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )

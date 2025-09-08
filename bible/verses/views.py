@@ -3,6 +3,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.response import Response
 
+from common.openapi import get_error_responses
+
 from ..models import Book, Verse
 from .serializers import VerseSerializer
 
@@ -23,8 +25,7 @@ class VersesByChapterView(generics.ListAPIView):
         tags=["verses"],
         responses={
             200: VerseSerializer(many=True),
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
-            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
@@ -46,8 +47,7 @@ class VerseDetailView(generics.RetrieveAPIView):
         tags=["verses"],
         responses={
             200: VerseSerializer,
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
-            404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):
@@ -72,7 +72,7 @@ class VersesByThemeView(generics.ListAPIView):
         tags=["verses"],
         responses={
             200: VerseSerializer(many=True),
-            401: {"type": "object", "properties": {"detail": {"type": "string"}}},
+            **get_error_responses(),
         },
     )
     def get(self, request, *args, **kwargs):

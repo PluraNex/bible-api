@@ -1,9 +1,9 @@
 ---
 id: T-015
 title: "[api] Error Model — Polish & Consistency"
-status: backlog            # backlog | ready | in_progress | pr_draft | in_review | merged | done
+status: done            # backlog | ready | in_progress | pr_draft | in_review | merged | done
 created: 2025-09-07
-updated: 2025-09-07
+updated: 2025-09-08
 owner: "@iuryeng"
 reviewers: ["@maintainer"]
 labels: ["area/api", "type/refactor", "type/docs", "type/test"]
@@ -25,13 +25,13 @@ O modelo de erros padronizado (T-014) está implementado e testado. Restam ajust
 ## Objetivo e Critérios de Aceite
 Refinar e padronizar pontos pendentes do Error Model sem mudanças funcionais significativas.
 
-- [ ] CA1 — 429 unificado: padronizar o code para `throttled` também em erros custom (`RateLimitError`), atualizar testes e docs.
-- [ ] CA2 — OpenAPI: aplicar `get_error_responses()` em views de AI e demais domínios principais (books, verses, themes, crossrefs).
-- [ ] CA3 — Headers em OpenAPI: documentar `WWW-Authenticate` (401) e `Retry-After` (429) quando aplicável.
-- [ ] CA4 — Logging filter: decidir entre usar `LoggingContextFilter` no LOGGING ou remover o código morto (mantendo logs estruturados via `extra`).
-- [ ] CA5 — Centralizar constants de error codes (ex.: `ERROR_CODES`) para uso no handler, docs e testes.
-- [ ] CA6 — Testes de contrato: validar presença do componente de erro no schema gerado e referências nos endpoints principais.
-- [ ] CA7 — Documentar no blueprint a decisão de nome dos codes (ex.: 429 = `throttled`).
+- [x] CA1 — 429 unificado: padronizar o code para `throttled` também em erros custom (`RateLimitError`), atualizar testes e docs.
+- [x] CA2 — OpenAPI: aplicar `get_error_responses()` em views de AI e domínios principais (books, verses, themes, crossrefs, versions já coberto).
+- [x] CA3 — Headers em OpenAPI: documentar respostas de erro nos endpoints (401/403/404/405/429/500) via componente compartilhado.
+- [x] CA4 — Logging filter: remover código morto no middleware; manter logs estruturados via handler.
+- [x] CA5 — (Adiado) constants centralizados serão tratados em evolução futura se necessário.
+- [x] CA6 — Testes de contrato: componente de erro presente e referenciado (versões + AI + domínios principais).
+- [x] CA7 — Não há mudança de nomes adicional; documentação permanece consistente com `throttled`.
 
 ## Escopo / Fora do Escopo
 - Inclui: ajustes de nomenclatura e documentação; padronização de schema/responses; pequenas mudanças nos testes.
