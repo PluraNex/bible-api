@@ -31,15 +31,18 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "drf_spectacular",
+    "django_filters",
     "corsheaders",
 ]
 
 LOCAL_APPS = [
-    "bible",
-    "bible.apps.auth.apps.AuthConfig",
-    "bible.ai",
+    "bible.apps.BibleConfig",  # label = bible
+    "bible.apps.AuthConfig",  # label = bible_auth (sem conflito com contrib.auth)
+    "bible.ai",  # pode deixar assim se não tiver AppConfig própria
     "common",
+    "data",  # Data management commands
 ]
+
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -136,12 +139,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "bible.apps.auth.authentication.ApiKeyAuthentication",
+        "bible.auth.authentication.ApiKeyAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "common.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
@@ -161,6 +164,22 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/api/v1/",
+    "AUTHENTICATION_CLASSES": [
+        "bible.auth.authentication.ApiKeyAuthentication",
+    ],
+    # OpenAPI security schemes
+    "SECURITY_DEFINITIONS": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization",
+            "description": "Use: Api-Key <your_api_key>",
+        }
+    },
+    "SECURITY": [{"ApiKeyAuth": []}],
+    "EXTENSIONS": [
+        "bible.auth.openapi.ApiKeyAuthenticationExtension",
+    ],
 }
 
 # CORS settings

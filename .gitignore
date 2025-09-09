@@ -195,5 +195,6 @@ test-results.xml
 
 # Local data
 *.sqlite3
-data/
+data/datasets/
 backups/
+.gemini/

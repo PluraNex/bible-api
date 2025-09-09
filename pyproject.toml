@@ -130,6 +130,9 @@ omit = [
     "*/settings/*",
     "*/tests/*",
     "*/__pycache__/*",
+    # Data directory (datasets, management commands, docs)
+    "data/*",
+    "*/data/*",
     # Django structural files
     "*/apps.py",
     "*/asgi.py",
