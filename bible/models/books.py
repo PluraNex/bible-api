@@ -25,7 +25,7 @@ class License(models.Model):
 
     code = models.CharField(max_length=50, unique=True)  # 'PD', 'CC-BY-SA-4.0'
     name = models.CharField(max_length=150)
-    url = models.URLField(blank=True, null=True)
+    url = models.URLField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -40,8 +40,8 @@ class License(models.Model):
 class Testament(models.Model):
     """Biblical testaments (Old/New)."""
 
-    name = models.CharField(max_length=45, blank=True, null=True)  # AT/NT
-    description = models.TextField(blank=True, null=True)
+    name = models.CharField(max_length=45, blank=True, default="")  # AT/NT
+    description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -95,7 +95,7 @@ class BookName(models.Model):
     canonical_book = models.ForeignKey(CanonicalBook, on_delete=models.CASCADE, related_name="names")
     language = models.ForeignKey(Language, on_delete=models.CASCADE, related_name="book_names")
     name = models.CharField(max_length=60)
-    abbreviation = models.CharField(max_length=10, blank=True, null=True)
+    abbreviation = models.CharField(max_length=10, blank=True, default="")
     version = models.ForeignKey("Version", on_delete=models.CASCADE, null=True, blank=True, related_name="book_names")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
