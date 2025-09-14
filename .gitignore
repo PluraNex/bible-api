@@ -195,6 +195,57 @@ test-results.xml
 
 # Local data
 *.sqlite3
-data/datasets/
 backups/
+
+# AI assistants local data
 .gemini/
+.claude/
+
+# Temporary processing files
+*.tmp
+*.temp
+*-temp.json
+*-staging.json
+
+# Data pipeline reports and artifacts
+reports/
+!reports/.gitkeep
+
+# Local env vars (do not commit secrets)
+.env
+
+# Additional project-specific excludes
+# Raw datasets and processed data - exclude entire data directory
+data/
+
+# Temporary files and directories
+tmp/
+tmp_*
+temp/
+*.tmp
+
+# MCP and tool directories
+.playwright-mcp/
+.cursor/
+
+# Generated documentation and architectures
+*ARCHITECTURE.md
+*_GUIDE.md
+*PIPELINE*.md
+
+# Script outputs
+create_*.py
+analyze_*.py
+validate_*.py
+migration_*.py
+run_*.py
+
+# Frontend (temporary test project - will be separated)
+frontend/
+
+# Scraped data and external content
+scraped/
+
+# Observability and monitoring
+grafana/data/
+prometheus/data/
