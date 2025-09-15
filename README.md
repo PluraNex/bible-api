@@ -132,6 +132,10 @@ make status              # Show status of all services
 make help                # Show all available commands
 ```
 
+## Observability
+
+See docs/OBSERVABILITY.md for the full observability stack (Prometheus + Grafana), health checks, metrics, dashboards, security notes, and how to extend business metrics.
+
 ## Architecture
 
 ### Project Structure

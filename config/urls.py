@@ -6,7 +6,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
+from django_prometheus import exports as prometheus_exports
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+from bible import views
 
 
 def health_check(request):
@@ -25,6 +28,10 @@ urlpatterns = [
     # Health and metrics
     path("health/", health_check, name="health"),
     path("metrics/", metrics, name="metrics"),
+    # New: granular health + prometheus metrics (T-009)
+    path("health/liveness/", lambda r: JsonResponse({"status": "alive"})),
+    path("health/readiness/", views.ReadinessCheckView.as_view(), name="readiness"),
+    path("metrics/prometheus/", prometheus_exports.ExportToDjangoView, name="metrics_prometheus"),
     # API v1
     path(
         "api/v1/",
@@ -32,7 +39,7 @@ urlpatterns = [
             [
                 path("bible/", include("bible.urls")),
                 path("ai/", include("bible.ai.urls")),
-                path("auth/", include("bible.apps.auth.urls")),
+                path("auth/", include("bible.auth.urls")),
                 # OpenAPI schema
                 path("schema/", SpectacularAPIView.as_view(), name="schema"),
                 path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

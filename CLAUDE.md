@@ -4,13 +4,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Core Commands
 
-The project uses a Django-based Bible API with comprehensive development workflows:
+### Development Setup
+- `make install` - Install development dependencies
+- `make dev` - Start development environment (Docker containers)
+- `make docker-build` - Build Docker containers from scratch
 
-- **Development setup**: Check `docs/architecture/BIBLE_API_BASE_PROJECT.md` for complete architecture
-- **Workflow management**: Follow `docs/workflows/DEV_FLOW_PLAYBOOK.md` for branch, commit, and CI practices
-- **Testing standards**: Apply `docs/api/API_TESTING_BEST_PRACTICES.md` for endpoint testing
-- **Task orchestration**: Use `docs/workflows/BIBLE_API_ORCHESTRATOR.md` for task planning and execution
-- **Documentation index**: See `docs/README.md` for complete documentation organization
+### Daily Development
+- `make ready` - Prepare code for PR (format, lint, test, generate schema)
+- `make dev-cycle` - Quick development cycle (format and test only)
+- `make fmt` - Format code with black and ruff
+- `make lint` - Run linting checks (ruff + black check)
+- `make test` - Run full test suite with pytest
+- `make coverage` - Run tests with coverage report
+
+### Database Operations
+- `make migrate` - Apply database migrations
+- `make migrations` - Create new migrations
+- `make db-reset` - Reset database (WARNING: destroys all data)
+- `make db-shell` - Open PostgreSQL shell
+
+### Bible Data Management (Unified System)
+- `python manage.py bible status` - Check data pipeline status (926K+ verses loaded)
+- `python manage.py bible migrate` - Migrate raw Bible files to organized structure
+- `python manage.py bible populate` - Populate database from processed files
+- `python manage.py bible populate --languages pt-BR,en-US` - Populate specific languages
+- `python manage.py bible crossrefs` - Import cross references (343K+ loaded)
+
+### API Development
+- `make schema` - Generate OpenAPI schema (schema.yml)
+- `make api-test` - Quick test of key API endpoints
+- `make health` - Check service health status
+
+### Testing Specific Components
+- `pytest tests/api/` - Test specific API modules
+- `pytest tests/models/` - Test specific model modules
+- `pytest -k "test_name"` - Run specific test by name
+- `pytest --lf` - Run only last failed tests
+
+### CI/CD Validation (Local)
+- `make ci-all` - Run all CI checks locally
+- `make ci-lint` - Run CI linting checks
+- `make ci-test` - Run CI tests with coverage requirements
+- `make ci-schema` - Validate OpenAPI schema generation
+
+### Docker & Debugging
+- `make docker-logs` - Show all container logs
+- `make logs-web` - Show Django application logs only
+- `make docker-shell` - Open bash shell in web container
+
+### RAG & Vector Operations
+- `python manage.py generate_embeddings` - Generate verse embeddings for semantic search
+- `python manage.py create_vector_indexes` - Create pgvector indexes for performance
+- `make embeddings-generate` - Generate embeddings for allowed versions (requires OPENAI_API_KEY)
+
+### Data Pipeline & Analysis
+- `make data-setup` - Initialize data pipeline directory structure
+- `make data-status` - Show data pipeline status and metrics
+- `make lang-analyze` - Analyze multilingual Bible files by language
+- `make lang-validate` - Validate language detection accuracy
+
+### Observability
+- `make prometheus-up` - Start Prometheus server (http://localhost:9090)
+- `make grafana-up` - Start Grafana dashboard (http://localhost:3000, admin/admin)
+
+### Documentation References
+- **Architecture guide**: `docs/architecture/BIBLE_API_BASE_PROJECT.md`
+- **Development workflow**: `docs/workflows/DEV_FLOW_PLAYBOOK.md`
+- **API testing standards**: `docs/api/API_TESTING_BEST_PRACTICES.md`
+- **Task orchestration**: `docs/workflows/BIBLE_API_ORCHESTRATOR.md`
 
 ## Architecture Overview
 
@@ -31,15 +92,20 @@ This is a Django REST Framework-based Bible API with the following key architect
 ### Key Domains
 1. **Bible Core**: Books, verses, themes, cross-references
 2. **Authentication**: API key-based auth with scope-based permissions
-3. **Audio**: Text-to-speech with cache-first, on-demand synthesis
-4. **AI Integration**: Agent registry with tool execution and approval workflows
-5. **External Resources**: Integration with external content providers
+3. **AI Integration**: Agent registry with tool execution and approval workflows
+4. **RAG System**: Vector embeddings with semantic search (VerseEmbedding model)
+5. **References**: Biblical reference parsing and normalization
+6. **Languages**: Multi-language support with automatic detection
 
 ### Data Layer
-- **PostgreSQL** as primary database
+- **PostgreSQL** as primary database (926K+ verses, 34 versions, 343K+ cross-refs)
+- **pgvector** extension for semantic search with verse embeddings
 - **Redis** for caching and rate limiting
 - **Strategic indexing** for biblical reference lookups
 - **Constraint-enforced data integrity** at database level
+- **Unified Data System**: Streamlined data pipeline via `python manage.py bible` commands
+- **Multi-language support**: Portuguese (pt-BR) and English (en-US) with automatic language detection
+- **RAG capabilities**: OpenAI embeddings for semantic verse search
 
 ## Development Workflow
 

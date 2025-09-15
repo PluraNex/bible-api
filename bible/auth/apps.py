@@ -6,4 +6,3 @@ class BibleAuthConfig(AppConfig):
     name = "bible.auth"
     label = "bible_auth"  # Avoid conflict with Django's built-in auth app
     verbose_name = "Bible Authentication"
-

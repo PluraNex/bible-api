@@ -1,7 +1,17 @@
 """
 OpenAPI schemas and examples for common components.
 """
+from drf_spectacular.utils import OpenApiParameter
 from rest_framework import serializers
+
+# Common OpenAPI parameters
+LANG_PARAMETER = OpenApiParameter(
+    name="lang",
+    description="Language code for localized content (e.g., 'en', 'pt', 'es'). Overrides Accept-Language header.",
+    required=False,
+    type=str,
+    location=OpenApiParameter.QUERY,
+)
 
 
 class ErrorResponseSerializer(serializers.Serializer):

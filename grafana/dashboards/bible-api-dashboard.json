@@ -1,0 +1,345 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "iteration": 1710000000000,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "type": "row",
+      "title": "Overview",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1}
+    },
+    {
+      "type": "stat",
+      "title": "Requests/s",
+      "id": 1,
+      "gridPos": {"x": 0, "y": 1, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(rate(django_http_requests_total_by_method{job=~\"$job\",instance=~\"$instance\"}[5m]))", "legendFormat": "req/s"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "auto"}
+    },
+    {
+      "type": "stat",
+      "title": "Error rate %",
+      "id": 2,
+      "gridPos": {"x": 6, "y": 1, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "100 * (sum(rate(django_http_requests_total_by_status{status=~\"5..|4..\",job=~\"$job\",instance=~\"$instance\"}[5m])) / sum(rate(django_http_requests_total_by_method{job=~\"$job\",instance=~\"$instance\"}[5m])))", "legendFormat": "errors%"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "stat",
+      "title": "P95 latency (ms)",
+      "id": 3,
+      "gridPos": {"x": 12, "y": 1, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "1000 * histogram_quantile(0.95, sum(rate(django_http_requests_latency_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m])) by (le))", "legendFormat": "p95"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "stat",
+      "title": "Scrape up",
+      "id": 4,
+      "gridPos": {"x": 18, "y": 1, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "avg(up{job=~\"$job\",instance=~\"$instance\"})", "legendFormat": "up"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+
+    {"type": "row", "title": "HTTP Requests", "gridPos": {"x": 0, "y": 5, "w": 24, "h": 1}},
+    {
+      "type": "timeseries",
+      "title": "Requests by method",
+      "id": 5,
+      "gridPos": {"x": 0, "y": 6, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum by (method) (rate(django_http_requests_total_by_method{job=~\"$job\",instance=~\"$instance\"}[5m]))", "legendFormat": "{{method}}"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests by status",
+      "id": 6,
+      "gridPos": {"x": 12, "y": 6, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum by (status) (rate(django_http_requests_total_by_status{job=~\"$job\",instance=~\"$instance\"}[5m]))", "legendFormat": "{{status}}"}
+      ]
+    },
+    {
+      "type": "bargauge",
+      "title": "In-flight requests",
+      "id": 7,
+      "gridPos": {"x": 0, "y": 14, "w": 6, "h": 7},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(django_http_requests_in_progress{job=~\"$job\",instance=~\"$instance\"})", "legendFormat": "inflight"}
+      ]
+    },
+
+    {"type": "row", "title": "Latency", "gridPos": {"x": 0, "y": 21, "w": 24, "h": 1}},
+    {
+      "type": "timeseries",
+      "title": "Latency quantiles (ms)",
+      "id": 8,
+      "gridPos": {"x": 0, "y": 22, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "1000 * histogram_quantile(0.5, sum(rate(django_http_requests_latency_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m])) by (le))", "legendFormat": "p50"},
+        {"expr": "1000 * histogram_quantile(0.95, sum(rate(django_http_requests_latency_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m])) by (le))", "legendFormat": "p95"},
+        {"expr": "1000 * histogram_quantile(0.99, sum(rate(django_http_requests_latency_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m])) by (le))", "legendFormat": "p99"}
+      ]
+    },
+    {
+      "type": "heatmap",
+      "title": "Latency heatmap",
+      "id": 9,
+      "gridPos": {"x": 12, "y": 22, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum by (le) (rate(django_http_requests_latency_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m]))"}
+      ]
+    },
+
+    {"type": "row", "title": "Database", "gridPos": {"x": 0, "y": 30, "w": 24, "h": 1}},
+    {
+      "type": "timeseries",
+      "title": "Queries per second",
+      "id": 10,
+      "gridPos": {"x": 0, "y": 31, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(rate(django_db_execute_total{job=~\"$job\",instance=~\"$instance\"}[5m]))", "legendFormat": "qps"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "DB connections created",
+      "id": 11,
+      "gridPos": {"x": 12, "y": 31, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(rate(django_db_connections_total{job=~\"$job\",instance=~\"$instance\"}[5m]))", "legendFormat": "connections/s"}
+      ]
+    },
+
+    {"type": "row", "title": "App Runtime", "gridPos": {"x": 0, "y": 39, "w": 24, "h": 1}},
+    {
+      "type": "timeseries",
+      "title": "CPU (cores)",
+      "id": 12,
+      "gridPos": {"x": 0, "y": 40, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "rate(process_cpu_seconds_total{job=~\"$job\",instance=~\"$instance\"}[5m])", "legendFormat": "cpu"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory (RSS)",
+      "id": 13,
+      "gridPos": {"x": 12, "y": 40, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "process_resident_memory_bytes{job=~\"$job\",instance=~\"$instance\"}", "legendFormat": "rss"}
+      ]
+    },
+
+    {"type": "row", "title": "Cache (Redis)", "gridPos": {"x": 0, "y": 48, "w": 24, "h": 1}},
+    {
+      "type": "timeseries",
+      "title": "Cache requests",
+      "id": 14,
+      "gridPos": {"x": 0, "y": 49, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(rate(django_cache_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m])) by (operation)", "legendFormat": "{{operation}}"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Cache hits ratio",
+      "id": 15,
+      "gridPos": {"x": 12, "y": 49, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(rate(django_cache_requests_total{operation=\"get\",job=~\"$job\",instance=~\"$instance\"}[5m])) / clamp_min(sum(rate(django_cache_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m])), 1)", "legendFormat": "hit_ratio"}
+      ]
+    },
+
+    {"type": "row", "title": "Views", "gridPos": {"x": 0, "y": 57, "w": 24, "h": 1}},
+    {
+      "type": "table",
+      "title": "Top Views (req/s)",
+      "id": 16,
+      "gridPos": {"x": 0, "y": 58, "w": 24, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "topk(10, sum by (view) (rate(django_http_requests_total_by_view{job=~\"$job\",instance=~\"$instance\"}[5m])))"}
+      ],
+      "options": {"showHeader": true}
+    },
+    {"type": "row", "title": "Language & Versions", "gridPos": {"x": 0, "y": 66, "w": 24, "h": 1}},
+    {
+      "type": "timeseries",
+      "title": "Traffic by language",
+      "id": 17,
+      "gridPos": {"x": 0, "y": 67, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum by (lang) (rate(bible_http_requests_total{job=~\"$job\",instance=~\"$instance\",lang=~\"$lang\"}[5m]))", "legendFormat": "{{lang}}"}
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Error rate by language %",
+      "id": 18,
+      "gridPos": {"x": 12, "y": 67, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "100 * ( sum(rate(bible_http_requests_total{status=~\\\"5..|4..\\\",job=~\\\"$job\\\",instance=~\\\"$instance\\\",lang=~\\\"$lang\\\"}[5m])) / clamp_min(sum(rate(bible_http_requests_total{job=~\\\"$job\\\",instance=~\\\"$instance\\\",lang=~\\\"$lang\\\"}[5m])), 1) )", "legendFormat": "errors%"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "stat",
+      "title": "p95 by language (ms)",
+      "id": 19,
+      "gridPos": {"x": 0, "y": 75, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "1000 * histogram_quantile(0.95, sum by (le, lang) (rate(bible_http_request_latency_seconds_bucket{job=~\"$job\",instance=~\"$instance\",lang=~\"$lang\"}[5m])))", "legendFormat": "p95"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "table",
+      "title": "Endpoint p95 latency (top 10, ms)",
+      "id": 20,
+      "gridPos": {"x": 12, "y": 75, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "topk(10, 1000 * histogram_quantile(0.95, sum by (le, view) (rate(bible_http_request_latency_seconds_bucket{job=~\\\"$job\\\",instance=~\\\"$instance\\\",view=~\\\"$endpoint\\\",lang=~\\\"$lang\\\"}[5m]))))"}
+      ],
+      "options": {"showHeader": true}
+    },
+    {
+      "type": "stat",
+      "title": "SLO burn (p95>300ms)",
+      "id": 21,
+      "gridPos": {"x": 0, "y": 83, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "(1000 * histogram_quantile(0.95, sum by (le) (rate(bible_http_request_latency_seconds_bucket{job=~\\\"$job\\\",instance=~\\\"$instance\\\"}[5m])))) > 300"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "table",
+      "title": "Hot verses (business)",
+      "id": 22,
+      "gridPos": {"x": 6, "y": 83, "w": 18, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "topk(10, sum by (book,chapter,verse,version) (rate(bible_verses_served_total{job=~\\\"$job\\\"}[15m])))"}
+      ],
+      "options": {"showHeader": true}
+    },
+    {
+      "type": "stat",
+      "title": "Pre-warm/Indexes in progress",
+      "id": 23,
+      "gridPos": {"x": 0, "y": 91, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(inprogress_index_builds{job=~\"$job\"})"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["bible-api", "observability"],
+  "templating": {
+    "list": [
+      {
+        "name": "job",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 2,
+        "query": "label_values(up, job)",
+        "current": {"text": "bible-api", "value": "bible-api"}
+      },
+      {
+        "name": "instance",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 2,
+        "query": "label_values(up{job=~\"$job\"}, instance)",
+        "current": {"text": "All", "value": ".*", "selected": true},
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "lang",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 2,
+        "query": "label_values(bible_http_requests_total{job=~\"$job\",instance=~\"$instance\"}, lang)",
+        "includeAll": true,
+        "multi": true,
+        "current": {"text": "All", "value": ".*", "selected": true}
+      },
+      {
+        "name": "version",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 2,
+        "query": "label_values(bible_http_requests_total{job=~\"$job\",instance=~\"$instance\"}, version)",
+        "includeAll": true,
+        "multi": true,
+        "current": {"text": "All", "value": ".*", "selected": true}
+      },
+      {
+        "name": "endpoint",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 2,
+        "query": "label_values(bible_http_requests_total{job=~\"$job\",instance=~\"$instance\"}, view)",
+        "includeAll": true,
+        "multi": true,
+        "current": {"text": "All", "value": ".*", "selected": true}
+      }
+    ]
+  },
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Bible API — Observability",
+  "version": 1
+}

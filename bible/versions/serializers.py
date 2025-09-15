@@ -5,11 +5,15 @@ from ..models import Version
 
 
 class VersionSerializer(serializers.ModelSerializer):
+    abbreviation = serializers.ReadOnlyField()
+    language = serializers.StringRelatedField()
+
     class Meta:
         model = Version
         fields = [
             "id",
             "name",
+            "code",
             "abbreviation",
             "language",
             "description",

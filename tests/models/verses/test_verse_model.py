@@ -4,42 +4,63 @@ Tests for Verse and Version models.
 from django.db import IntegrityError
 from django.test import TestCase
 
-from bible.models import Book, Verse, Version
+from bible.models import BookName, CanonicalBook, Language, Testament, Verse, Version
 
 
 class VersionModelTest(TestCase):
     """Tests for Version model."""
 
+    def setUp(self):
+        """Set up test data."""
+        self.language = Language.objects.create(code="en-US", name="English (United States)")
+
     def test_version_creation(self):
         """Test basic version creation."""
         version = Version.objects.create(
-            name="King James Version", abbreviation="KJV", language="en", description="Classic English translation"
+            name="King James Version", code="EN_KJV", language=self.language, description="Classic English translation"
         )
-        self.assertEqual(str(version), "King James Version (KJV)")
-        self.assertEqual(version.language, "en")
+        self.assertEqual(str(version), "King James Version (EN_KJV)")
+        self.assertEqual(version.abbreviation, "KJV")
         self.assertTrue(version.is_active)
 
-    def test_version_unique_abbreviation(self):
-        """Test that abbreviation is unique."""
-        Version.objects.create(name="King James Version", abbreviation="KJV", language="en")
+    def test_version_unique_code_per_language(self):
+        """Test that code is unique per language."""
+        Version.objects.create(name="King James Version", code="EN_KJV", language=self.language)
 
         with self.assertRaises(IntegrityError):
-            Version.objects.create(name="Another Version", abbreviation="KJV", language="en")  # Duplicate abbreviation
+            Version.objects.create(
+                name="Another Version", code="EN_KJV", language=self.language  # Duplicate code for same language
+            )
 
 
 class VerseModelTest(TestCase):
     """Tests for Verse model."""
 
     def setUp(self):
-        self.book = Book.objects.create(name="John", abbreviation="Joh", order=43, testament="NEW", chapter_count=21)
-        self.version = Version.objects.create(name="King James Version", abbreviation="KJV", language="en")
+        """Set up test data."""
+        # Create language
+        self.language = Language.objects.create(code="en-US", name="English (United States)")
+
+        # Create testament
+        self.testament = Testament.objects.create(id=2, name="Novo Testamento")
+
+        # Create canonical book
+        self.book = CanonicalBook.objects.create(
+            osis_code="John", canonical_order=43, testament=self.testament, chapter_count=21
+        )
+
+        # Create book name
+        BookName.objects.create(canonical_book=self.book, language=self.language, name="John", abbreviation="Joh")
+
+        # Create version
+        self.version = Version.objects.create(name="King James Version", code="EN_KJV", language=self.language)
 
     def test_verse_creation(self):
         """Test basic verse creation."""
         verse = Verse.objects.create(
             book=self.book, version=self.version, chapter=3, number=16, text="For God so loved the world..."
         )
-        self.assertEqual(str(verse), "Joh 3:16 (KJV)")
+        self.assertEqual(str(verse), "John 3:16 (KJV)")
         self.assertEqual(verse.reference, "John 3:16")
 
     def test_verse_unique_constraint(self):

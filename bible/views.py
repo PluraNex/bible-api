@@ -1,6 +1,9 @@
 """
 Bible API views.
 """
+from django.core.cache import cache
+from django.db import connections
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
@@ -52,3 +55,60 @@ class BibleOverviewAPIView(APIView):
 
 
 # Domain-specific views live under bible/<domain>/views.py
+
+
+class ReadinessCheckView(APIView):
+    """Readiness probe: checks DB and cache connectivity."""
+
+    @extend_schema(
+        summary="Readiness check",
+        description="Returns 200 when DB and cache are reachable; otherwise 503 with details.",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {"status": {"type": "string"}, "checks": {"type": "object"}},
+            },
+            503: {
+                "type": "object",
+                "properties": {"status": {"type": "string"}, "checks": {"type": "object"}},
+            },
+        },
+    )
+    def get(self, request):
+        checks = {"database": False, "cache": False}
+        db_ok = cache_ok = False
+
+        # DB check
+        try:
+            with connections["default"].cursor() as cursor:
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+            db_ok = True
+        except Exception:
+            db_ok = False
+
+        # Cache check
+        try:
+            cache.set("__readiness_probe__", "ok", 5)
+            cache_ok = cache.get("__readiness_probe__") == "ok"
+        except Exception:
+            cache_ok = False
+
+        checks["database"] = db_ok
+        checks["cache"] = cache_ok
+        status_code = status.HTTP_200_OK if (db_ok and cache_ok) else status.HTTP_503_SERVICE_UNAVAILABLE
+        return Response(
+            {"status": "ready" if status_code == 200 else "not_ready", "checks": checks}, status=status_code
+        )
+
+
+class PrometheusMetricsView(APIView):
+    """Very small placeholder Prometheus metrics endpoint (to be replaced by django-prometheus)."""
+
+    def get(self, request):
+        # Minimal text exposition format; replace with real metrics collector in T-009
+        content = """# HELP bible_api_dummy_requests_total Dummy total requests
+# TYPE bible_api_dummy_requests_total counter
+bible_api_dummy_requests_total{service="bible-api"} 1
+"""
+        return HttpResponse(content, status=200, content_type="text/plain; version=0.0.4; charset=utf-8")
