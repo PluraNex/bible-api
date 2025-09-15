@@ -215,8 +215,17 @@ reports/
 .env
 
 # Additional project-specific excludes
-# Raw datasets and processed data - exclude entire data directory
-data/
+# Raw datasets and processed data - exclude data directory but keep app structure
+data/*
+!data/__init__.py
+!data/apps.py
+!data/management/
+data/management/*
+!data/management/__init__.py
+!data/management/commands/
+data/management/commands/*
+!data/management/commands/__init__.py
+!data/management/commands/*.py
 
 # Temporary files and directories
 tmp/
