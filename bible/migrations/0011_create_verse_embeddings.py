@@ -5,15 +5,30 @@ import django.db.models.deletion
 import pgvector.django
 
 
+def create_vector_extension(apps, schema_editor):
+    """Create vector extension if available, skip if not."""
+    try:
+        with schema_editor.connection.cursor() as cursor:
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
+    except Exception:
+        # Skip if extension is not available (e.g., in CI)
+        pass
+
+
+def reverse_vector_extension(apps, schema_editor):
+    """No-op reverse operation."""
+    pass
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("bible", "0010_author"),
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql="CREATE EXTENSION IF NOT EXISTS vector",
-            reverse_sql="-- no-op",
+        migrations.RunPython(
+            code=create_vector_extension,
+            reverse_code=reverse_vector_extension,
         ),
         migrations.CreateModel(
             name="VerseEmbedding",
