@@ -4,31 +4,12 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def create_vector_extension(apps, schema_editor):
-    """Create vector extension if available, skip if not."""
-    try:
-        with schema_editor.connection.cursor() as cursor:
-            cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    except Exception:
-        # Skip if extension is not available (e.g., in CI)
-        pass
-
-
-def reverse_vector_extension(apps, schema_editor):
-    """No-op reverse operation."""
-    pass
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ("bible", "0010_author"),
     ]
 
     operations = [
-        migrations.RunPython(
-            code=create_vector_extension,
-            reverse_code=reverse_vector_extension,
-        ),
         # Create the model in Django's migration state using JSONField for universal compatibility
         migrations.CreateModel(
             name="VerseEmbedding",

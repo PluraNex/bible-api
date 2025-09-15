@@ -118,7 +118,10 @@ class VersesViewsTest(TestCase):
         request = self.factory.get("/api/v1/bible/verses/Genesis/1/")
 
         # Mock the super().get() to avoid full request processing
-        with patch.object(view.__class__.__bases__[0], "get") as mock_super_get:
+        # The correct base class is generics.ListAPIView (second in MRO)
+        from rest_framework import generics
+
+        with patch.object(generics.ListAPIView, "get") as mock_super_get:
             mock_super_get.return_value = Mock(status_code=200)
             response = view.get(request, book_name="Genesis", chapter=1)
 
@@ -162,7 +165,10 @@ class VersesViewsTest(TestCase):
         request = self.factory.get(f"/api/v1/bible/verses/{self.verse1.id}/")
 
         # Mock the super().get() to avoid full request processing
-        with patch.object(view.__class__.__bases__[0], "get") as mock_super_get:
+        # The correct base class is generics.RetrieveAPIView (second in MRO)
+        from rest_framework import generics
+
+        with patch.object(generics.RetrieveAPIView, "get") as mock_super_get:
             mock_super_get.return_value = Mock(status_code=200)
             response = view.get(request, pk=self.verse1.id)
 
@@ -211,7 +217,10 @@ class VersesViewsTest(TestCase):
         request = self.factory.get("/api/v1/bible/verses/by-theme/123/")
 
         # Mock the super().get() to avoid full request processing
-        with patch.object(view.__class__.__bases__[0], "get") as mock_super_get:
+        # The correct base class is generics.ListAPIView (second in MRO)
+        from rest_framework import generics
+
+        with patch.object(generics.ListAPIView, "get") as mock_super_get:
             mock_super_get.return_value = Mock(status_code=200)
             response = view.get(request, theme_id=123)
 
