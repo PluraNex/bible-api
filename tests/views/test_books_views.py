@@ -145,6 +145,7 @@ class BooksViewsTest(TestCase):
 
         view = ChaptersByBookView()
         request = self.factory.get("/api/v1/bible/books/Genesis/chapters/")
+        request.lang_code = "en"  # Add language code attribute
         response = view.get(request, book_name="Genesis")
 
         self.assertEqual(response.status_code, 200)
@@ -204,6 +205,7 @@ class BooksViewsTest(TestCase):
 
         view = ChaptersByBookView()
         request = self.factory.get("/api/v1/bible/books/John/chapters/")
+        request.lang_code = "en"  # Add language code attribute
         response = view.get(request, book_name="John")
 
         self.assertEqual(response.status_code, 200)

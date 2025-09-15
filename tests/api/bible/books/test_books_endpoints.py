@@ -207,7 +207,7 @@ class BooksEndpointsTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key_read.key}")
 
         # Adjusted expected query count based on actual implementation
-        with self.assertNumQueries(10):  # Updated based on test output
+        with self.assertNumQueries(2):  # 1 for books with select_related + 1 for prefetch_related names
             response = self.client.get("/api/v1/bible/books/")
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 

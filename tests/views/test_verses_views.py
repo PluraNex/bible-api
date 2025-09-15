@@ -57,8 +57,15 @@ class VersesViewsTest(TestCase):
 
     def test_verses_by_chapter_view_queryset_success(self):
         """Test VersesByChapterView queryset with valid book and chapter."""
+        from unittest.mock import Mock
+
         view = VersesByChapterView()
         view.kwargs = {"book_name": "Genesis", "chapter": 1}
+
+        # Mock request with version parameter to avoid version resolution logic
+        mock_request = Mock()
+        mock_request.query_params = {"version": str(self.version.id)}
+        view.request = mock_request
 
         with patch("bible.verses.views.get_canonical_book_by_name") as mock_get_book:
             mock_get_book.return_value = self.genesis
@@ -243,9 +250,9 @@ class VersesViewsTest(TestCase):
             mock_get_book.return_value = self.genesis
             queryset = view.get_queryset()
 
-            # Check that select_related is applied
-            query_str = str(queryset.query)
-            self.assertIn("JOIN", query_str)  # Should have joins for select_related
+            # Check that select_related is applied without executing the query
+            self.assertIn("book", queryset.query.select_related)
+            self.assertIn("version", queryset.query.select_related)
 
     def test_verses_by_theme_view_query_efficiency(self):
         """Test that VersesByThemeView uses select_related for efficiency."""
@@ -254,9 +261,10 @@ class VersesViewsTest(TestCase):
 
         queryset = view.get_queryset()
 
-        # Check that select_related is applied
-        query_str = str(queryset.query)
-        self.assertIn("JOIN", query_str)  # Should have joins for select_related
+        # Check that select_related is applied without executing the query
+        self.assertTrue(hasattr(queryset, "select_related_fields"))
+        self.assertIn("book", queryset.query.select_related)
+        self.assertIn("version", queryset.query.select_related)
 
     def test_verses_by_chapter_view_ordering(self):
         """Test that VersesByChapterView orders by number."""
@@ -279,5 +287,6 @@ class VersesViewsTest(TestCase):
         queryset = view.get_queryset()
 
         # Should be ordered by book canonical_order, chapter, number
-        query_str = str(queryset.query)
-        self.assertIn("ORDER BY", query_str)
+        # Test the ordering without forcing query execution
+        self.assertEqual(queryset.ordered, True)
+        self.assertIn("book__canonical_order", queryset.query.order_by)

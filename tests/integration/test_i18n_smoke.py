@@ -85,17 +85,16 @@ class I18nSmokeTestCase(TestCase):
 
         # Create versions
         self.kjv = Version.objects.create(
-            name="King James Version", code="EN_KJV", abbreviation="KJV", language=self.en_lang, is_active=True
+            name="King James Version", code="EN_KJV", language=self.en_lang, is_active=True
         )
 
         self.nvi = Version.objects.create(
-            name="Nova Versão Internacional", code="PT_NVI", abbreviation="NVI", language=self.pt_lang, is_active=True
+            name="Nova Versão Internacional", code="PT_NVI", language=self.pt_lang, is_active=True
         )
 
         self.nvi_br = Version.objects.create(
             name="Nova Versão Internacional (Brasil)",
             code="PT_BR_NVI",
-            abbreviation="NVI-BR",
             language=self.pt_br_lang,
             is_active=True,
         )

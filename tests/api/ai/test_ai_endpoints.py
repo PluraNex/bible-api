@@ -62,7 +62,9 @@ class AIEndpointsTest(TestCase):
         """Test that run endpoint requires proper ai-run scope (§10.5)."""
         # Read scope only should get 403
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key_read.key}")
-        response = self.client.post("/api/v1/ai/run/", {"agent": "test_agent", "input": "test input"})
+        response = self.client.post(
+            "/api/v1/ai/agents/test_agent/runs/", {"agent": "test_agent", "input": "test input"}
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_tools_test_requires_ai_tools_scope(self):
@@ -100,7 +102,7 @@ class AIEndpointsTest(TestCase):
         """Test that agents list is query-efficient."""
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key_read.key}")
 
-        with self.assertNumQueries(3):  # Adjust based on implementation
+        with self.assertNumQueries(0):  # No database queries - hardcoded response
             response = self.client.get("/api/v1/ai/agents/")
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -146,7 +148,9 @@ class AIEndpointsTest(TestCase):
         """Test run endpoint with valid ai-run scope."""
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key_ai_run.key}")
 
-        response = self.client.post("/api/v1/ai/run/", {"agent": "test_agent", "input": "test input"})
+        response = self.client.post(
+            "/api/v1/ai/agents/test_agent/runs/", {"agent": "test_agent", "input": "test input"}
+        )
 
         # Response depends on actual implementation
         self.assertIn(
@@ -248,7 +252,8 @@ class AIEndpointsTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key_ai_run.key}")
 
         response = self.client.post(
-            "/api/v1/ai/run/", {"agent": "non_existent_agent", "input": "test@email.com secret_password"}
+            "/api/v1/ai/agents/non_existent_agent/runs/",
+            {"agent": "non_existent_agent", "input": "test@email.com secret_password"},
         )
 
         error_text = response.content.decode().lower()
@@ -274,7 +279,9 @@ class AIEndpointsTest(TestCase):
         # Make requests until throttled
         responses = []
         for _ in range(20):  # Adjust based on throttle limits
-            response = self.client.post("/api/v1/ai/run/", {"agent": "test_agent", "input": "test input"})
+            response = self.client.post(
+                "/api/v1/ai/agents/test_agent/runs/", {"agent": "test_agent", "input": "test input"}
+            )
             responses.append(response.status_code)
             if response.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
                 # Check Retry-After header
