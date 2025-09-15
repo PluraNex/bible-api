@@ -14,7 +14,7 @@ class BookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CanonicalBook
-        fields = ["id", "name", "abbreviation", "order", "testament", "chapter_count"]
+        fields = ["id", "osis_code", "name", "abbreviation", "order", "testament", "chapter_count"]
 
     def get_name(self, obj) -> str:
         """Get localized name using the existing utility function with fallback logic."""

@@ -18,6 +18,9 @@ class TestLanguageSensitiveMixin(TestCase):
 
         # Create test view class that uses the mixin
         class TestView(LanguageSensitiveMixin, APIView):
+            authentication_classes = []  # Disable authentication for test
+            permission_classes = []  # Disable permissions for test
+
             def get(self, request):
                 return Response({"test": "data"})
 
@@ -49,6 +52,9 @@ class TestLanguageSensitiveMixin(TestCase):
 
         # Create view that sets its own Vary header
         class TestViewWithVary(LanguageSensitiveMixin, APIView):
+            authentication_classes = []  # Disable authentication for test
+            permission_classes = []  # Disable permissions for test
+
             def get(self, request):
                 response = Response({"test": "data"})
                 response["Vary"] = "Accept, Origin"
@@ -69,6 +75,9 @@ class TestLanguageSensitiveMixin(TestCase):
         """Test that mixin doesn't add Accept-Language if already present."""
 
         class TestViewWithAcceptLanguage(LanguageSensitiveMixin, APIView):
+            authentication_classes = []  # Disable authentication for test
+            permission_classes = []  # Disable permissions for test
+
             def get(self, request):
                 response = Response({"test": "data"})
                 response["Vary"] = "Accept, Accept-Language, Origin"

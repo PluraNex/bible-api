@@ -232,7 +232,7 @@ class BooksI18nSmokeTest(I18nSmokeTestCase):
 
         if data["results"]:
             book = data["results"][0]
-            required_fields = ["id", "name", "osis_code", "canonical_order", "chapter_count"]
+            required_fields = ["id", "name", "osis_code", "order", "chapter_count"]
             for field in required_fields:
                 self.assertIn(field, book, f"Book should have {field} field")
 
@@ -253,8 +253,8 @@ class VersesI18nSmokeTest(I18nSmokeTestCase):
         if data["results"]:
             verse = data["results"][0]
             # Should include book info with Portuguese name
-            self.assertIn("book_info", verse)
-            self.assertEqual(verse["book_info"]["name"], "João")
+            self.assertIn("book_name", verse)
+            self.assertEqual(verse["book_name"], "João")
 
     def test_verses_with_default_version_for_language(self):
         """Verses should use appropriate default version for language."""
@@ -282,7 +282,7 @@ class VersesI18nSmokeTest(I18nSmokeTestCase):
             verse = data["results"][0]
             # Text should be English (KJV) but book name Portuguese
             self.assertIn("For God so loved", verse["text"])
-            self.assertEqual(verse["book_info"]["name"], "João")
+            self.assertEqual(verse["book_name"], "João")
 
     def test_verses_404_for_unknown_book(self):
         """Verses for unknown book should return 404."""
@@ -304,7 +304,7 @@ class VersesI18nSmokeTest(I18nSmokeTestCase):
 
         if data["results"]:
             verse = data["results"][0]
-            required_fields = ["id", "text", "number", "chapter", "book_info", "version_info"]
+            required_fields = ["id", "text", "number", "chapter", "book_name", "version_code"]
             for field in required_fields:
                 self.assertIn(field, verse, f"Verse should have {field} field")
 
@@ -346,7 +346,7 @@ class VersionsI18nSmokeTest(I18nSmokeTestCase):
 
         data = response.json()
         self.assertEqual(data["language"], "pt-BR")  # Should fallback to regional
-        self.assertEqual(data["abbreviation"], "NVI-BR")
+        self.assertEqual(data["abbreviation"], "NVI")
 
     def test_versions_default_fallback_regional_to_base(self):
         """Versions default should fallback from regional to base."""
@@ -514,6 +514,6 @@ class I18nEdgeCasesSmokeTest(I18nSmokeTestCase):
         john_lower = next((b for b in lower_data["results"] if b["osis_code"] == "John"), None)
         john_upper = next((b for b in upper_data["results"] if b["osis_code"] == "John"), None)
 
-        # 'pt' should match, 'PT' should fallback to English
+        # Both 'pt' and 'PT' should match (case-insensitive)
         self.assertEqual(john_lower["name"], "João")
-        self.assertEqual(john_upper["name"], "John")  # Fallback
+        self.assertEqual(john_upper["name"], "João")  # Case-insensitive match

@@ -6,7 +6,7 @@ from ..models import Version
 
 class VersionSerializer(serializers.ModelSerializer):
     abbreviation = serializers.ReadOnlyField()
-    language = serializers.StringRelatedField()
+    language = serializers.CharField(source="language.code")
 
     class Meta:
         model = Version
