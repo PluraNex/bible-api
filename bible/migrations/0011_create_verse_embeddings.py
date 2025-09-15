@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import pgvector.django
 
 
 def create_vector_extension(apps, schema_editor):
@@ -30,23 +29,30 @@ class Migration(migrations.Migration):
             code=create_vector_extension,
             reverse_code=reverse_vector_extension,
         ),
+        # Create the model in Django's migration state using JSONField for universal compatibility
         migrations.CreateModel(
             name="VerseEmbedding",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID"),
+                ),
                 ("version_code", models.CharField(db_index=True, max_length=40)),
                 ("model_name_small", models.CharField(max_length=80)),
                 ("dim_small", models.PositiveIntegerField()),
-                ("embedding_small", pgvector.django.VectorField(null=True)),
-                ("model_name_large", models.CharField(blank=True, max_length=80, null=True)),
+                # Use JSONField for universal compatibility across CI and production
+                ("embedding_small", models.JSONField(null=True, blank=True)),
+                ("model_name_large", models.CharField(blank=True, max_length=80, default="")),
                 ("dim_large", models.PositiveIntegerField(blank=True, null=True)),
-                ("embedding_large", pgvector.django.VectorField(blank=True, null=True)),
+                ("embedding_large", models.JSONField(blank=True, null=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "verse",
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="embedding", to="bible.verse"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="embedding",
+                        to="bible.verse",
                     ),
                 ),
             ],
