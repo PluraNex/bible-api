@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+<!-- Last updated: 2025-09-16 -->
 
 ## Core Commands
 
