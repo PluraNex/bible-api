@@ -254,7 +254,7 @@ class VersesViewsTest(TestCase):
             queryset = view.get_queryset()
 
             # Check that select_related is applied
-            if not queryset._result_cache is not None and hasattr(queryset.query, 'select_related'):
+            if not queryset._result_cache is not None and hasattr(queryset.query, "select_related"):
                 self.assertIn("book", queryset.query.select_related)
                 self.assertIn("version", queryset.query.select_related)
 
@@ -266,7 +266,7 @@ class VersesViewsTest(TestCase):
         queryset = view.get_queryset()
 
         # Check that select_related is applied
-        if hasattr(queryset.query, 'select_related') and queryset.query.select_related:
+        if hasattr(queryset.query, "select_related") and queryset.query.select_related:
             self.assertIn("book", queryset.query.select_related)
             self.assertIn("version", queryset.query.select_related)
 
@@ -283,7 +283,7 @@ class VersesViewsTest(TestCase):
             queryset = view.get_queryset()
 
             # Check ordering field is set
-            if hasattr(queryset.query, 'order_by') and queryset.query.order_by:
+            if hasattr(queryset.query, "order_by") and queryset.query.order_by:
                 self.assertIn("number", str(queryset.query.order_by))
             else:
                 # Fallback: Test that ordering is applied
