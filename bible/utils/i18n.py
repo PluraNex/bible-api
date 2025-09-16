@@ -42,9 +42,11 @@ def resolve_language(request: HttpRequest) -> str:
     if lang_param:
         validated_lang = _validate_language_code(lang_param)
         if validated_lang:
-            logger.debug(f"Language resolved from ?lang= parameter: {validated_lang}")
+            logger.debug("Language resolved from ?lang= parameter: %s", validated_lang)
             return validated_lang
-        logger.warning(f"Invalid lang parameter '{lang_param}', falling back to Accept-Language")
+        # Sanitize user input for logging to prevent injection attacks
+        safe_lang_param = lang_param[:10] if isinstance(lang_param, str) else str(lang_param)[:10]
+        logger.warning("Invalid lang parameter '%s', falling back to Accept-Language", safe_lang_param)
 
     # 2. Parse Accept-Language header
     accept_language = request.META.get("HTTP_ACCEPT_LANGUAGE", "")
