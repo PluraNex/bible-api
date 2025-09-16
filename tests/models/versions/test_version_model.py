@@ -23,7 +23,7 @@ class VersionModelTest(TestCase):
             versification="KJV",
             copyright="Public Domain",
             license=self.license,
-            is_active=True
+            is_active=True,
         )
 
         self.assertEqual(version.language, self.language)
@@ -36,41 +36,26 @@ class VersionModelTest(TestCase):
 
     def test_version_str_representation(self):
         """Test string representation of Version."""
-        version = Version.objects.create(
-            language=self.language,
-            code="EN_KJV",
-            name="King James Version"
-        )
+        version = Version.objects.create(language=self.language, code="EN_KJV", name="King James Version")
 
         expected = "King James Version (EN_KJV)"
         self.assertEqual(str(version), expected)
 
     def test_abbreviation_property_with_underscore(self):
         """Test abbreviation property with underscore in code."""
-        version = Version.objects.create(
-            language=self.language,
-            code="PT_BR_NVI",
-            name="Nova Versão Internacional"
-        )
+        version = Version.objects.create(language=self.language, code="PT_BR_NVI", name="Nova Versão Internacional")
 
         self.assertEqual(version.abbreviation, "NVI")
 
     def test_abbreviation_property_without_underscore(self):
         """Test abbreviation property without underscore in code."""
-        version = Version.objects.create(
-            language=self.language,
-            code="SIMPLE",
-            name="Simple Version"
-        )
+        version = Version.objects.create(language=self.language, code="SIMPLE", name="Simple Version")
 
         self.assertEqual(version.abbreviation, "SIMPLE")
 
     def test_version_defaults(self):
         """Test default values for Version fields."""
-        version = Version.objects.create(
-            language=self.language,
-            name="Test Version"
-        )
+        version = Version.objects.create(language=self.language, name="Test Version")
 
         self.assertEqual(version.code, "EN_UNKNOWN")
         self.assertEqual(version.versification, "KJV")
@@ -91,10 +76,7 @@ class VersionModelTest(TestCase):
 
     def test_version_with_nullable_language(self):
         """Test Version creation with null language."""
-        version = Version.objects.create(
-            name="Test Version",
-            code="TEST"
-        )
+        version = Version.objects.create(name="Test Version", code="TEST")
 
         self.assertIsNone(version.language)
         self.assertEqual(version.name, "Test Version")
@@ -102,11 +84,7 @@ class VersionModelTest(TestCase):
 
     def test_version_license_relationship(self):
         """Test Version license foreign key relationship."""
-        version = Version.objects.create(
-            language=self.language,
-            name="Licensed Version",
-            license=self.license
-        )
+        version = Version.objects.create(language=self.language, name="Licensed Version", license=self.license)
 
         self.assertEqual(version.license, self.license)
 

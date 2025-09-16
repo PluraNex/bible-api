@@ -1,17 +1,29 @@
 """Tests for common.data_config module."""
-import pytest
 from pathlib import Path
 
 from common.data_config import (
-    DATA_DIR, EXTERNAL_DIR, PROCESSED_DIR, SCHEMAS_DIR,
-    DEFAULT_BATCH_SIZE, MIN_VERSE_LENGTH, MAX_VERSE_LENGTH, EXPECTED_VERSE_RANGE,
-    MIN_DETECTION_CONFIDENCE, HIGH_CONFIDENCE_THRESHOLD,
-    DEFAULT_LICENSE_CODE, DEFAULT_LICENSE_NAME,
-    CROSSREF_BATCH_SIZE, DEFAULT_CROSSREF_FILE,
-    LOG_FORMAT, LOG_LEVEL,
+    BIBLE_FILE_PATTERNS,
+    CROSSREF_BATCH_SIZE,
+    DATA_DIR,
+    DEFAULT_BATCH_SIZE,
+    DEFAULT_CROSSREF_FILE,
+    DEFAULT_LICENSE_CODE,
+    DEFAULT_LICENSE_NAME,
+    EXPECTED_VERSE_RANGE,
+    EXTERNAL_DIR,
+    HIGH_CONFIDENCE_THRESHOLD,
+    IGNORE_PATTERNS,
+    LOG_FORMAT,
+    LOG_LEVEL,
+    MAX_VERSE_LENGTH,
+    MIGRATION_TIMEOUT,
+    MIN_DETECTION_CONFIDENCE,
+    MIN_VERSE_LENGTH,
+    POPULATION_TIMEOUT,
+    PROCESSED_DIR,
     QUALITY_CHECKS,
-    BIBLE_FILE_PATTERNS, IGNORE_PATTERNS,
-    MIGRATION_TIMEOUT, POPULATION_TIMEOUT, VALIDATION_TIMEOUT
+    SCHEMAS_DIR,
+    VALIDATION_TIMEOUT,
 )
 
 
@@ -86,9 +98,11 @@ class TestDataConfig:
         assert isinstance(QUALITY_CHECKS, dict)
 
         required_keys = [
-            "min_books_per_bible", "min_chapters_per_book",
-            "min_verses_per_chapter", "max_verse_length",
-            "expected_total_verses"
+            "min_books_per_bible",
+            "min_chapters_per_book",
+            "min_verses_per_chapter",
+            "max_verse_length",
+            "expected_total_verses",
         ]
 
         for key in required_keys:

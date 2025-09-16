@@ -1,10 +1,9 @@
 """Tests for bible.utils core functions."""
-import pytest
 from django.http import Http404
 from django.test import TestCase
 
-from bible.models import CanonicalBook, BookName, Language, Testament
-from bible.utils import get_canonical_book_by_name, get_book_display_name, get_book_abbreviation
+from bible.models import BookName, CanonicalBook, Language, Testament
+from bible.utils import get_book_abbreviation, get_book_display_name, get_canonical_book_by_name
 
 
 class BibleUtilsTest(TestCase):
@@ -22,25 +21,16 @@ class BibleUtilsTest(TestCase):
 
         # Create canonical book
         cls.genesis = CanonicalBook.objects.create(
-            osis_code="Gen",
-            canonical_order=1,
-            testament=cls.testament,
-            chapter_count=50
+            osis_code="Gen", canonical_order=1, testament=cls.testament, chapter_count=50
         )
 
         # Create book names
         cls.genesis_en = BookName.objects.create(
-            canonical_book=cls.genesis,
-            language=cls.english,
-            name="Genesis",
-            abbreviation="Gen"
+            canonical_book=cls.genesis, language=cls.english, name="Genesis", abbreviation="Gen"
         )
 
         cls.genesis_pt = BookName.objects.create(
-            canonical_book=cls.genesis,
-            language=cls.portuguese,
-            name="Gênesis",
-            abbreviation="Gên"
+            canonical_book=cls.genesis, language=cls.portuguese, name="Gênesis", abbreviation="Gên"
         )
 
     def test_get_canonical_book_by_name_exact_match(self):
@@ -70,10 +60,7 @@ class BibleUtilsTest(TestCase):
         """Test finding book by OSIS code fallback."""
         # Create a book without BookName entries
         matthew = CanonicalBook.objects.create(
-            osis_code="Matt",
-            canonical_order=2,
-            testament=self.testament,
-            chapter_count=28
+            osis_code="Matt", canonical_order=2, testament=self.testament, chapter_count=28
         )
 
         book = get_canonical_book_by_name("Matt")

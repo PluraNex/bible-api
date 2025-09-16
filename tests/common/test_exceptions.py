@@ -1,12 +1,17 @@
 """Tests for common.exceptions module."""
-import pytest
 from unittest.mock import Mock, patch
+
 from rest_framework import status
 
 from common.exceptions import (
-    APIError, ValidationError, NotFoundError, PermissionError, RateLimitError,
-    _request_id_from_context, _response_payload, _apply_headers,
-    _STATUS_CODE_MAPPING
+    APIError,
+    NotFoundError,
+    PermissionError,
+    RateLimitError,
+    ValidationError,
+    _apply_headers,
+    _request_id_from_context,
+    _response_payload,
 )
 
 
@@ -27,10 +32,7 @@ class TestAPIError:
         """Test APIError with custom values."""
         details = {"field": "value"}
         error = APIError(
-            "Custom error",
-            code="custom_code",
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            details=details
+            "Custom error", code="custom_code", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, details=details
         )
 
         assert error.message == "Custom error"
@@ -136,7 +138,7 @@ class TestUtilityFunctions:
         """Test getting request_id when no request in context."""
         context = {}
 
-        with patch('uuid.uuid4') as mock_uuid:
+        with patch("uuid.uuid4") as mock_uuid:
             mock_uuid.return_value = "generated-uuid"
             result = _request_id_from_context(context)
             assert result == "generated-uuid"
@@ -145,11 +147,7 @@ class TestUtilityFunctions:
         """Test basic response payload creation."""
         payload = _response_payload("Error message", "error_code", "req-123")
 
-        expected = {
-            "detail": "Error message",
-            "code": "error_code",
-            "request_id": "req-123"
-        }
+        expected = {"detail": "Error message", "code": "error_code", "request_id": "req-123"}
         assert payload == expected
 
     def test_apply_headers_www_authenticate(self):

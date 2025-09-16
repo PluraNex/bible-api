@@ -14,17 +14,18 @@ class BibleViewsCoverageTest(TestCase):
 
     def test_prometheus_view_get(self):
         """Test PrometheusMetricsView.get method directly."""
-        from bible.views import PrometheusMetricsView
         from django.test import RequestFactory
 
+        from bible.views import PrometheusMetricsView
+
         factory = RequestFactory()
-        request = factory.get('/metrics/prometheus/')
+        request = factory.get("/metrics/prometheus/")
 
         view = PrometheusMetricsView()
         response = view.get(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], "text/plain; version=0.0.4; charset=utf-8")
+        self.assertEqual(response["content-type"], "text/plain; version=0.0.4; charset=utf-8")
 
         content = response.content.decode()
         self.assertIn("bible_api_dummy_requests_total", content)  # This should cover lines 114-118

@@ -1,8 +1,8 @@
 """
 Direct tests for bible.utils module to ensure coverage.
 """
-from django.test import TestCase
 from django.http import Http404
+from django.test import TestCase
 
 from bible.models import BookName, CanonicalBook, Language, Testament
 
@@ -20,18 +20,12 @@ class BibleUtilsDirectTest(TestCase):
 
         # Create canonical book
         self.book = CanonicalBook.objects.create(
-            osis_code="DirectGen",
-            canonical_order=999,
-            testament=self.testament,
-            chapter_count=50
+            osis_code="DirectGen", canonical_order=999, testament=self.testament, chapter_count=50
         )
 
         # Create book name
         BookName.objects.create(
-            canonical_book=self.book,
-            language=self.language,
-            name="Direct Genesis",
-            abbreviation="DGen"
+            canonical_book=self.book, language=self.language, name="Direct Genesis", abbreviation="DGen"
         )
 
     def test_get_canonical_book_by_name_function(self):

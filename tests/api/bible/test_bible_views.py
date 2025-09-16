@@ -12,6 +12,7 @@ class BibleOverviewAPIViewTest(TestCase):
     def setUp(self):
         """Set up test data."""
         from django.contrib.auth.models import User
+
         from bible.models import APIKey
 
         self.client = APIClient()
@@ -60,7 +61,7 @@ class PrometheusMetricsViewTest(TestCase):
         self.assertIn("# HELP", content)
         self.assertIn("# TYPE", content)
         # Since we're using django-prometheus, check for common metrics
-        self.assertTrue(any(metric in content for metric in ['python_info', 'process_', 'django_']))
+        self.assertTrue(any(metric in content for metric in ["python_info", "process_", "django_"]))
 
     def test_prometheus_metrics_public_access(self):
         """Test that prometheus metrics endpoint is publicly accessible."""

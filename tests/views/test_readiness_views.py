@@ -1,7 +1,8 @@
 """
 Tests for readiness and monitoring views.
 """
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -23,7 +24,7 @@ class ReadinessCheckViewTest(TestCase):
         self.assertEqual(data["status"], "ready")
         self.assertIn("checks", data)
 
-    @patch('bible.views.connections')
+    @patch("bible.views.connections")
     def test_readiness_database_failure(self, mock_connections):
         """Test readiness check when database is not reachable."""
         # Mock database connection failure
@@ -38,7 +39,7 @@ class ReadinessCheckViewTest(TestCase):
         self.assertEqual(data["status"], "not_ready")
         self.assertFalse(data["checks"]["database"])
 
-    @patch('bible.views.cache')
+    @patch("bible.views.cache")
     def test_readiness_cache_failure(self, mock_cache):
         """Test readiness check when cache is not reachable."""
         # Mock cache failure
@@ -51,7 +52,7 @@ class ReadinessCheckViewTest(TestCase):
         self.assertEqual(data["status"], "not_ready")
         self.assertFalse(data["checks"]["cache"])
 
-    @patch('bible.views.cache')
+    @patch("bible.views.cache")
     def test_readiness_cache_get_failure(self, mock_cache):
         """Test readiness check when cache get operation fails."""
         # Mock cache get returning wrong value
@@ -78,14 +79,14 @@ class PrometheusMetricsViewTest(TestCase):
         response = self.client.get("/metrics/prometheus/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], "text/plain; version=0.0.4; charset=utf-8")
+        self.assertEqual(response["content-type"], "text/plain; version=0.0.4; charset=utf-8")
 
         content = response.content.decode()
         # Check for common prometheus metrics (should be django-prometheus format)
         self.assertIn("# HELP", content)
         self.assertIn("# TYPE", content)
         # Should contain some django metrics
-        self.assertTrue(any(metric in content for metric in ['django_', 'python_', 'process_']))
+        self.assertTrue(any(metric in content for metric in ["django_", "python_", "process_"]))
 
     def test_prometheus_metrics_no_auth_required(self):
         """Test that prometheus metrics endpoint doesn't require authentication."""

@@ -5,7 +5,7 @@ from django.test import TestCase
 from drf_spectacular.utils import OpenApiParameter
 from rest_framework import serializers
 
-from common.openapi import LANG_PARAMETER, ErrorResponseSerializer, ERROR_EXAMPLES, get_error_responses
+from common.openapi import ERROR_EXAMPLES, LANG_PARAMETER, ErrorResponseSerializer, get_error_responses
 
 
 class OpenAPIComponentsTest(TestCase):
@@ -46,7 +46,7 @@ class OpenAPIComponentsTest(TestCase):
             "AuthenticationError",
             "PermissionError",
             "ThrottleError",
-            "InternalServerError"
+            "InternalServerError",
         ]
 
         for example_name in expected_examples:
@@ -85,7 +85,7 @@ class OpenAPIComponentsTest(TestCase):
         valid_data = {
             "detail": "Test error",
             "code": "test_error",
-            "request_id": "550e8400-e29b-41d4-a716-446655440000"
+            "request_id": "550e8400-e29b-41d4-a716-446655440000",
         }
 
         serializer = ErrorResponseSerializer(data=valid_data)
@@ -96,18 +96,14 @@ class OpenAPIComponentsTest(TestCase):
             "detail": "Validation failed",
             "code": "validation_error",
             "request_id": "550e8400-e29b-41d4-a716-446655440000",
-            "errors": {"field": ["Required"]}
+            "errors": {"field": ["Required"]},
         }
 
         serializer = ErrorResponseSerializer(data=valid_data_with_errors)
         self.assertTrue(serializer.is_valid())
 
         # Invalid UUID should fail validation
-        invalid_data = {
-            "detail": "Test error",
-            "code": "test_error",
-            "request_id": "not-a-valid-uuid"
-        }
+        invalid_data = {"detail": "Test error", "code": "test_error", "request_id": "not-a-valid-uuid"}
 
         serializer = ErrorResponseSerializer(data=invalid_data)
         self.assertFalse(serializer.is_valid())

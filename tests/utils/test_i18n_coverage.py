@@ -1,8 +1,9 @@
 """
 Tests to increase coverage for bible.utils.i18n module.
 """
-from django.test import TestCase
 from unittest.mock import Mock
+
+from django.test import TestCase
 
 from bible.models import Language
 from bible.utils.i18n import _validate_language_code, get_language_from_context
@@ -38,7 +39,7 @@ class I18nCoverageTest(TestCase):
     def test_get_language_from_context_no_lang_code(self):
         """Test get_language_from_context with request but no lang_code."""
         mock_request = Mock()
-        delattr(mock_request, 'lang_code') if hasattr(mock_request, 'lang_code') else None
+        delattr(mock_request, "lang_code") if hasattr(mock_request, "lang_code") else None
 
         context = {"request": mock_request}
         result = get_language_from_context(context)

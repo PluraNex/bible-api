@@ -2,7 +2,6 @@
 Final test for bible.utils module to ensure complete coverage.
 """
 from django.test import TestCase
-from rest_framework.exceptions import NotFound
 
 from bible.models import BookName, CanonicalBook, Language, Testament
 
@@ -20,10 +19,7 @@ class BibleUtilsFinalTest(TestCase):
 
         # Create canonical book
         self.book = CanonicalBook.objects.create(
-            osis_code="FinalGen",
-            canonical_order=9999,
-            testament=self.testament,
-            chapter_count=50
+            osis_code="FinalGen", canonical_order=9999, testament=self.testament, chapter_count=50
         )
 
         # Create book name
@@ -32,7 +28,7 @@ class BibleUtilsFinalTest(TestCase):
             language=self.language,
             name="Final Genesis",
             abbreviation="FGen",
-            version=None  # Explicitly set to None
+            version=None,  # Explicitly set to None
         )
 
     def test_get_canonical_book_by_name_direct(self):
@@ -54,9 +50,10 @@ class BibleUtilsFinalTest(TestCase):
 
     def test_get_canonical_book_by_name_not_found_direct(self):
         """Test getting non-existent book."""
+        from django.http import Http404
+
         from bible.utils import get_canonical_book_by_name
 
-        from django.http import Http404
         with self.assertRaises(Http404):
             get_canonical_book_by_name("NonExistentFinalBook")
 
