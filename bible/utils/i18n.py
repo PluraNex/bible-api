@@ -42,11 +42,9 @@ def resolve_language(request: HttpRequest) -> str:
     if lang_param:
         validated_lang = _validate_language_code(lang_param)
         if validated_lang:
-            logger.debug("Language resolved from ?lang= parameter: %s", validated_lang)
+            logger.debug("Language resolved from query parameter")
             return validated_lang
-        # Sanitize user input for logging to prevent injection attacks
-        safe_lang_param = lang_param[:10] if isinstance(lang_param, str) else str(lang_param)[:10]
-        logger.warning("Invalid lang parameter '%s', falling back to Accept-Language", safe_lang_param)
+        logger.warning("Invalid lang parameter provided, falling back to Accept-Language")
 
     # 2. Parse Accept-Language header
     accept_language = request.META.get("HTTP_ACCEPT_LANGUAGE", "")
@@ -55,12 +53,12 @@ def resolve_language(request: HttpRequest) -> str:
         for lang_code, _ in parsed_langs:
             validated_lang = _validate_language_code(lang_code)
             if validated_lang:
-                logger.debug(f"Language resolved from Accept-Language: {validated_lang}")
+                logger.debug("Language resolved from Accept-Language header")
                 return validated_lang
 
     # 3. Default fallback
     default_lang = getattr(settings, "DEFAULT_LANGUAGE_CODE", "en")
-    logger.debug(f"Language resolved to default: {default_lang}")
+    logger.debug("Language resolved to default fallback")
     return default_lang
 
 
@@ -89,19 +87,19 @@ def _validate_language_code(lang_code: str) -> str | None:
     # Handle Portuguese variants (pt-BR → pt)
     if lang_code.startswith("pt"):
         if Language.objects.filter(code="pt").exists():
-            logger.debug(f"Fallback: {lang_code} → pt")
+            logger.debug("Language fallback applied: Portuguese variant to pt")
             return "pt"
 
     # Handle Spanish variants (es-ES → es)
     if lang_code.startswith("es"):
         if Language.objects.filter(code="es").exists():
-            logger.debug(f"Fallback: {lang_code} → es")
+            logger.debug("Language fallback applied: Spanish variant to es")
             return "es"
 
     # Handle English variants (en-US → en)
     if lang_code.startswith("en"):
         if Language.objects.filter(code="en").exists():
-            logger.debug(f"Fallback: {lang_code} → en")
+            logger.debug("Language fallback applied: English variant to en")
             return "en"
 
     # No fallback for completely invalid codes in validation
