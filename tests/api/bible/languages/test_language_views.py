@@ -34,20 +34,32 @@ class LanguageListViewTest(TestCase):
         response = self.client.get("/api/v1/bible/languages/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
+        response_data = response.json()
+
+        # Should be paginated response
+        self.assertIn("results", response_data)
+        self.assertIn("pagination", response_data)
+
+        data = response_data["results"]
 
         # Should return our test languages (may be fewer if some already exist)
         self.assertGreaterEqual(len(data), 1)
 
-        # Should find at least some of our test languages
-        language_codes = [item["code"] for item in data]
-        expected_codes = ["en", "pt", "pt-BR"]
-        found_codes = [code for code in expected_codes if code in language_codes]
-        self.assertGreaterEqual(len(found_codes), 1, "Should find at least one test language")
+        # Check that each item has the expected structure
+        if len(data) > 0:
+            first_item = data[0]
+            self.assertIn("code", first_item)
+            self.assertIn("name", first_item)
 
-        # Should be ordered by name (from serializer fields)
-        names = [item["name"] for item in data]
-        self.assertEqual(names, sorted(names))
+            # Should find at least some of our test languages
+            language_codes = [item["code"] for item in data]
+            expected_codes = ["en", "pt", "pt-BR"]
+            found_codes = [code for code in expected_codes if code in language_codes]
+            self.assertGreaterEqual(len(found_codes), 1, "Should find at least one test language")
+
+            # Should be ordered by name (from serializer fields)
+            names = [item["name"] for item in data]
+            self.assertEqual(names, sorted(names))
 
     def test_filter_languages_by_code(self):
         """Test filtering languages by code."""
@@ -55,15 +67,19 @@ class LanguageListViewTest(TestCase):
         response = self.client.get("/api/v1/bible/languages/?code=en")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
+        response_data = response.json()
+
+        # Should be paginated response
+        self.assertIn("results", response_data)
+        data = response_data["results"]
 
         # Should return only English language (if it exists)
         if len(data) > 0:
-            self.assertEqual(data[0]["code"], "en")
+            # All results should have code 'en'
+            for item in data:
+                self.assertEqual(item["code"], "en")
+            # First item should be English
             self.assertEqual(data[0]["name"], "English")
-        else:
-            # If no data, the filter worked correctly (no en language exists)
-            pass
 
     def test_filter_languages_empty_result(self):
         """Test filtering with non-existent language code."""
@@ -71,7 +87,11 @@ class LanguageListViewTest(TestCase):
         response = self.client.get("/api/v1/bible/languages/?code=nonexistent")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
+        response_data = response.json()
+
+        # Should be paginated response
+        self.assertIn("results", response_data)
+        data = response_data["results"]
 
         # Should return empty list
         self.assertEqual(len(data), 0)
