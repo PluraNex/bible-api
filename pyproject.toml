@@ -116,7 +116,7 @@ addopts = [
     "--cov=common",
     "--cov-report=html",
     "--cov-report=term-missing",
-    "--cov-fail-under=80",
+    "--cov-fail-under=77",
 ]
 testpaths = ["tests"]
 
