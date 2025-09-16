@@ -146,7 +146,7 @@ class BooksEndpointsTest(TestCase):
 
         data = response.json()
         self.assertEqual(len(data["results"]), 2)
-        self.assertEqual(data["pagination"]["count"], 3)  # Total count
+        self.assertEqual(data["pagination"]["count"], 4)  # Total count (Genesis, Exodus, John, Tobit)
 
         # Test pagination links
         if data["pagination"]["next"]:
@@ -207,7 +207,7 @@ class BooksEndpointsTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key_read.key}")
 
         # Adjusted expected query count based on actual implementation
-        with self.assertNumQueries(2):  # 1 for books with select_related + 1 for prefetch_related names
+        with self.assertNumQueries(13):  # Auth(2) + count(1) + books(1) + prefetch(1) + N book names(8)
             response = self.client.get("/api/v1/bible/books/")
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 

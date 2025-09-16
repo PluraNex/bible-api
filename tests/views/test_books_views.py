@@ -153,7 +153,7 @@ class BooksViewsTest(TestCase):
         self.assertEqual(response.data["chapters"], list(range(1, 51)))  # 50 chapters
 
         mock_get_book.assert_called_once_with("Genesis")
-        mock_display_name.assert_called_once_with(self.genesis)
+        mock_display_name.assert_called_once_with(self.genesis, "en")
 
     @patch("bible.books.views.get_canonical_book_by_name")
     def test_chapters_by_book_view_not_found(self, mock_get_book):

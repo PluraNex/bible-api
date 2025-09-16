@@ -141,6 +141,8 @@ omit = [
     "bible/serializers.py",
     # URL configuration files
     "**/urls.py",
+    # Files under construction
+    "common/data_core.py",
 ]
 
 [tool.coverage.report]

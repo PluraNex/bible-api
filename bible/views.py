@@ -59,6 +59,8 @@ class BibleOverviewAPIView(APIView):
 
 class ReadinessCheckView(APIView):
     """Readiness probe: checks DB and cache connectivity."""
+    authentication_classes = []
+    permission_classes = []
 
     @extend_schema(
         summary="Readiness check",
@@ -104,6 +106,8 @@ class ReadinessCheckView(APIView):
 
 class PrometheusMetricsView(APIView):
     """Very small placeholder Prometheus metrics endpoint (to be replaced by django-prometheus)."""
+    authentication_classes = []
+    permission_classes = []
 
     def get(self, request):
         # Minimal text exposition format; replace with real metrics collector in T-009

@@ -38,8 +38,8 @@ class VersionsApiTest(TestCase):
         resp = self.client.get(f"/api/v1/bible/versions/?language={self.en_lang.id}&is_active=true")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         items = resp.json().get("results", [])
-        # Since language is StringRelatedField, it returns the string representation of Language
-        self.assertTrue(all(v["language"] == str(self.en_lang) for v in items))
+        # Since language field returns language.code (CharField), expect the code
+        self.assertTrue(all(v["language"] == self.en_lang.code for v in items))
         self.assertTrue(all(v["is_active"] is True for v in items))
 
     def test_detail_and_404(self):
@@ -81,8 +81,8 @@ class VersionsApiTest(TestCase):
         resp = self.client.get(f"/api/v1/bible/versions/?language={self.en_lang.id}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         items = resp.json().get("results", [])
-        # Since language is StringRelatedField, it returns the string representation of Language
-        self.assertTrue(all(v["language"] == str(self.en_lang) for v in items))
+        # Since language field returns language.code (CharField), expect the code
+        self.assertTrue(all(v["language"] == self.en_lang.code for v in items))
 
     def test_is_active_various_formats(self):
         """is_active should accept various boolean formats."""
@@ -188,7 +188,7 @@ class VersionDefaultApiTest(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.json()
         self.assertEqual(data["language"], "pt-BR")
-        self.assertEqual(data["abbreviation"], "NVI-BR")
+        self.assertEqual(data["abbreviation"], "NVI")
 
     def test_regional_language_fallback_to_base(self):
         """Regional language should fallback to base when regional not found."""
@@ -223,14 +223,14 @@ class VersionDefaultApiTest(TestCase):
         self.assertEqual(data["code"], "version_not_found")
         self.assertIn("No active version found for language 'pt'", data["detail"])
 
-    def test_response_headers_no_vary(self):
-        """Response should not have Vary header since only lang query param is used."""
+    def test_response_headers_vary(self):
+        """Response should have appropriate Vary header."""
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
         resp = self.client.get("/api/v1/bible/versions/default/?lang=pt")
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        # No Vary header expected since we only use lang query param, not Accept-Language
-        self.assertNotIn("Vary", resp)
+        # Vary header is expected since response varies based on authorization
+        self.assertIn("Vary", resp)
 
     def test_ordering_consistency(self):
         """Should return same version consistently when multiple versions exist."""

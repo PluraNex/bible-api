@@ -19,6 +19,7 @@ class AuthStatusAPIView(APIView):
     """
     Authentication status endpoint.
     """
+    permission_classes = [AllowAny]
 
     @extend_schema(
         summary="Authentication Status",

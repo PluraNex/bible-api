@@ -48,6 +48,9 @@ class APIKey(models.Model):
 
     def has_scope(self, scope):
         """Check if API key has specific scope."""
+        # Check for wildcard scope first
+        if "*" in self.scopes:
+            return True
         return scope in self.scopes
 
     def update_last_used(self):

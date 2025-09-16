@@ -101,3 +101,14 @@ class TestLanguageSensitiveMixin(TestCase):
         # When no existing Vary header, should be just "Accept-Language"
         vary_header = response.get("Vary", "")
         self.assertIn("Accept-Language", vary_header)
+
+    def test_does_not_add_vary_header_with_lang_query_param(self):
+        """Test that mixin doesn't add Vary header when lang query param is present."""
+        request = self.factory.get("/test/?lang=en")
+        view = self.view_class.as_view()
+        response = view(request)
+
+        # When lang query param is present, should not add Vary: Accept-Language
+        vary_header = response.get("Vary", "")
+        # Should not contain Accept-Language (other headers like Accept may still be present)
+        self.assertNotIn("Accept-Language", vary_header)

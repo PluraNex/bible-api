@@ -44,10 +44,9 @@ class AuthViewsCoverageTest(TestCase):
     def test_developer_registration_valid_data(self):
         """Test developer registration with valid data."""
         registration_data = {
-            "first_name": "John",
-            "last_name": "Developer",
+            "name": "John Developer",
             "email": "john@example.com",
-            "organization": "Test Org",
+            "company": "Test Org",
         }
 
         response = self.client.post("/api/v1/auth/register/", registration_data)
@@ -56,14 +55,17 @@ class AuthViewsCoverageTest(TestCase):
         data = response.json()
         self.assertIn("api_key", data)
         self.assertIn("examples", data)
-        self.assertEqual(data["name"], "John")
+        self.assertEqual(data["name"], "John Developer")
         self.assertEqual(data["email"], "john@example.com")
 
     def test_developer_registration_invalid_data(self):
         """Test developer registration with invalid data to cover error path."""
-        invalid_data = {"first_name": "", "email": "invalid-email"}  # Invalid - required field  # Invalid email format
+        invalid_data = {"name": "", "email": "invalid-email"}  # Invalid - required field empty, invalid email format
 
         response = self.client.post("/api/v1/auth/register/", invalid_data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("errors", response.json())
+        # Response should contain validation errors directly, not wrapped in "errors"
+        data = response.json()
+        self.assertIn("name", data)
+        self.assertIn("email", data)

@@ -88,3 +88,43 @@ class APIKeyAuthenticationTest(TestCase):
         """Test authenticate_credentials with invalid key."""
         with self.assertRaises(AuthenticationFailed):
             self.auth.authenticate_credentials("invalid-key")
+
+    def test_authenticate_header_no_credentials(self):
+        """Test authentication with header but no credentials."""
+        request = self.factory.get("/test/", HTTP_AUTHORIZATION="Api-Key")
+        with self.assertRaises(AuthenticationFailed) as cm:
+            self.auth.authenticate(request)
+        self.assertIn("No credentials provided", str(cm.exception))
+
+    def test_authenticate_header_too_many_parts(self):
+        """Test authentication with too many parts in header."""
+        request = self.factory.get("/test/", HTTP_AUTHORIZATION="Api-Key part1 part2 part3")
+        with self.assertRaises(AuthenticationFailed) as cm:
+            self.auth.authenticate(request)
+        self.assertIn("should not contain spaces", str(cm.exception))
+
+    def test_authenticate_header_method(self):
+        """Test authenticate_header method returns correct value."""
+        request = self.factory.get("/test/")
+        result = self.auth.authenticate_header(request)
+        self.assertEqual(result, "Api-Key")
+
+    def test_authenticate_credentials_inactive_user(self):
+        """Test authenticate_credentials with inactive user."""
+        self.user.is_active = False
+        self.user.save()
+
+        with self.assertRaises(AuthenticationFailed) as cm:
+            self.auth.authenticate_credentials(self.api_key.key)
+        self.assertIn("inactive or deleted", str(cm.exception))
+
+    def test_authenticate_updates_last_used(self):
+        """Test that authentication updates last_used_at timestamp."""
+        original_last_used = self.api_key.last_used_at
+
+        request = self.factory.get("/test/", HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
+        self.auth.authenticate(request)
+
+        # Refresh from database
+        self.api_key.refresh_from_db()
+        self.assertNotEqual(self.api_key.last_used_at, original_last_used)

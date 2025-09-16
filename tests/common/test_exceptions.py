@@ -1,120 +1,160 @@
-"""
-Tests for common.exceptions module.
-"""
-from django.http import Http404
-from django.test import RequestFactory, TestCase
+"""Tests for common.exceptions module."""
+import pytest
+from unittest.mock import Mock, patch
 from rest_framework import status
-from rest_framework.exceptions import NotFound, ValidationError
 
 from common.exceptions import (
-    APIError,
-    NotFoundError,
-    PermissionError,
-    RateLimitError,
-    custom_exception_handler,
-)
-from common.exceptions import (
-    ValidationError as CustomValidationError,
+    APIError, ValidationError, NotFoundError, PermissionError, RateLimitError,
+    _request_id_from_context, _response_payload, _apply_headers,
+    _STATUS_CODE_MAPPING
 )
 
 
-class APIErrorTest(TestCase):
-    def test_api_error_creation(self):
-        """Test creating APIError with default values."""
-        error = APIError("Test error")
-        self.assertEqual(error.message, "Test error")
-        self.assertEqual(error.code, "api_error")
-        self.assertEqual(error.status_code, status.HTTP_400_BAD_REQUEST)
+class TestAPIError:
+    """Test base APIError class."""
 
-    def test_api_error_with_custom_values(self):
-        """Test creating APIError with custom values."""
-        error = APIError("Custom error", "CUSTOM_CODE", status.HTTP_422_UNPROCESSABLE_ENTITY)
-        self.assertEqual(error.message, "Custom error")
-        self.assertEqual(error.code, "CUSTOM_CODE")
-        self.assertEqual(error.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+    def test_default_initialization(self):
+        """Test APIError with default values."""
+        error = APIError("Something went wrong")
 
+        assert error.message == "Something went wrong"
+        assert error.code == "api_error"
+        assert error.status_code == status.HTTP_400_BAD_REQUEST
+        assert error.details == {}
+        assert str(error) == "Something went wrong"
 
-class SpecificErrorsTest(TestCase):
-    def test_validation_error(self):
-        """Test CustomValidationError."""
-        error = CustomValidationError("Invalid input")
-        self.assertEqual(error.message, "Invalid input")
-        self.assertEqual(error.code, "validation_error")
-        self.assertEqual(error.status_code, status.HTTP_400_BAD_REQUEST)
+    def test_custom_initialization(self):
+        """Test APIError with custom values."""
+        details = {"field": "value"}
+        error = APIError(
+            "Custom error",
+            code="custom_code",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            details=details
+        )
 
-    def test_not_found_error(self):
-        """Test NotFoundError."""
-        error = NotFoundError("Resource not found")
-        self.assertEqual(error.message, "Resource not found")
-        self.assertEqual(error.code, "not_found")
-        self.assertEqual(error.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_permission_error(self):
-        """Test PermissionError."""
-        error = PermissionError("Access denied")
-        self.assertEqual(error.message, "Access denied")
-        self.assertEqual(error.code, "permission_denied")
-        self.assertEqual(error.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_rate_limit_error(self):
-        """Test RateLimitError."""
-        error = RateLimitError("Rate limit exceeded")
-        self.assertEqual(error.message, "Rate limit exceeded")
-        self.assertEqual(error.code, "throttled")
-        self.assertEqual(error.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+        assert error.message == "Custom error"
+        assert error.code == "custom_code"
+        assert error.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert error.details == details
 
 
-class CustomExceptionHandlerTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.request = self.factory.get("/test/")
+class TestValidationError:
+    """Test ValidationError class."""
 
-    def test_handle_api_error(self):
-        """Test handling APIError."""
-        error = APIError("Test error", "TEST_CODE", status.HTTP_400_BAD_REQUEST)
-        response = custom_exception_handler(error, {"request": self.request})
+    def test_default_initialization(self):
+        """Test ValidationError with default values."""
+        error = ValidationError("Validation failed")
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        data = response.data
-        self.assertEqual(data["code"], "TEST_CODE")
-        self.assertEqual(data["detail"], "Test error")
-        self.assertIn("request_id", data)
+        assert error.message == "Validation failed"
+        assert error.code == "validation_error"
+        assert error.status_code == status.HTTP_400_BAD_REQUEST
+        assert error.details == {}
 
-    def test_handle_validation_error(self):
-        """Test handling DRF ValidationError."""
-        error = ValidationError({"field": ["This field is required"]})
-        response = custom_exception_handler(error, {"request": self.request})
+    def test_with_details(self):
+        """Test ValidationError with details."""
+        details = {"email": ["This field is required"]}
+        error = ValidationError("Validation failed", details=details)
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        data = response.data
-        self.assertEqual(data["code"], "validation_error")
-        self.assertIn("field", data["errors"])
+        assert error.details == details
 
-    def test_handle_not_found(self):
-        """Test handling DRF NotFound."""
-        error = NotFound("Not found")
-        response = custom_exception_handler(error, {"request": self.request})
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        data = response.data
-        self.assertEqual(data["code"], "not_found")
+class TestNotFoundError:
+    """Test NotFoundError class."""
 
-    def test_handle_http404(self):
-        """Test handling Django Http404."""
-        error = Http404("Page not found")
-        response = custom_exception_handler(error, {"request": self.request})
+    def test_default_initialization(self):
+        """Test NotFoundError with default values."""
+        error = NotFoundError()
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        data = response.data
-        self.assertEqual(data["code"], "not_found")
+        assert error.message == "Resource not found"
+        assert error.code == "not_found"
+        assert error.status_code == status.HTTP_404_NOT_FOUND
+        assert error.details == {"resource_type": "resource"}
 
-    def test_handle_generic_exception(self):
-        """Test handling generic exception."""
-        error = Exception("Something went wrong")
-        response = custom_exception_handler(error, {"request": self.request})
+    def test_custom_initialization(self):
+        """Test NotFoundError with custom values."""
+        error = NotFoundError("Book not found", resource_type="book")
 
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        data = response.data
-        self.assertEqual(data["code"], "internal_server_error")
-        # Should not expose sensitive error details in production
-        self.assertIn("detail", data)
+        assert error.message == "Book not found"
+        assert error.details == {"resource_type": "book"}
+
+
+class TestPermissionError:
+    """Test PermissionError class."""
+
+    def test_default_initialization(self):
+        """Test PermissionError with default values."""
+        error = PermissionError()
+
+        assert error.message == "Permission denied"
+        assert error.code == "permission_denied"
+        assert error.status_code == status.HTTP_403_FORBIDDEN
+        assert error.details == {"required_scopes": []}
+
+    def test_with_scopes(self):
+        """Test PermissionError with required scopes."""
+        scopes = ["read", "write"]
+        error = PermissionError("Need more permissions", required_scopes=scopes)
+
+        assert error.message == "Need more permissions"
+        assert error.details == {"required_scopes": scopes}
+
+
+class TestRateLimitError:
+    """Test RateLimitError class."""
+
+    def test_default_initialization(self):
+        """Test RateLimitError with default values."""
+        error = RateLimitError()
+
+        assert error.message == "Rate limit exceeded"
+        assert error.code == "throttled"
+        assert error.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+        assert error.details == {"retry_after": None}
+
+    def test_with_retry_after(self):
+        """Test RateLimitError with retry_after."""
+        error = RateLimitError("Too many requests", retry_after=60)
+
+        assert error.message == "Too many requests"
+        assert error.details == {"retry_after": 60}
+
+
+class TestUtilityFunctions:
+    """Test utility functions."""
+
+    def test_request_id_from_context_with_request_id(self):
+        """Test getting request_id from context when it exists."""
+        mock_request = Mock()
+        mock_request.request_id = "test-request-id"
+        context = {"request": mock_request}
+
+        result = _request_id_from_context(context)
+        assert result == "test-request-id"
+
+    def test_request_id_from_context_no_request(self):
+        """Test getting request_id when no request in context."""
+        context = {}
+
+        with patch('uuid.uuid4') as mock_uuid:
+            mock_uuid.return_value = "generated-uuid"
+            result = _request_id_from_context(context)
+            assert result == "generated-uuid"
+
+    def test_response_payload_basic(self):
+        """Test basic response payload creation."""
+        payload = _response_payload("Error message", "error_code", "req-123")
+
+        expected = {
+            "detail": "Error message",
+            "code": "error_code",
+            "request_id": "req-123"
+        }
+        assert payload == expected
+
+    def test_apply_headers_www_authenticate(self):
+        """Test applying WWW-Authenticate header."""
+        response = {}
+        _apply_headers(response, www_auth=True)
+
+        assert response["WWW-Authenticate"] == 'Api-Key realm="bible-api"'

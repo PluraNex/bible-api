@@ -29,7 +29,7 @@ class VersionSerializerTest(TestCase):
         self.assertEqual(data["name"], "King James Version")
         self.assertEqual(data["code"], "EN_KJV")
         self.assertEqual(data["abbreviation"], "KJV")  # Property field
-        self.assertEqual(data["language"], "English (United States) (en-US)")
+        self.assertEqual(data["language"], "en-US")
         self.assertEqual(data["description"], "Classic English translation")
         self.assertTrue(data["is_active"])
 
