@@ -1,45 +1,68 @@
-"""
-CrossReference model for Bible API.
-"""
 from django.db import models
 from django.db.models import F, Q
 
-from .verses import Verse
+# A referência agora é para o livro canônico, não para um verso específico de uma versão
+from .books import CanonicalBook
 
 
 class CrossReference(models.Model):
     """
-    Represents a cross-reference between two verses.
-    Directional by default (from_verse -> to_verse), with optional relationship_type and source.
+    Relação canônica e agnóstica à versão entre um trecho bíblico e outro.
     """
 
-    REL_TYPES = (
-        ("parallel", "Parallel"),
-        ("prophecy", "Prophecy"),
-        ("quote", "Quote"),
-        ("theme", "Theme Related"),
-        ("other", "Other"),
-    )
+    # De
+    from_book = models.ForeignKey(CanonicalBook, on_delete=models.CASCADE, related_name="x_from")
+    from_chapter = models.PositiveIntegerField()
+    from_verse = models.PositiveIntegerField()
 
-    from_verse = models.ForeignKey(Verse, on_delete=models.CASCADE, related_name="crossrefs_from")
-    to_verse = models.ForeignKey(Verse, on_delete=models.CASCADE, related_name="crossrefs_to")
-    relationship_type = models.CharField(max_length=20, choices=REL_TYPES, default="other")
-    source = models.CharField(max_length=50, default="manual")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # Para (com suporte a intervalo de versículos)
+    to_book = models.ForeignKey(CanonicalBook, on_delete=models.CASCADE, related_name="x_to")
+    to_chapter = models.PositiveIntegerField()
+    to_verse_start = models.PositiveIntegerField()
+    to_verse_end = models.PositiveIntegerField()
+
+    # Metadados da referência
+    source = models.CharField(max_length=120, blank=True, default="", help_text="Ex: TSK, OpenBible")
+    votes = models.PositiveIntegerField(default=0, help_text="Relevância da referência, se aplicável")
+
+    # Campos adicionais do blueprint para futuras implementações
+    confidence = models.FloatField(default=1.0, help_text="Confiança na referência (0.0 a 1.0)")
+    explanation = models.TextField(blank=True, default="", help_text="Nota explicativa sobre a referência")
 
     class Meta:
         db_table = "cross_references"
-        ordering = ["from_verse_id", "to_verse_id"]
+        ordering = ["from_book", "from_chapter", "from_verse"]
         indexes = [
-            models.Index(fields=["from_verse"]),
-            models.Index(fields=["to_verse"]),
-            models.Index(fields=["relationship_type"]),
+            models.Index(fields=["from_book", "from_chapter", "from_verse"], name="cr_from_idx"),
+            models.Index(fields=["to_book", "to_chapter", "to_verse_start"], name="cr_to_idx"),
         ]
         constraints = [
-            models.UniqueConstraint(fields=["from_verse", "to_verse", "source"], name="crossref_unique_from_to_source"),
-            models.CheckConstraint(check=~Q(from_verse=F("to_verse")), name="crossref_no_self_reference"),
+            # Garante que uma referência de uma fonte específica seja única
+            models.UniqueConstraint(
+                fields=[
+                    "from_book",
+                    "from_chapter",
+                    "from_verse",
+                    "to_book",
+                    "to_chapter",
+                    "to_verse_start",
+                    "to_verse_end",
+                    "source",
+                ],
+                name="uniq_crossref_full",
+            ),
+            # Garante que o intervalo de versículos de destino seja válido
+            models.CheckConstraint(check=Q(to_verse_end__gte=F("to_verse_start")), name="cr_to_end_gte_start"),
+            # Garante que a confiança esteja no intervalo correto
+            models.CheckConstraint(check=Q(confidence__gte=0.0) & Q(confidence__lte=1.0), name="cr_confidence_0_1"),
         ]
 
     def __str__(self):
-        return f"{self.from_verse_id} -> {self.to_verse_id} ({self.relationship_type})"
+        to_range = f"{self.to_verse_start}"
+        if self.to_verse_end > self.to_verse_start:
+            to_range += f"-{self.to_verse_end}"
+
+        return (
+            f"{self.from_book.osis_code} {self.from_chapter}:{self.from_verse} → "
+            f"{self.to_book.osis_code} {self.to_chapter}:{to_range}"
+        )

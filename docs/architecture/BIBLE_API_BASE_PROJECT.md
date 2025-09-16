@@ -694,7 +694,8 @@ class BookName(models.Model):
             ),
         ]
         indexes = [
-            models.Index(fields=["canonical_book", "language"], name="bookname_book_lang_idx"),
+            models.Index(fields=["canonical_book", "
+            language"], name="bookname_book_lang_idx"),
         ]
 
     def __str__(self):

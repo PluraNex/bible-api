@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from bible.models import APIKey, Book, Theme, Verse, VerseTheme, Version
+from bible.models import APIKey, Book, BookName, CanonicalBook, Language, Testament, Theme, Verse, VerseTheme, Version
 
 
 class VersesApiTest(TestCase):
@@ -15,13 +15,31 @@ class VersesApiTest(TestCase):
         self.user = User.objects.create_user(username="verses_user")
         self.api_key = APIKey.objects.create(name="Verses Key", user=self.user, scopes=["read"])
 
-        self.book = Book.objects.create(name="John", abbreviation="Joh", order=43, testament="NEW", chapter_count=21)
-        self.version = Version.objects.create(name="King James Version", abbreviation="KJV", language="en")
+        # Create blueprint structure
+        self.new_testament = Testament.objects.create(name="New Testament")
+        self.english = Language.objects.create(name="English", code="en")
+
+        # Create canonical book
+        self.john_canonical = CanonicalBook.objects.create(
+            osis_code="John", canonical_order=43, testament=self.new_testament, chapter_count=21
+        )
+
+        # Create English name
+        BookName.objects.create(
+            canonical_book=self.john_canonical, language=self.english, name="John", abbreviation="Joh"
+        )
+
+        # Use proxy model for backward compatibility
+        self.book = Book.objects.get(id=self.john_canonical.id)
+
+        # Create version with blueprint structure
+        self.version = Version.objects.create(name="King James Version", code="EN_KJV", language=self.english)
+
         self.v1 = Verse.objects.create(
-            book=self.book, version=self.version, chapter=3, number=16, text="For God so loved..."
+            book=self.john_canonical, version=self.version, chapter=3, number=16, text="For God so loved..."
         )
         self.v2 = Verse.objects.create(
-            book=self.book, version=self.version, chapter=3, number=17, text="For God sent not..."
+            book=self.john_canonical, version=self.version, chapter=3, number=17, text="For God sent not..."
         )
 
     def test_requires_auth(self):

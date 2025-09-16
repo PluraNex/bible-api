@@ -1,42 +1,18 @@
 """
-Verse and Version models.
+Verse models following complete blueprint architecture.
 """
 from django.db import models
 
-from .books import Book
-
-
-class Version(models.Model):
-    """
-    Bible version/translation.
-    """
-
-    name = models.CharField(max_length=100)
-    abbreviation = models.CharField(max_length=10, unique=True)
-    language = models.CharField(max_length=10, default="en")
-    description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ["name"]
-        db_table = "versions"
-        indexes = [
-            models.Index(fields=["language", "is_active"]),
-            models.Index(fields=["abbreviation"]),
-        ]
-
-    def __str__(self):
-        return f"{self.name} ({self.abbreviation})"
+from .books import CanonicalBook
+from .versions import Version
 
 
 class Verse(models.Model):
     """
-    Individual verse content.
+    Individual verse content with canonical book reference.
     """
 
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="verses")
+    book = models.ForeignKey(CanonicalBook, on_delete=models.CASCADE, related_name="verses")
     version = models.ForeignKey(Version, on_delete=models.CASCADE, related_name="verses")
     chapter = models.PositiveIntegerField()
     number = models.PositiveIntegerField()
@@ -46,7 +22,7 @@ class Verse(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["book__order", "chapter", "number"]
+        ordering = ["book__canonical_order", "chapter", "number"]
         unique_together = ["book", "version", "chapter", "number"]
         db_table = "verses"
         indexes = [
@@ -55,9 +31,15 @@ class Verse(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.book.abbreviation} {self.chapter}:{self.number} ({self.version.abbreviation})"
+        return f"{self.book.osis_code} {self.chapter}:{self.number} ({self.version.abbreviation})"
 
     @property
     def reference(self):
-        """Human-readable verse reference."""
-        return f"{self.book.name} {self.chapter}:{self.number}"
+        """Human-readable verse reference using version's language."""
+        book_name = self.book.names.filter(language=self.version.language, version=self.version).first()
+
+        if not book_name:
+            book_name = self.book.names.filter(language=self.version.language, version__isnull=True).first()
+
+        display_name = book_name.name if book_name else self.book.osis_code
+        return f"{display_name} {self.chapter}:{self.number}"

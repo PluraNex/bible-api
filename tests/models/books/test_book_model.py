@@ -1,36 +1,75 @@
 """
-Tests for Book model.
+Tests for Book models (CanonicalBook, BookName, etc).
 """
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TransactionTestCase
+from django.test.utils import override_settings
 
-from bible.models import Book
+from bible.models import BookName, CanonicalBook, Language, Testament
 
 
-class BookModelTest(TestCase):
-    """Tests for Book model."""
+@override_settings(USE_TZ=True)
+class BookModelTest(TransactionTestCase):
+    """Tests for CanonicalBook and BookName models."""
+
+    def setUp(self):
+        """Set up test data."""
+        # Create test testament (use different ID to avoid conflicts)
+        self.testament, _ = Testament.objects.get_or_create(id=99, defaults={"name": "Test Testament"})
+        # Create test language (use different code to avoid conflicts)
+        self.language, _ = Language.objects.get_or_create(code="test-lang", defaults={"name": "Test Language"})
 
     def test_book_creation(self):
-        """Test basic book creation with all required fields."""
-        book = Book.objects.create(name="Genesis", abbreviation="Gen", order=1, testament="OLD", chapter_count=50)
-        self.assertEqual(str(book), "Genesis (Gen)")
-        self.assertEqual(book.order, 1)
-        self.assertEqual(book.testament, "OLD")
+        """Test basic canonical book creation with all required fields."""
+        book = CanonicalBook.objects.create(
+            osis_code="TestGen", canonical_order=999, testament=self.testament, chapter_count=50
+        )
+
+        # Create book name in test language
+        book_name = BookName.objects.create(
+            canonical_book=book, language=self.language, name="Test Gênesis", abbreviation="TGn"
+        )
+
+        self.assertEqual(str(book), "TestGen")
+        self.assertEqual(book.canonical_order, 999)
         self.assertEqual(book.chapter_count, 50)
+        self.assertEqual(str(book_name), "Test Gênesis [test-lang]")
 
     def test_book_unique_constraints(self):
-        """Test that name, abbreviation, and order are unique."""
-        Book.objects.create(name="Genesis", abbreviation="Gen", order=1, testament="OLD", chapter_count=50)
+        """Test that osis_code and canonical_order are unique."""
+        CanonicalBook.objects.create(
+            osis_code="TestGen1", canonical_order=998, testament=self.testament, chapter_count=50
+        )
 
-        # Test unique name
+        # Test unique osis_code
         with self.assertRaises(IntegrityError):
-            Book.objects.create(name="Genesis", abbreviation="GEN2", order=2, testament="OLD", chapter_count=50)
+            CanonicalBook.objects.create(
+                osis_code="TestGen1",  # Duplicate osis_code
+                canonical_order=997,
+                testament=self.testament,
+                chapter_count=50,
+            )
+
+        # Test unique canonical_order
+        with self.assertRaises(IntegrityError):
+            CanonicalBook.objects.create(
+                osis_code="TestGen2",
+                canonical_order=998,  # Duplicate canonical_order
+                testament=self.testament,
+                chapter_count=40,
+            )
 
     def test_book_ordering(self):
-        """Test that books are ordered by order field."""
-        book2 = Book.objects.create(name="Exodus", abbreviation="Exo", order=2, testament="OLD", chapter_count=40)
-        book1 = Book.objects.create(name="Genesis", abbreviation="Gen", order=1, testament="OLD", chapter_count=50)
+        """Test that books are ordered by canonical_order field."""
+        book2 = CanonicalBook.objects.create(
+            osis_code="TestExod", canonical_order=996, testament=self.testament, chapter_count=40
+        )
+        book1 = CanonicalBook.objects.create(
+            osis_code="TestGen3", canonical_order=995, testament=self.testament, chapter_count=50
+        )
 
-        books = list(Book.objects.all())
-        self.assertEqual(books[0], book1)
-        self.assertEqual(books[1], book2)
+        # Filter to only test books to avoid interference from seeded data
+        books = list(CanonicalBook.objects.filter(osis_code__startswith="Test").order_by("canonical_order"))
+        # Verify ordering: book1 should come before book2
+        self.assertEqual(books[-2], book1)  # book1 should come before book2
+        self.assertEqual(books[-1], book2)

@@ -1,0 +1,2620 @@
+openapi: 3.0.3
+info:
+  title: Bible API
+  version: 1.0.0
+  description: A comprehensive RESTful Bible API with AI integration
+paths:
+  /api/v1/ai/agents/:
+    get:
+      operationId: ai_agents_list
+      description: List available AI agents.
+      summary: List AI agents
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - ai
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agents:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              description:
+                                type: string
+                              enabled:
+                                type: boolean
+                              status:
+                                type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/ai/agents/{name}/runs/:
+    post:
+      operationId: ai_agents_runs_create
+      description: Create a new agent run (skeleton).
+      summary: Create agent run
+      parameters:
+      - in: path
+        name: name
+        schema:
+          type: string
+        required: true
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRunCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentRunCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentRunCreateRequest'
+        required: true
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
+          description: ''
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent:
+                    type: string
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/ai/runs/{run_id}/:
+    get:
+      operationId: ai_runs_retrieve
+      description: Get details of an agent run (skeleton).
+      summary: Get agent run details
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ai
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
+          description: ''
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: integer
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/ai/runs/{run_id}/approve/:
+    post:
+      operationId: ai_runs_approve_create
+      description: Approve an agent run.
+      summary: Approve agent run
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRunApproveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentRunApproveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentRunApproveRequest'
+        required: true
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
+          description: ''
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: integer
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/ai/runs/{run_id}/cancel/:
+    delete:
+      operationId: ai_runs_cancel_destroy
+      description: Cancel an agent run.
+      summary: Cancel agent run
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ai
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
+          description: ''
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: integer
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/ai/tools/:
+    get:
+      operationId: ai_tools_list
+      description: List available AI tools.
+      summary: List AI tools
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - ai
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tools:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              description:
+                                type: string
+                              requires_approval:
+                                type: boolean
+                              status:
+                                type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/ai/tools/{tool}/test/:
+    post:
+      operationId: ai_tools_test_create
+      description: Test an AI tool (skeleton).
+      summary: Test an AI tool
+      parameters:
+      - in: path
+        name: tool
+        schema:
+          type: string
+        required: true
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolTestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ToolTestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ToolTestRequest'
+        required: true
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolTestResponse'
+          description: ''
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tool:
+                    type: string
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: "\n        Register as a developer and receive an API key for accessing\
+        \ the Bible API.\n\n        **What you'll get:**\n        - Instant API key\
+        \ generation\n        - 1,000 requests/hour rate limit\n        - Read access\
+        \ to all endpoints\n        - Complete documentation and examples\n\n    \
+        \    **Perfect for:**\n        - Mobile app developers\n        - Web developers\n\
+        \        - Scripture study applications\n        - Educational projects\n\
+        \        "
+      summary: Register for API Access
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeveloperRegistration'
+            examples:
+              BasicRegistration:
+                value:
+                  name: João Silva
+                  email: joao@exemplo.com
+                summary: Basic Registration
+              CompleteRegistration:
+                value:
+                  name: Maria Santos
+                  email: maria@startup.com
+                  company: BibliaApp LTDA
+                  description: Aplicativo mobile de estudos bíblicos para jovens
+                  website: https://bibliaapp.com
+                summary: Complete Registration
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeveloperRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeveloperRegistration'
+        required: true
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKeyResponse'
+              examples:
+                BasicRegistration:
+                  value:
+                    name: João Silva
+                    email: joao@exemplo.com
+                  summary: Basic Registration
+                CompleteRegistration:
+                  value:
+                    name: Maria Santos
+                    email: maria@startup.com
+                    company: BibliaApp LTDA
+                    description: Aplicativo mobile de estudos bíblicos para jovens
+                    website: https://bibliaapp.com
+                  summary: Complete Registration
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/auth/status/:
+    get:
+      operationId: auth_status_retrieve
+      description: Check current authentication status
+      summary: Authentication Status
+      tags:
+      - auth
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated:
+                    type: boolean
+                  user:
+                    type: string
+                  api_key_status:
+                    type: string
+          description: ''
+  /api/v1/bible/books/:
+    get:
+      operationId: bible_books_list
+      summary: List books
+      parameters:
+      - in: query
+        name: is_deuterocanonical
+        schema:
+          type: string
+        description: Filter by deuterocanonical books
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: 'Order results by: canonical_order, chapter_count'
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in book names and abbreviations
+      - in: query
+        name: testament
+        schema:
+          type: string
+        description: Filter by testament ID
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/{book_name}/chapters/:
+    get:
+      operationId: bible_books_chapters_retrieve
+      summary: List chapters by book
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  book:
+                    type: string
+                  chapters:
+                    type: array
+                    items:
+                      type: integer
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/{book_name}/context/:
+    get:
+      operationId: bible_books_context_retrieve
+      summary: Get book context
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  book:
+                    type: string
+                  context:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/{book_name}/info/:
+    get:
+      operationId: bible_books_info_retrieve
+      summary: Get book info
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/{book_name}/outline/:
+    get:
+      operationId: bible_books_outline_retrieve
+      summary: Get book outline
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  book:
+                    type: string
+                  outline:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/{book_name}/statistics/:
+    get:
+      operationId: bible_books_statistics_retrieve
+      summary: Get book statistics
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  book:
+                    type: string
+                  statistics:
+                    type: object
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/{book_name}/structure/:
+    get:
+      operationId: bible_books_structure_retrieve
+      summary: Get book structure
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  book:
+                    type: string
+                  structure:
+                    type: string
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/by-author/{author_name}/:
+    get:
+      operationId: bible_books_by_author_list
+      summary: List books by author
+      parameters:
+      - in: path
+        name: author_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/books/by-testament/{testament_id}/:
+    get:
+      operationId: bible_books_by_testament_list
+      summary: List books by testament
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: testament_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - books
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/cross-references/by-theme/{theme_id}/:
+    get:
+      operationId: bible_cross_references_by_theme_list
+      description: GET /api/v1/bible/cross-references/by-theme/<theme_id>/
+      summary: List cross-references by theme
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: theme_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - cross-references
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCrossReferenceList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/cross-references/verse/{verse_id}/:
+    get:
+      operationId: bible_cross_references_verse_list
+      summary: List cross-references for a verse
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: verse_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - cross-references
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCrossReferenceList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/overview/:
+    get:
+      operationId: bible_overview_retrieve
+      description: Get basic information about the Bible API
+      summary: Bible API Overview
+      tags:
+      - bible
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_name:
+                    type: string
+                  version:
+                    type: string
+                  description:
+                    type: string
+                  endpoints:
+                    type: object
+                    properties:
+                      books:
+                        type: string
+                      verses:
+                        type: string
+                      auth:
+                        type: string
+          description: ''
+  /api/v1/bible/themes/:
+    get:
+      operationId: bible_themes_list
+      summary: List themes
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - themes
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedThemeList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/themes/{id}/detail/:
+    get:
+      operationId: bible_themes_detail_retrieve
+      summary: Get theme detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - themes
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/verses/{id}/:
+    get:
+      operationId: bible_verses_retrieve
+      summary: Get verse by id
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - verses
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/verses/by-chapter/{book_name}/{chapter}/:
+    get:
+      operationId: bible_verses_by_chapter_list
+      summary: List verses by chapter
+      parameters:
+      - in: path
+        name: book_name
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: chapter
+        schema:
+          type: integer
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in verse text
+      - in: query
+        name: version
+        schema:
+          type: string
+        description: Filter by version ID
+      tags:
+      - verses
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVerseList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/verses/by-theme/{theme_id}/:
+    get:
+      operationId: bible_verses_by_theme_list
+      description: GET /api/v1/bible/verses/by-theme/<theme_id>/
+      summary: List verses by theme
+      parameters:
+      - in: query
+        name: book
+        schema:
+          type: string
+        description: Filter by book ID
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in verse text
+      - in: path
+        name: theme_id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: version
+        schema:
+          type: string
+        description: Filter by version ID
+      tags:
+      - verses
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVerseList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/versions/:
+    get:
+      operationId: bible_versions_list
+      summary: List Bible versions
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - versions
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVersionList'
+              examples:
+                ListVersions:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - count: 2
+                      next: null
+                      previous: null
+                      results:
+                      - id: 1
+                        name: King James Version
+                        abbreviation: KJV
+                        language: en
+                        description: Classic English translation
+                        is_active: true
+                      - id: 2
+                        name: Nova Versão Internacional
+                        abbreviation: NVI
+                        language: pt
+                        description: Tradução em português
+                        is_active: true
+                  summary: List versions
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/v1/bible/versions/{abbreviation}/:
+    get:
+      operationId: bible_versions_retrieve
+      summary: Get version by abbreviation
+      parameters:
+      - in: path
+        name: abbreviation
+        schema:
+          type: string
+        required: true
+      tags:
+      - versions
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+              examples:
+                VersionDetail:
+                  value:
+                    id: 1
+                    name: King James Version
+                    abbreviation: KJV
+                    language: en
+                    description: Classic English translation
+                    is_active: true
+                  summary: Version detail
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+components:
+  schemas:
+    APIKeyResponse:
+      type: object
+      description: Serializer for API key response.
+      properties:
+        api_key:
+          type: string
+          description: Your API key - keep this secure!
+        name:
+          type: string
+          description: Developer name
+        email:
+          type: string
+          format: email
+          description: Developer email
+        rate_limit:
+          type: integer
+          description: Requests per hour limit
+        scopes:
+          type: array
+          items:
+            type: string
+          description: 'Available scopes: read, write, ai, audio'
+        created_at:
+          type: string
+          format: date-time
+          description: API key creation date
+        documentation_url:
+          type: string
+          format: uri
+          description: Link to API documentation
+        examples:
+          type: object
+          additionalProperties: {}
+          description: Quick start examples
+      required:
+      - api_key
+      - created_at
+      - documentation_url
+      - email
+      - examples
+      - name
+      - rate_limit
+      - scopes
+    AgentRunApproveRequest:
+      type: object
+      description: Serializer for approving an AI agent run.
+      properties:
+        run_id:
+          type: integer
+          description: ID of the agent run to approve.
+        note:
+          type: string
+          description: Optional note for approval.
+      required:
+      - run_id
+    AgentRunCreateRequest:
+      type: object
+      description: Serializer for creating an AI agent run.
+      properties:
+        agent:
+          type: string
+          description: Name of the agent to run.
+        input_payload:
+          type: object
+          additionalProperties: {}
+          description: Input data for the agent run.
+      required:
+      - agent
+      - input_payload
+    AgentRunResponse:
+      type: object
+      description: Serializer for AI agent run details and responses.
+      properties:
+        agent:
+          type: string
+        run_id:
+          type: integer
+        status:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - status
+    Book:
+      type: object
+      description: Serializer for canonical books with backward compatibility.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Get default name from BookName.
+          readOnly: true
+        abbreviation:
+          type: string
+          description: Get default abbreviation from BookName.
+          readOnly: true
+        order:
+          type: integer
+        testament:
+          type: string
+        chapter_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - abbreviation
+      - chapter_count
+      - id
+      - name
+      - order
+      - testament
+    CrossReference:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        from_book:
+          type: integer
+        from_book_name:
+          type: string
+          readOnly: true
+        from_book_code:
+          type: string
+          readOnly: true
+        from_chapter:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        from_verse:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        to_book:
+          type: integer
+        to_book_name:
+          type: string
+          readOnly: true
+        to_book_code:
+          type: string
+          readOnly: true
+        to_chapter:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        to_verse_start:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        to_verse_end:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        source:
+          type: string
+          nullable: true
+          description: 'Ex: TSK, OpenBible'
+          maxLength: 120
+        votes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Relevância da referência, se aplicável
+        confidence:
+          type: number
+          format: double
+          description: Confiança na referência (0.0 a 1.0)
+        explanation:
+          type: string
+          nullable: true
+          description: Nota explicativa sobre a referência
+      required:
+      - from_book
+      - from_book_code
+      - from_book_name
+      - from_chapter
+      - from_verse
+      - id
+      - to_book
+      - to_book_code
+      - to_book_name
+      - to_chapter
+      - to_verse_end
+      - to_verse_start
+    DeveloperRegistration:
+      type: object
+      description: Serializer for developer registration and API key generation.
+      properties:
+        name:
+          type: string
+          description: Full name of the developer
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          description: Developer's email address
+        company:
+          type: string
+          description: Company or organization name
+          maxLength: 100
+        description:
+          type: string
+          description: Brief description of how you plan to use the API
+          maxLength: 500
+        website:
+          type: string
+          format: uri
+          description: Your website or app URL
+      required:
+      - email
+      - name
+    ErrorResponse:
+      type: object
+      description: Standard error response format for all API endpoints.
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message describing what went wrong
+        code:
+          type: string
+          description: Machine-readable error code for programmatic handling
+        request_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this request, useful for debugging and
+            support
+        errors:
+          type: object
+          additionalProperties: {}
+          description: Additional error details, typically validation errors with
+            field-specific messages
+      required:
+      - code
+      - detail
+      - request_id
+    PaginatedBookList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
+    PaginatedCrossReferenceList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrossReference'
+    PaginatedThemeList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Theme'
+    PaginatedVerseList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Verse'
+    PaginatedVersionList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Version'
+    Theme:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+      required:
+      - id
+      - name
+    ToolTestRequest:
+      type: object
+      description: Serializer for testing an AI tool.
+      properties:
+        tool:
+          type: string
+          description: Name of the tool to test.
+        params:
+          type: object
+          additionalProperties: {}
+          description: Parameters for the tool.
+      required:
+      - tool
+    ToolTestResponse:
+      type: object
+      description: Serializer for AI tool test response.
+      properties:
+        tool:
+          type: string
+        status:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - status
+      - tool
+    Verse:
+      type: object
+      description: Verse serializer with enhanced blueprint support.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        book:
+          type: integer
+        book_osis:
+          type: string
+          readOnly: true
+        book_name:
+          type: string
+          description: Get localized book name based on version language.
+          readOnly: true
+        version:
+          type: integer
+        version_code:
+          type: string
+          readOnly: true
+        chapter:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        text:
+          type: string
+        reference:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - book
+      - book_name
+      - book_osis
+      - chapter
+      - created_at
+      - id
+      - number
+      - reference
+      - text
+      - updated_at
+      - version
+      - version_code
+    Version:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 40
+        abbreviation:
+          type: string
+          readOnly: true
+        language:
+          type: string
+          readOnly: true
+        description:
+          type: string
+        is_active:
+          type: boolean
+      required:
+      - abbreviation
+      - id
+      - language
+      - name
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'API Key authentication. Format: Api-Key your_api_key_here'

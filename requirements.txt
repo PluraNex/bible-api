@@ -1,6 +1,7 @@
 Django==4.2.7
 djangorestframework==3.14.0
 drf-spectacular==0.26.5
+django-filter==23.3
 psycopg2-binary==2.9.9
 redis==4.6.0
 django-redis==5.4.0
@@ -8,3 +9,10 @@ django-cors-headers==4.3.1
 python-decouple==3.8
 dj-database-url==2.1.0
 Pillow==10.1.0
+firecrawl-py
+requests==2.31.0
+beautifulsoup4==4.12.2
+pgvector==0.2.5
+openai>=1.30.0
+numpy>=1.26.0
+django-prometheus==2.3.1

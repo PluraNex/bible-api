@@ -30,11 +30,11 @@ class AiRoutesTest(TestCase):
 
         agents_resp = self.client.get("/api/v1/ai/agents/")
         self.assertEqual(agents_resp.status_code, status.HTTP_200_OK)
-        self.assertIn("agents", agents_resp.json())
+        self.assertIn("results", agents_resp.json())
 
         tools_resp = self.client.get("/api/v1/ai/tools/")
         self.assertEqual(tools_resp.status_code, status.HTTP_200_OK)
-        self.assertIn("tools", tools_resp.json())
+        self.assertIn("results", tools_resp.json())
 
     def test_tool_test_returns_501(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
