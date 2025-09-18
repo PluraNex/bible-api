@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.test import RequestFactory, TestCase
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.request import Request
@@ -261,6 +262,24 @@ class CrossRefsViewsTest(TestCase):
         self.assertFalse(hasattr(view, "post"))
         self.assertFalse(hasattr(view, "put"))
         self.assertFalse(hasattr(view, "delete"))
+
+    def test_crossrefs_by_verse_view_vary_header(self):
+        """Ensure cache varies by Accept-Language header."""
+        cache.clear()
+        view = CrossReferencesByVerseView()
+        django_request = self.api_factory.get(
+            "/api/v1/bible/cross-references/for/?ref=Gen 1:1",
+            HTTP_ACCEPT_LANGUAGE="pt",
+        )
+        request = Request(django_request)
+        request.lang_code = "pt"
+        view.request = request
+        view.format_kwarg = None
+
+        response = view.get(request)
+
+        vary_header = response.get("Vary", "")
+        self.assertIn("Accept-Language", vary_header)
 
     def test_crossrefs_by_theme_view_methods(self):
         """Test CrossReferencesByThemeView only allows GET method."""

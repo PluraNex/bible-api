@@ -2,6 +2,7 @@
 from django.db.models import Avg, Count, Exists, Max, Min, OuterRef
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import generics
 from rest_framework.exceptions import NotFound, ValidationError
@@ -108,6 +109,7 @@ class ReferenceResolutionMixin:
         return self._resolved_reference_cache
 
 
+@method_decorator(vary_on_headers("Accept-Language"), name="get")
 @method_decorator(cache_page(60), name="get")
 class CrossReferencesByVerseView(CrossReferenceFiltersMixin, ReferenceResolutionMixin, generics.ListAPIView):
     serializer_class = CrossReferenceSerializer
