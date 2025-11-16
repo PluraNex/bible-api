@@ -10,7 +10,6 @@ from rest_framework.test import APIClient
 
 from bible.models import APIKey, BookName, CanonicalBook, Language, Testament, Version
 
-
 # ========================================
 # Database Setup
 # ========================================

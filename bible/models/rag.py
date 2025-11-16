@@ -1,7 +1,7 @@
 """RAG-related models: verse embeddings storage."""
-from django.db import models
-from django.contrib.postgres.fields import ArrayField
 import pgvector.django
+from django.contrib.postgres.fields import ArrayField
+from django.db import models
 
 from .verses import Verse
 

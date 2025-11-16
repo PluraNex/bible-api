@@ -9,6 +9,7 @@ Tests helper functions from bible.ai.retrieval module:
 Following best practices §2: Unit tests for isolated logic.
 """
 import pytest
+
 from bible.ai import retrieval
 
 
@@ -20,7 +21,7 @@ class TestVectorArraySQL:
         """Testa conversão válida de vetor Python para formato SQL ARRAY."""
         vec = [0.1, 0.2, 0.3]
         result = retrieval._vector_array_sql(vec, 3)
-        
+
         assert "ARRAY[" in result
         assert "0.1" in result
         assert "0.2" in result
@@ -41,7 +42,7 @@ class TestVectorArraySQL:
         """Testa que vetor maior que dimensão esperada é truncado."""
         vec = [0.1, 0.2, 0.3, 0.4, 0.5]
         result = retrieval._vector_array_sql(vec, 3)
-        
+
         # Deve truncar para 3 elementos (2 vírgulas)
         assert result.count(",") == 2
         assert "0.1" in result
@@ -53,7 +54,7 @@ class TestVectorArraySQL:
         """Testa que lida corretamente com precisão de floats."""
         vec = [0.123456789, 0.987654321]
         result = retrieval._vector_array_sql(vec, 2)
-        
+
         # Python trunca floats para precisão padrão
         assert "0.1234" in result
         assert "0.9876" in result
@@ -135,12 +136,12 @@ class TestCosineSimilarity:
         """Testa com vetores de alta dimensionalidade (simula embeddings)."""
         import random
         random.seed(42)
-        
+
         # Simular embeddings de 1536 dimensões
         a = [random.random() for _ in range(1536)]
         b = [random.random() for _ in range(1536)]
-        
+
         similarity = retrieval._cosine(a, b)
-        
+
         # Deve estar entre -1 e 1
         assert -1.0 <= similarity <= 1.0

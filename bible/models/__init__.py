@@ -5,7 +5,7 @@ from .auth import APIKey
 from .books import Book, BookName, CanonicalBook, Language, License, Testament
 from .comments import Author, CommentaryEntry, CommentarySource, VerseComment
 from .crossrefs import CrossReference
-from .rag import VerseEmbedding, UnifiedVerseEmbedding, UnifiedThemeEmbedding
+from .rag import UnifiedThemeEmbedding, UnifiedVerseEmbedding, VerseEmbedding
 from .themes import Theme, VerseTheme
 from .verses import Verse
 from .versions import Version

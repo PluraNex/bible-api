@@ -12,14 +12,13 @@ Data: 2025-09-21
 Baseline Evidence: docs/research/BASELINE_EVIDENCE_REPORT.md
 """
 import hashlib
-import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Dict, Any
-from django.core.cache import cache
-from django.conf import settings
+from typing import Any
+
 import openai
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +84,7 @@ class EmbeddingCache:
         self,
         query: str,
         model: str = "text-embedding-3-small"
-    ) -> Tuple[List[float], Dict[str, Any]]:
+    ) -> tuple[list[float], dict[str, Any]]:
         """
         Obter embedding com cache inteligente.
 
@@ -162,7 +161,7 @@ class EmbeddingCache:
             logger.error(f"Erro ao obter embedding da API OpenAI: {e}")
             raise
 
-    def precompute_embeddings(self, queries: List[str], model: str = "text-embedding-3-small") -> Dict[str, Any]:
+    def precompute_embeddings(self, queries: list[str], model: str = "text-embedding-3-small") -> dict[str, Any]:
         """
         Precomputar embeddings para queries específicas.
         Útil para warming do cache antes de períodos de alta demanda.
@@ -198,7 +197,7 @@ class EmbeddingCache:
         logger.info(f"Precomputing concluído: {results}")
         return results
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Obter estatísticas do cache."""
         if not self.track_metrics:
             return {"tracking_disabled": True}
@@ -219,7 +218,7 @@ class EmbeddingCache:
             "performance_improvement": self._calculate_performance_improvement()
         }
 
-    def clear_cache(self, pattern: Optional[str] = None) -> int:
+    def clear_cache(self, pattern: str | None = None) -> int:
         """Limpar cache de embeddings."""
         if pattern:
             # Clear specific pattern
@@ -293,7 +292,7 @@ class EmbeddingCache:
         estimated_tokens = 10
         return costs_per_1k.get(model, 0.00002) * (estimated_tokens / 1000)
 
-    def _calculate_performance_improvement(self) -> Dict[str, float]:
+    def _calculate_performance_improvement(self) -> dict[str, float]:
         """Calcular melhoria de performance vs baseline."""
         if self.metrics.total_requests == 0:
             return {}

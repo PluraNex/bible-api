@@ -25,14 +25,13 @@ Data: 2025-09-21
 """
 from __future__ import annotations
 
+import logging
 import os
 import time
-import logging
 from collections.abc import Sequence
-from typing import Any, Dict, Optional
 from dataclasses import dataclass
+from typing import Any
 
-from django.core.cache import cache
 from django.db import connection
 
 from .embedding_cache import embedding_cache
@@ -303,7 +302,7 @@ def _apply_reranking_v1_1(hits: list[dict], query_vec: list[float], top_k: int) 
     return reranked
 
 
-def _calculate_baseline_improvement(metrics: RetrievalMetrics) -> Dict[str, float]:
+def _calculate_baseline_improvement(metrics: RetrievalMetrics) -> dict[str, float]:
     """Calcular melhoria vs baseline estabelecido."""
     # Baseline do report: 2-25s embedding, ~250ms search
     baseline_embedding_ms = 13000  # Média
@@ -344,10 +343,10 @@ def retrieve(
 ) -> dict[str, Any]:
     """
     Função de compatibilidade com v1.0 e interface pública padrão.
-    
+
     Redireciona para retrieve_v1_1 automaticamente com otimizações de cache.
     Mantém assinatura idêntica ao retrieval.py original para compatibilidade.
-    
+
     Args:
         query: Texto da consulta
         vector: Vetor pre-computado (opcional)
@@ -358,7 +357,7 @@ def retrieve(
         chapter_end: Capítulo final (range)
         lang: Idioma (não implementado)
         timeout: Timeout para API OpenAI
-        
+
     Returns:
         dict com hits e timing info
     """
@@ -377,7 +376,7 @@ def retrieve(
 
 # === FUNÇÕES DE UTILIDADE PARA WARM-UP ===
 
-def warmup_cache(common_queries: Optional[list[str]] = None) -> Dict[str, Any]:
+def warmup_cache(common_queries: list[str] | None = None) -> dict[str, Any]:
     """Warm-up do cache com queries teológicas comuns."""
     if common_queries is None:
         common_queries = [
@@ -389,7 +388,7 @@ def warmup_cache(common_queries: Optional[list[str]] = None) -> Dict[str, Any]:
     return embedding_cache.precompute_embeddings(common_queries)
 
 
-def get_performance_stats() -> Dict[str, Any]:
+def get_performance_stats() -> dict[str, Any]:
     """Obter estatísticas de performance do sistema v1.1."""
     cache_stats = embedding_cache.get_cache_stats()
 
