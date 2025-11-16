@@ -13,7 +13,8 @@ tests/
 ├── api/                            # Testes de API (integração)
 │   ├── ai/
 │   │   ├── test_ai_endpoints.py    # Agents, tools, runs, workflows
-│   │   └── test_ai_routes.py       # Routing específico
+│   │   ├── test_ai_routes.py       # Routing específico
+│   │   └── test_rag_endpoints.py   # RAG search/retrieve (SKIPPED: pending DB migration)
 │   ├── bible/
 │   │   ├── auth/
 │   │   │   └── test_permissions.py # Permissions API específicas
@@ -57,6 +58,7 @@ tests/
 │
 ├── utils/                          # Testes unitários de utilitários
 │   ├── test_bible_utils.py
+│   ├── test_ai_helpers.py          # Funções helper de AI (_vector_array_sql, _cosine, etc)
 │   └── test_utils_comprehensive.py
 │
 ├── common/                         # Testes de componentes comuns
@@ -92,7 +94,7 @@ tests/
 - `@pytest.mark.books` - Books/verses
 - `@pytest.mark.crossrefs` - Cross references
 - `@pytest.mark.audio` - Audio/TTS
-- `@pytest.mark.ai` - AI agents e tools
+- `@pytest.mark.ai` - AI agents, tools, RAG retrieval
 - `@pytest.mark.resources` - Recursos externos
 
 ## 🔧 Execução de Testes
@@ -208,6 +210,26 @@ make ci-test       # Suite CI completa
 - **API endpoints**: ≥ 85%
 - **Domínios críticos**: próximo a 100%
 - **Exclusões documentadas**: migrations, settings, imports
+
+**Status Atual**: 83.62% (584 testes passing, 22 skipped)
+
+## ⚠️ Testes Pendentes
+
+### RAG Integration Tests (`tests/api/ai/test_rag_endpoints.py`)
+
+**Status**: 17 testes skipped
+
+**Motivo**: O modelo `VerseEmbedding.embedding_small` está definido como `JSONField` mas o código 
+de retrieval espera um `VectorField` do pgvector para operações de similaridade vetorial (`<=>`).
+
+**Para resolver**:
+1. Criar migração Django alterando `embedding_small` de `JSONField` para `VectorField`
+2. Executar migração no banco de dados
+3. Remover o decorator `pytestmark` de `tests/api/ai/test_rag_endpoints.py`
+4. Verificar que os 17 testes passam
+
+**Impacto**: Os testes unitários de AI helpers (18 testes) estão passando. Apenas os testes de 
+integração com banco de dados estão aguardando a migração.
 
 ## 🔍 Debugging
 

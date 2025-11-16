@@ -45,6 +45,12 @@ services:
       - DEBUG=1
       - DATABASE_URL=postgresql://bible_user:bible_pass@db:5432/bible_api
       - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RAG_ALLOWED_VERSIONS=${RAG_ALLOWED_VERSIONS}
+      - RAG_VERSION_PRIORITY=${RAG_VERSION_PRIORITY}
+      - RAG_RERANK_LARGE=${RAG_RERANK_LARGE}
+      - RAG_HYBRID=${RAG_HYBRID}
+      - RAG_HYBRID_ALPHA=${RAG_HYBRID_ALPHA}
     depends_on:
       db:
         condition: service_healthy

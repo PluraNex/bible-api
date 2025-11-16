@@ -4,10 +4,25 @@ Provides common fixtures and test utilities following API_TESTING_BEST_PRACTICES
 """
 import pytest
 from django.contrib.auth.models import User
+from django.db import connection
 from django.test import override_settings
 from rest_framework.test import APIClient
 
 from bible.models import APIKey, BookName, CanonicalBook, Language, Testament, Version
+
+
+# ========================================
+# Database Setup
+# ========================================
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_database(django_db_setup, django_db_blocker):
+    """Setup pgvector extension for test database."""
+    with django_db_blocker.unblock():
+        with connection.cursor() as cursor:
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+
 
 # ========================================
 # Basic Fixtures
