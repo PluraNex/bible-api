@@ -107,19 +107,45 @@ try:
 except Exception:
     pass
 
-# pgvector / IVFFlat tuning via env (session options)
+# pgvector tuning via env (session options) - HNSW + IVFFlat support
 try:
+    # Legacy IVFFlat support (mantido para compatibilidade)
     probes = config("PG_IVFFLAT_PROBES", default=10, cast=int)
+
+    # HNSW parameters - CRÍTICOS para performance do RAG (T-RAG08)
+    hnsw_ef_search = config("PG_HNSW_EF_SEARCH", default=40, cast=int)  # Balance speed/accuracy
+
+    DATABASES["default"].setdefault("OPTIONS", {})
+    opts = DATABASES["default"]["OPTIONS"]
+
+    # Build optimized connection options
+    connection_params = []
+
+    # IVFFlat (legacy)
     if probes:
-        DATABASES["default"].setdefault("OPTIONS", {})
-        opts = DATABASES["default"]["OPTIONS"]
-        extra = f"-c ivfflat.probes={probes}"
+        connection_params.append(f"ivfflat.probes={probes}")
+
+    # HNSW (novo - performance crítica)
+    if hnsw_ef_search:
+        connection_params.append(f"hnsw.ef_search={hnsw_ef_search}")
+
+    # Apply parameters to connection string
+    if connection_params:
+        param_string = " -c ".join(connection_params)
+        extra = f"-c {param_string}"
+
         if "options" in opts and opts["options"]:
-            if extra not in str(opts["options"]):
-                opts["options"] = f"{opts['options']} {extra}".strip()
+            # Merge with existing options, avoiding duplicates
+            existing = str(opts["options"])
+            for param in connection_params:
+                if f"-c {param}" not in existing:
+                    existing = f"{existing} -c {param}".strip()
+            opts["options"] = existing
         else:
             opts["options"] = extra
+
 except Exception:
+    # Fail silently to avoid breaking other configurations
     pass
 
 # Cache
@@ -201,19 +227,18 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/api/v1/",
-    # OpenAPI security schemes - ESSENCIAL para o botão Authorize aparecer
-    "SECURITY_DEFINITIONS": {
-        "ApiKeyAuth": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization",
-            "description": "Use: Api-Key <your_api_key>",
+    # OpenAPI 3.0 security schemes - CONFIGURAÇÃO CORRETA
+    "SECURITY": [{"ApiKeyAuth": []}],
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Authorization",
+                "description": "API Key authentication. Format: Api-Key your_api_key_here",
+            }
         }
     },
-    "SECURITY": [{"ApiKeyAuth": []}],
-    "EXTENSIONS": [
-        "bible.auth.openapi.ApiKeyAuthenticationExtension",
-    ],
 }
 
 # CORS settings
