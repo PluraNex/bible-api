@@ -1,6 +1,7 @@
 """
 URL configuration for Cross-References domain.
 """
+
 from django.urls import path
 
 from .views import (

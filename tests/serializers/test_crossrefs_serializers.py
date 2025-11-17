@@ -1,6 +1,7 @@
 """
 Tests for CrossReference serializers.
 """
+
 from django.test import TestCase
 
 from bible.crossrefs.serializers import CrossReferenceSerializer

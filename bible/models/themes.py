@@ -1,6 +1,7 @@
 """
 Theme and VerseTheme models for Bible API (biblical themes, not UI styles).
 """
+
 from django.db import models
 
 from .verses import Verse

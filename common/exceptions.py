@@ -1,6 +1,7 @@
 """
 Standardized error handling for Bible API.
 """
+
 import logging
 import uuid
 from typing import Any

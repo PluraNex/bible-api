@@ -1,6 +1,7 @@
 """
 Tests for Theme model.
 """
+
 from django.db import IntegrityError
 from django.test import TestCase
 

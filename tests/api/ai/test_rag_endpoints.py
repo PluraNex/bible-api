@@ -14,6 +14,7 @@ IMPORTANT: Most tests are currently skipped because VerseEmbedding.embedding_sma
 is defined as JSONField instead of VectorField. The integration tests will pass
 once the database migration to VectorField is complete.
 """
+
 import os
 
 import pytest
@@ -41,6 +42,7 @@ class TestRetrievalFunction:
     def clear_cache(self):
         """Clear embedding cache between tests."""
         from django.core.cache import cache
+
         cache.clear()
         yield
         cache.clear()
@@ -63,10 +65,7 @@ class TestRetrievalFunction:
         # Embedding time should be 0 since vector was provided
         assert result["timing"]["embedding_ms"] == 0
 
-    @pytest.mark.skipif(
-        not os.getenv("OPENAI_API_KEY"),
-        reason="OPENAI_API_KEY not configured"
-    )
+    @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not configured")
     def test_retrieve_with_query_calls_embedding(self):
         """Test that query triggers embedding generation."""
         result = retrieval.retrieve(query="amor de Deus", top_k=3)
@@ -92,11 +91,7 @@ class TestRetrievalFunction:
         """Test that retrieve filters by versions."""
         fake_vector = [0.01] * 1536
 
-        result = retrieval.retrieve(
-            vector=fake_vector,
-            top_k=10,
-            versions=["PT_NAA", "PT_ARA"]
-        )
+        result = retrieval.retrieve(vector=fake_vector, top_k=10, versions=["PT_NAA", "PT_ARA"])
 
         # All results should be from specified versions (if any)
         for hit in result["hits"]:
@@ -106,11 +101,7 @@ class TestRetrievalFunction:
         """Test that retrieve filters by book_id."""
         fake_vector = [0.01] * 1536
 
-        result = retrieval.retrieve(
-            vector=fake_vector,
-            top_k=10,
-            book_id=1  # Genesis
-        )
+        result = retrieval.retrieve(vector=fake_vector, top_k=10, book_id=1)  # Genesis
 
         # All results should be from book_id 1 (if any)
         for hit in result["hits"]:
@@ -120,12 +111,7 @@ class TestRetrievalFunction:
         """Test that retrieve filters by chapter."""
         fake_vector = [0.01] * 1536
 
-        result = retrieval.retrieve(
-            vector=fake_vector,
-            top_k=10,
-            book_id=1,
-            chapter=1
-        )
+        result = retrieval.retrieve(vector=fake_vector, top_k=10, book_id=1, chapter=1)
 
         # All results should be from chapter 1 (if any)
         for hit in result["hits"]:
@@ -150,11 +136,7 @@ class TestRetrievalFunction:
         fake_vector = [0.01] * 1536
 
         # Use impossible filter to get empty results
-        result = retrieval.retrieve(
-            vector=fake_vector,
-            top_k=3,
-            book_id=9999  # Non-existent book
-        )
+        result = retrieval.retrieve(vector=fake_vector, top_k=3, book_id=9999)  # Non-existent book
 
         assert isinstance(result, dict)
         assert "hits" in result
@@ -188,29 +170,27 @@ class TestRagCachingBehavior:
     def clear_cache(self):
         """Clear cache between tests."""
         from django.core.cache import cache
+
         cache.clear()
         yield
         cache.clear()
 
     def test_embedding_cache_exists(self):
         """Test that embedding_cache module is available."""
-        assert hasattr(retrieval, 'embedding_cache')
-        assert hasattr(retrieval.embedding_cache, 'get_embedding')
+        assert hasattr(retrieval, "embedding_cache")
+        assert hasattr(retrieval.embedding_cache, "get_embedding")
 
     def test_warmup_cache_function_exists(self):
         """Test that warmup_cache function exists."""
-        assert hasattr(retrieval, 'warmup_cache')
+        assert hasattr(retrieval, "warmup_cache")
         assert callable(retrieval.warmup_cache)
 
     def test_get_performance_stats_function_exists(self):
         """Test that get_performance_stats function exists."""
-        assert hasattr(retrieval, 'get_performance_stats')
+        assert hasattr(retrieval, "get_performance_stats")
         assert callable(retrieval.get_performance_stats)
 
-    @pytest.mark.skipif(
-        not os.getenv("OPENAI_API_KEY"),
-        reason="OPENAI_API_KEY not configured"
-    )
+    @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not configured")
     def test_performance_stats_structure(self):
         """Test that get_performance_stats returns correct structure."""
         stats = retrieval.get_performance_stats()
@@ -241,10 +221,7 @@ class TestRagEdgeCases:
         # Should use RAG_ALLOWED_VERSIONS default
         assert isinstance(result, dict)
 
-    @pytest.mark.skipif(
-        not os.getenv("OPENAI_API_KEY"),
-        reason="OPENAI_API_KEY not configured"
-    )
+    @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not configured")
     def test_retrieve_with_unicode_query(self):
         """Test that unicode queries are handled correctly."""
         result = retrieval.retrieve(query="joão 3:16 ♥ αγάπη", top_k=3)

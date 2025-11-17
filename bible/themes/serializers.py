@@ -1,4 +1,5 @@
 """Serializers for themes domain."""
+
 from rest_framework import serializers
 
 from ..models import Theme

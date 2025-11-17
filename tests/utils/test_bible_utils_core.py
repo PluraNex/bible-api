@@ -1,4 +1,5 @@
 """Tests for bible.utils core functions."""
+
 from django.http import Http404
 from django.test import TestCase
 

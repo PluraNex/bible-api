@@ -1,6 +1,7 @@
 """
 Tests for Verse and Version models.
 """
+
 from django.db import IntegrityError
 from django.test import TestCase
 

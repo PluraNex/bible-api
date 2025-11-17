@@ -3,6 +3,7 @@ API tests for books endpoints.
 Tests authentication, permissions, pagination, ordering, and contract compliance.
 Following API_TESTING_BEST_PRACTICES.md §2-16.
 """
+
 import pytest
 from django.contrib.auth.models import User
 from django.test import TestCase

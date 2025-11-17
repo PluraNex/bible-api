@@ -11,6 +11,7 @@ This template covers all required test cases from §3-16:
 - Caching behavior (§9)
 - Security considerations (§11)
 """
+
 import pytest
 from django.contrib.auth.models import User
 from django.test import TestCase

@@ -1,6 +1,7 @@
 """
 URL configuration for Themes domain.
 """
+
 from django.urls import path
 
 from .views import (

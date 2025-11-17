@@ -1,6 +1,7 @@
 """
 OpenAPI schemas and examples for common components.
 """
+
 from drf_spectacular.utils import OpenApiParameter
 from rest_framework import serializers
 

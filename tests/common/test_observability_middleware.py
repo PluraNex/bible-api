@@ -1,6 +1,7 @@
 """
 Tests for observability middleware.
 """
+
 from unittest.mock import Mock, patch
 
 from django.http import HttpResponse

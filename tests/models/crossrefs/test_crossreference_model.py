@@ -1,6 +1,7 @@
 """
 Tests for CrossReference model.
 """
+
 from django.db import IntegrityError
 from django.test import TransactionTestCase
 from django.test.utils import override_settings

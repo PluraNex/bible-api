@@ -3,6 +3,7 @@ Bible API Data Configuration
 
 Centralized configuration for all data processing operations.
 """
+
 from pathlib import Path
 
 # Base directories

@@ -2,6 +2,7 @@
 Coverage improvement tests for auth views.
 Tests AuthenticationStatusView and DeveloperRegistrationAPIView.
 """
+
 import pytest
 from django.contrib.auth.models import User
 from django.test import TestCase

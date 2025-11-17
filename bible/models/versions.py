@@ -1,6 +1,7 @@
 """
 Version models following complete blueprint architecture.
 """
+
 from django.db import models
 
 from .books import Language, License

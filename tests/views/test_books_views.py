@@ -2,6 +2,7 @@
 Unit tests for books views.
 Tests view methods, filtering, ordering, and error handling.
 """
+
 from unittest.mock import patch
 
 import pytest

@@ -8,6 +8,7 @@ Usage:
     python manage.py bible status
     python manage.py bible crossrefs [--file PATH]
 """
+
 import time
 from pathlib import Path
 

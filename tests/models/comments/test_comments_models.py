@@ -2,6 +2,7 @@
 Tests for commentary models.
 Tests Author, CommentarySource, CommentaryEntry, and VerseComment models.
 """
+
 import pytest
 from django.contrib.auth.models import User
 from django.test import TestCase

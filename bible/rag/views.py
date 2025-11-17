@@ -11,6 +11,7 @@ Body:
 
 Response: summary + per_query with hits and latência.
 """
+
 from __future__ import annotations
 
 import statistics

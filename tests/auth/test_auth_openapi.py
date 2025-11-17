@@ -1,6 +1,7 @@
 """
 Tests for auth OpenAPI extension.
 """
+
 from django.test import TestCase
 
 from bible.auth.openapi import ApiKeyAuthenticationExtension

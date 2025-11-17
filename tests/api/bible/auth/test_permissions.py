@@ -1,6 +1,7 @@
 """
 Tests for authentication and permissions.
 """
+
 from unittest.mock import Mock
 
 from django.contrib.auth.models import User

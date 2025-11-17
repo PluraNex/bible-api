@@ -2,6 +2,7 @@
 Unit tests for themes views.
 Tests view methods, queryset logic, and inheritance.
 """
+
 from unittest.mock import Mock, patch
 
 import pytest

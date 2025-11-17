@@ -1,6 +1,7 @@
 """
 Middleware for Bible API.
 """
+
 import uuid
 
 

@@ -1,6 +1,7 @@
 """
 Tests for bible.utils module.
 """
+
 from django.test import TestCase
 
 from bible.models import BookName, CanonicalBook, Language, Testament

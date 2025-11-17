@@ -1,6 +1,7 @@
 """
 Tests for common mixins.
 """
+
 from django.test import RequestFactory, TestCase
 from rest_framework import status
 from rest_framework.response import Response

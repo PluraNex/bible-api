@@ -1,6 +1,7 @@
 """
 Quick tests to boost coverage for small modules.
 """
+
 from django.test import TestCase
 
 

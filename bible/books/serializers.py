@@ -1,4 +1,5 @@
 """Serializers for books domain."""
+
 from rest_framework import serializers
 
 from ..models import BookName, CanonicalBook, Language

@@ -1,4 +1,5 @@
 """Views for cross-references domain."""
+
 from django.db.models import Avg, Count, Exists, Max, Min, OuterRef
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page

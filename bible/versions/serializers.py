@@ -1,4 +1,5 @@
 """Serializers for versions domain."""
+
 from rest_framework import serializers
 
 from ..models import Version

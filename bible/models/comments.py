@@ -1,6 +1,7 @@
 """
 Commentary and Comment models following complete blueprint architecture.
 """
+
 from django.conf import settings
 from django.db import models
 

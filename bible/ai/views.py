@@ -2,6 +2,7 @@
 AI Agent and Tool views for Bible API.
 Skeleton implementation with auth and schema annotations.
 """
+
 import time
 
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema

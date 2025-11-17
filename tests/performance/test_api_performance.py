@@ -2,6 +2,7 @@
 Performance tests for Bible API.
 Tests query efficiency, response times, and scalability.
 """
+
 import time
 
 from django.contrib.auth.models import User

@@ -1,4 +1,5 @@
 """Tests for new Verses endpoints by reference/range/compare (T-007)."""
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status

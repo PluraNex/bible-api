@@ -1,6 +1,7 @@
 """
 Authentication models for Bible API.
 """
+
 import secrets
 
 from django.contrib.auth.models import User

@@ -1,4 +1,5 @@
 """Serializers for References domain (T-006)."""
+
 from rest_framework import serializers
 
 

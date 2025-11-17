@@ -1,6 +1,7 @@
 """
 Book-related utility functions.
 """
+
 from django.db.models import Q
 from django.http import Http404
 

@@ -1,6 +1,7 @@
 """
 URL configuration for Bible app.
 """
+
 from django.urls import include, path
 
 from . import views

@@ -2,6 +2,7 @@
 Tests for i18n utilities.
 Tests language resolution, Accept-Language parsing, and middleware.
 """
+
 from unittest.mock import Mock
 
 import pytest

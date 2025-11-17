@@ -1,4 +1,5 @@
 """RAG-related models: verse embeddings storage."""
+
 import pgvector.django
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -43,48 +44,34 @@ class UnifiedVerseEmbedding(models.Model):
     """
 
     canonical_verse_id = models.CharField(
-        max_length=20,
-        unique=True,
-        db_index=True,
-        help_text="Canonical reference like 'Gn.1.1', 'Mt.5.3'"
+        max_length=20, unique=True, db_index=True, help_text="Canonical reference like 'Gn.1.1', 'Mt.5.3'"
     )
     source_versions = ArrayField(
-        models.CharField(max_length=10),
-        help_text="List of version codes used in fusion: ['NAA', 'ARA', 'NVI']"
+        models.CharField(max_length=10), help_text="List of version codes used in fusion: ['NAA', 'ARA', 'NVI']"
     )
-    version_weights = models.JSONField(
-        help_text="Weights used in fusion: {'NAA': 0.4, 'ARA': 0.35, 'NVI': 0.25}"
-    )
+    version_weights = models.JSONField(help_text="Weights used in fusion: {'NAA': 0.4, 'ARA': 0.35, 'NVI': 0.25}")
 
     # Unified embeddings (fused from multiple versions)
     model_name_small = models.CharField(max_length=80, default="text-embedding-3-small")
     dim_small = models.PositiveIntegerField(default=1536)
     unified_embedding_small = pgvector.django.VectorField(
-        dimensions=1536,
-        null=True,
-        blank=True,
-        help_text="Unified small embedding for fast recall"
+        dimensions=1536, null=True, blank=True, help_text="Unified small embedding for fast recall"
     )
 
     model_name_large = models.CharField(max_length=80, blank=True, default="text-embedding-3-large")
     dim_large = models.PositiveIntegerField(null=True, blank=True, default=3072)
     unified_embedding_large = pgvector.django.VectorField(
-        dimensions=3072,
-        null=True,
-        blank=True,
-        help_text="Unified large embedding for precise reranking"
+        dimensions=3072, null=True, blank=True, help_text="Unified large embedding for precise reranking"
     )
 
     # Fusion metadata
     fusion_strategy = models.CharField(
         max_length=30,
         default="weighted_average",
-        help_text="Strategy used: weighted_average, max_pooling, concatenation"
+        help_text="Strategy used: weighted_average, max_pooling, concatenation",
     )
     quality_score = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Quality score of the unified embedding (0.0-1.0)"
+        null=True, blank=True, help_text="Quality score of the unified embedding (0.0-1.0)"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -113,45 +100,31 @@ class UnifiedThemeEmbedding(models.Model):
         max_length=255,
         unique=True,
         db_index=True,
-        help_text="Unique theme identifier like 'graça_divina', 'amor_de_deus'"
+        help_text="Unique theme identifier like 'graça_divina', 'amor_de_deus'",
     )
-    theme_text = models.TextField(
-        help_text="Human-readable theme text: 'Graça divina', 'Amor de Deus'"
-    )
+    theme_text = models.TextField(help_text="Human-readable theme text: 'Graça divina', 'Amor de Deus'")
     source_topics = ArrayField(
-        models.CharField(max_length=100),
-        help_text="List of topic IDs that contributed to this theme: ['GOD', 'GRACE']"
+        models.CharField(max_length=100), help_text="List of topic IDs that contributed to this theme: ['GOD', 'GRACE']"
     )
 
     # Unified embeddings (fused from multiple topic contexts)
     model_name_small = models.CharField(max_length=80, default="text-embedding-3-small")
     dim_small = models.PositiveIntegerField(default=1536)
     unified_embedding_small = pgvector.django.VectorField(
-        dimensions=1536,
-        null=True,
-        blank=True,
-        help_text="Unified small embedding for fast theme discovery"
+        dimensions=1536, null=True, blank=True, help_text="Unified small embedding for fast theme discovery"
     )
 
     model_name_large = models.CharField(max_length=80, default="text-embedding-3-large")
     dim_large = models.PositiveIntegerField(default=3072)
     unified_embedding_large = pgvector.django.VectorField(
-        dimensions=3072,
-        null=True,
-        blank=True,
-        help_text="Unified large embedding for precise semantic scoring"
+        dimensions=3072, null=True, blank=True, help_text="Unified large embedding for precise semantic scoring"
     )
 
     # Fusion metadata
     fusion_strategy = models.CharField(
-        max_length=30,
-        default="weighted_average",
-        help_text="Strategy used for combining topic embeddings"
+        max_length=30, default="weighted_average", help_text="Strategy used for combining topic embeddings"
     )
-    quality_score = models.FloatField(
-        default=0.0,
-        help_text="Quality score of the unified theme embedding (0.0-1.0)"
-    )
+    quality_score = models.FloatField(default=0.0, help_text="Quality score of the unified theme embedding (0.0-1.0)")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,6 +1,7 @@
 """
 Tests for bible.auth.authentication module.
 """
+
 from django.contrib.auth.models import User
 from django.test import RequestFactory, TestCase
 from rest_framework.exceptions import AuthenticationFailed

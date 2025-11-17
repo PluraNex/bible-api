@@ -1,6 +1,7 @@
 """
 URL configuration for Languages domain.
 """
+
 from django.urls import path
 
 from .views import LanguageListView

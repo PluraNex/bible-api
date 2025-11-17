@@ -2,6 +2,7 @@
 Global test configuration for Bible API.
 Provides common fixtures and test utilities following API_TESTING_BEST_PRACTICES.md §14.
 """
+
 import pytest
 from django.contrib.auth.models import User
 from django.db import connection

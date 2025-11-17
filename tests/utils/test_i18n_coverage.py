@@ -1,6 +1,7 @@
 """
 Tests to increase coverage for bible.utils.i18n module.
 """
+
 from unittest.mock import Mock
 
 from django.test import TestCase

@@ -1,6 +1,7 @@
 """
 Tests for authentication models.
 """
+
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import TestCase

@@ -4,6 +4,7 @@ Bible API Data Core Engine - Unified & Streamlined
 All-in-one data processing engine that replaces the complex pipeline
 with a simple, robust, and maintainable solution.
 """
+
 import json
 import logging
 import re

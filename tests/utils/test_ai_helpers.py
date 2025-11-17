@@ -8,6 +8,7 @@ Tests helper functions from bible.ai.retrieval module:
 
 Following best practices §2: Unit tests for isolated logic.
 """
+
 import pytest
 
 from bible.ai import retrieval
@@ -125,16 +126,18 @@ class TestCosineSimilarity:
     def test_normalized_vectors(self):
         """Testa similaridade com vetores normalizados."""
         import math
+
         # Vetores unitários em 45 graus
-        a = [1/math.sqrt(2), 1/math.sqrt(2)]
+        a = [1 / math.sqrt(2), 1 / math.sqrt(2)]
         b = [1.0, 0.0]
         similarity = retrieval._cosine(a, b)
         # cos(45°) = 1/sqrt(2) ≈ 0.707
-        assert abs(similarity - 1/math.sqrt(2)) < 0.001
+        assert abs(similarity - 1 / math.sqrt(2)) < 0.001
 
     def test_high_dimensional_vectors(self):
         """Testa com vetores de alta dimensionalidade (simula embeddings)."""
         import random
+
         random.seed(42)
 
         # Simular embeddings de 1536 dimensões

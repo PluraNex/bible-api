@@ -1,6 +1,7 @@
 """
 Comprehensive tests for bible.utils module.
 """
+
 from django.http import Http404
 from django.test import TestCase
 

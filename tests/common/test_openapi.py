@@ -1,6 +1,7 @@
 """
 Tests for common OpenAPI components.
 """
+
 from django.test import TestCase
 from drf_spectacular.utils import OpenApiParameter
 from rest_framework import serializers

@@ -1,6 +1,7 @@
 """
 Tests for standardized error handling system.
 """
+
 import uuid
 from unittest.mock import patch
 

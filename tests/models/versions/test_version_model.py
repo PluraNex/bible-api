@@ -1,6 +1,7 @@
 """
 Tests for Version model.
 """
+
 from django.test import TestCase
 
 from bible.models import Language, License, Version

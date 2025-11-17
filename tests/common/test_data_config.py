@@ -1,4 +1,5 @@
 """Tests for common.data_config module."""
+
 from pathlib import Path
 
 from common.data_config import (

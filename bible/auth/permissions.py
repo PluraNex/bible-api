@@ -1,6 +1,7 @@
 """
 Permission classes for Bible API.
 """
+
 from rest_framework import permissions
 
 from bible.models.auth import APIKey

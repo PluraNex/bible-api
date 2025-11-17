@@ -12,6 +12,7 @@ Notes:
 - Uses CREATE INDEX CONCURRENTLY (requires autocommit).
 - You can raise maintenance_work_mem only for this session via --maintenance-work-mem (e.g., 512MB).
 """
+
 from __future__ import annotations
 
 import re

@@ -1,6 +1,7 @@
 """
 Bible models - centralized imports.
 """
+
 from .auth import APIKey
 from .books import Book, BookName, CanonicalBook, Language, License, Testament
 from .comments import Author, CommentaryEntry, CommentarySource, VerseComment

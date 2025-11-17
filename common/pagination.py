@@ -1,6 +1,7 @@
 """
 Custom pagination classes for the Bible API.
 """
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 

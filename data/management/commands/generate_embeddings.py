@@ -12,6 +12,7 @@ Exemplos:
 
 Modo dry-run (sem OPENAI_API_KEY): estima tokens e custo, e não grava.
 """
+
 import hashlib
 import os
 import random

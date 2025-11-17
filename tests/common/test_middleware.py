@@ -1,6 +1,7 @@
 """
 Tests for common middleware.
 """
+
 import uuid
 from unittest.mock import Mock
 

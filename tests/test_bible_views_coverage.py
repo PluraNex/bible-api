@@ -1,6 +1,7 @@
 """
 Simple test to improve bible.views coverage.
 """
+
 from django.test import TestCase
 from rest_framework.test import APIClient
 

@@ -1,6 +1,7 @@
 """
 Custom authentication classes for Bible API.
 """
+
 from rest_framework import authentication, exceptions
 
 from bible.models.auth import APIKey

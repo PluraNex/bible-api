@@ -1,6 +1,7 @@
 """
 Tests for Theme serializers.
 """
+
 from django.test import TestCase
 
 from bible.models import Theme

@@ -1,6 +1,7 @@
 """
 Tests for common pagination classes.
 """
+
 from unittest.mock import Mock
 
 from django.core.paginator import Paginator

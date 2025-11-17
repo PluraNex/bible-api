@@ -2,6 +2,7 @@
 Unit tests for cross-references views.
 Tests view methods, queryset logic, and query efficiency.
 """
+
 from unittest.mock import patch
 
 import pytest

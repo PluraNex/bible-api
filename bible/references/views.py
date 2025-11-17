@@ -1,4 +1,5 @@
 """Views for References domain (T-006). Minimal functional implementation."""
+
 import re
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema

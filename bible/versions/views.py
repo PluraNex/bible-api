@@ -1,4 +1,5 @@
 """Views for versions domain."""
+
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import generics, status
 from rest_framework.response import Response

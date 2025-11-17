@@ -2,6 +2,7 @@
 Unit tests for verses views.
 Tests view methods, queryset logic, filtering, and error handling.
 """
+
 from unittest.mock import Mock, patch
 
 import pytest

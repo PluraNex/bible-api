@@ -1,6 +1,7 @@
 """
 Tests for Version serializers.
 """
+
 from django.test import TestCase
 
 from bible.models import Language, Version

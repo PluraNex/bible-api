@@ -1,6 +1,7 @@
 """
 Tests for Verse serializers.
 """
+
 from django.test import TestCase
 
 from bible.models import BookName, CanonicalBook, Language, Testament, Verse, Version

@@ -1,4 +1,5 @@
 """Services for reference parsing and resolution (T-006)."""
+
 from __future__ import annotations
 
 import re

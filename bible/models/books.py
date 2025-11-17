@@ -1,6 +1,7 @@
 """
 Book-related models following the complete blueprint architecture.
 """
+
 from django.db import models
 
 

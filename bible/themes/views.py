@@ -1,4 +1,5 @@
 """Views for themes domain."""
+
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema

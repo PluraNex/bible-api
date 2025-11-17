@@ -1,6 +1,7 @@
 """
 Tests for Request ID middleware.
 """
+
 import uuid
 from unittest.mock import Mock
 

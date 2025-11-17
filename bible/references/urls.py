@@ -1,4 +1,5 @@
 """URL configuration for References domain (T-006)."""
+
 from django.urls import path
 
 from .views import ReferenceNormalizeView, ReferenceParseView, ReferenceResolveView

@@ -2,6 +2,7 @@
 Internationalization utilities for Bible API.
 Implements language negotiation and resolution as per API_STANDARDS.md §6.
 """
+
 import logging
 
 from django.conf import settings

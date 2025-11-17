@@ -6,6 +6,7 @@ Following API_TESTING_BEST_PRACTICES.md §2-16 and §10.5.
 Consolidates tests from tests/ai/test_ai_views.py following proper structure:
 tests/api/<area>/<endpoint>_test_*.py
 """
+
 import pytest
 from django.contrib.auth.models import User
 from django.test import TestCase

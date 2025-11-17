@@ -23,6 +23,7 @@ Target v1.1:
 Versão: 1.1.0
 Data: 2025-09-21
 """
+
 from __future__ import annotations
 
 import logging
@@ -42,6 +43,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RetrievalMetrics:
     """Métricas detalhadas de performance para tracking de melhorias."""
+
     query_time_ms: float
     embedding_time_ms: float
     search_time_ms: float
@@ -128,23 +130,18 @@ def retrieve_v1_1(
 
     # === OTIMIZAÇÃO v1.1: Cache Avançado de Embeddings ===
     metrics = RetrievalMetrics(
-        query_time_ms=0, embedding_time_ms=0,
-        search_time_ms=0, total_time_ms=0,
-        cache_hit=False, results_count=0
+        query_time_ms=0, embedding_time_ms=0, search_time_ms=0, total_time_ms=0, cache_hit=False, results_count=0
     )
 
     if vector is None:
         start_embedding = time.time()
 
         # Usar cache avançado ao invés da API direta
-        query_vec, embedding_info = embedding_cache.get_embedding(
-            query.strip(),
-            model="text-embedding-3-small"
-        )
+        query_vec, embedding_info = embedding_cache.get_embedding(query.strip(), model="text-embedding-3-small")
 
         embedding_time = (time.time() - start_embedding) * 1000
         metrics.embedding_time_ms = embedding_time
-        metrics.cache_hit = (embedding_info.get("source") == "cache")
+        metrics.cache_hit = embedding_info.get("source") == "cache"
 
         logger.info(f"Embedding obtido via {embedding_info.get('source')} em {embedding_time:.1f}ms")
 
@@ -215,17 +212,19 @@ def retrieve_v1_1(
         dist = float(dist)
         sim = 1.0 - dist  # Converter distância para similaridade
 
-        raw_hits.append({
-            "verse_id": verse_id,
-            "book_id": b_id,
-            "book_osis": osis,
-            "chapter": ch,
-            "verse": num,
-            "text": text,
-            "version": ver,
-            "similarity": sim,
-            "distance": dist,
-        })
+        raw_hits.append(
+            {
+                "verse_id": verse_id,
+                "book_id": b_id,
+                "book_osis": osis,
+                "chapter": ch,
+                "verse": num,
+                "text": text,
+                "version": ver,
+                "similarity": sim,
+                "distance": dist,
+            }
+        )
 
     # === APLICAR RERANKING (se habilitado) ===
     # Mantida lógica do v1.0 para compatibilidade
@@ -245,10 +244,12 @@ def retrieve_v1_1(
     metrics.results_count = len(final_hits)
     metrics.query_time_ms = total_time - metrics.embedding_time_ms - metrics.search_time_ms
 
-    logger.info(f"Retrieval v1.1 concluído: {total_time:.1f}ms total "
-               f"(embedding: {metrics.embedding_time_ms:.1f}ms, "
-               f"search: {metrics.search_time_ms:.1f}ms, "
-               f"cache_hit: {metrics.cache_hit})")
+    logger.info(
+        f"Retrieval v1.1 concluído: {total_time:.1f}ms total "
+        f"(embedding: {metrics.embedding_time_ms:.1f}ms, "
+        f"search: {metrics.search_time_ms:.1f}ms, "
+        f"cache_hit: {metrics.cache_hit})"
+    )
 
     # === RESPOSTA ===
     response = {
@@ -311,12 +312,12 @@ def _calculate_baseline_improvement(metrics: RetrievalMetrics) -> dict[str, floa
 
     embedding_improvement = (
         (baseline_embedding_ms - metrics.embedding_time_ms) / baseline_embedding_ms * 100
-        if baseline_embedding_ms > 0 else 0
+        if baseline_embedding_ms > 0
+        else 0
     )
 
     total_improvement = (
-        (baseline_total_ms - metrics.total_time_ms) / baseline_total_ms * 100
-        if baseline_total_ms > 0 else 0
+        (baseline_total_ms - metrics.total_time_ms) / baseline_total_ms * 100 if baseline_total_ms > 0 else 0
     )
 
     return {
@@ -328,6 +329,7 @@ def _calculate_baseline_improvement(metrics: RetrievalMetrics) -> dict[str, floa
 
 
 # === FUNÇÕES DE COMPATIBILIDADE ===
+
 
 def retrieve(
     *,
@@ -376,13 +378,21 @@ def retrieve(
 
 # === FUNÇÕES DE UTILIDADE PARA WARM-UP ===
 
+
 def warmup_cache(common_queries: list[str] | None = None) -> dict[str, Any]:
     """Warm-up do cache com queries teológicas comuns."""
     if common_queries is None:
         common_queries = [
-            "amor de Deus", "salvação pela fé", "Jesus Cristo",
-            "perdão dos pecados", "vida eterna", "Espírito Santo",
-            "oração", "reino de Deus", "paz", "esperança"
+            "amor de Deus",
+            "salvação pela fé",
+            "Jesus Cristo",
+            "perdão dos pecados",
+            "vida eterna",
+            "Espírito Santo",
+            "oração",
+            "reino de Deus",
+            "paz",
+            "esperança",
         ]
 
     return embedding_cache.precompute_embeddings(common_queries)
@@ -399,6 +409,6 @@ def get_performance_stats() -> dict[str, Any]:
             "embedding_cache": "✅ Ativo",
             "advanced_metrics": "✅ Ativo",
             "cold_start_optimization": "✅ Ativo",
-            "baseline_tracking": "✅ Ativo"
-        }
+            "baseline_tracking": "✅ Ativo",
+        },
     }
