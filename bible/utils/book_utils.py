@@ -48,6 +48,8 @@ def get_book_display_name(canonical_book: CanonicalBook, language_code: str = "e
     """
     Get the display name for a canonical book in the specified language.
 
+    Implements fallback logic: pt-BR → pt → en, es-ES → es → en, etc.
+
     Args:
         canonical_book: The CanonicalBook instance
         language_code: The language code (default: 'en')
@@ -55,9 +57,32 @@ def get_book_display_name(canonical_book: CanonicalBook, language_code: str = "e
     Returns:
         Display name for the book
     """
-    book_name = canonical_book.names.filter(language__code=language_code, version__isnull=True).first()
+    if not language_code:
+        language_code = "en"
 
-    return book_name.name if book_name else canonical_book.osis_code
+    lang_code = language_code.strip()
+
+    # Try exact match first
+    book_name = canonical_book.names.filter(language__code__iexact=lang_code, version__isnull=True).first()
+    if book_name:
+        return book_name.name
+
+    # Fallback: try base language (pt-BR → pt, es-ES → es, en-US → en)
+    lang_lower = lang_code.lower()
+    if "-" in lang_code:
+        base_lang = lang_code.split("-")[0]
+        book_name = canonical_book.names.filter(language__code__iexact=base_lang, version__isnull=True).first()
+        if book_name:
+            return book_name.name
+
+    # Final fallback: try English
+    if lang_lower != "en":
+        book_name = canonical_book.names.filter(language__code__iexact="en", version__isnull=True).first()
+        if book_name:
+            return book_name.name
+
+    # Ultimate fallback: OSIS code
+    return canonical_book.osis_code
 
 
 def get_book_abbreviation(canonical_book: CanonicalBook, language_code: str = "en") -> str:

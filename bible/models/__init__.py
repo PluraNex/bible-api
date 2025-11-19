@@ -3,7 +3,7 @@ Bible models - centralized imports.
 """
 
 from .auth import APIKey
-from .books import Book, BookName, CanonicalBook, Language, License, Testament
+from .books import Book, BookCategory, BookName, CanonicalBook, Language, License, Testament
 from .comments import Author, CommentaryEntry, CommentarySource, VerseComment
 from .crossrefs import CrossReference
 from .rag import UnifiedThemeEmbedding, UnifiedVerseEmbedding, VerseEmbedding
@@ -19,6 +19,7 @@ __all__ = [
     # New blueprint models
     "CanonicalBook",
     "BookName",
+    "BookCategory",
     "Language",
     "License",
     "Testament",

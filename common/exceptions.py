@@ -219,3 +219,31 @@ def custom_exception_handler(exc, context):
         _response_payload("An internal server error occurred", "internal_server_error", request_id),
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
+
+
+def build_error_response(
+    detail: str,
+    code: str,
+    status_code: int,
+    *,
+    request=None,
+    errors: dict[str, Any] | None = None,
+    vary_accept_language: bool = False,
+) -> Response:
+    """
+    Helper to build standardized error responses outside of the exception handler.
+
+    Ensures we always include request_id/code fields and (optionally) language-specific
+    Vary headers, matching the global exception handler contract.
+    """
+
+    request_id = getattr(request, "request_id", str(uuid.uuid4()))
+    payload = _response_payload(detail, code, request_id, errors=errors)
+    response = Response(payload, status=status_code)
+    if vary_accept_language and request is not None:
+        params = getattr(request, "query_params", getattr(request, "GET", {}))
+        if "lang" not in params:
+            vary_header = response.get("Vary", "")
+            if "Accept-Language" not in vary_header:
+                response["Vary"] = (vary_header + ", " if vary_header else "") + "Accept-Language"
+    return response

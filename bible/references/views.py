@@ -4,7 +4,7 @@ import re
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -97,7 +97,7 @@ class ReferenceParseView(APIView):
 
 
 class ReferenceResolveView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Public endpoint for development
     throttle_scope = "search"
 
     @extend_schema(

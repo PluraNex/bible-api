@@ -6,6 +6,7 @@ from django.urls import path
 
 from .views import (
     VerseDetailView,
+    VerseListView,
     VersesByChapterView,
     VersesByReferenceView,
     VersesByThemeView,
@@ -16,6 +17,12 @@ from .views import (
 app_name = "verses"
 
 urlpatterns = [
+    # General listing with advanced filters (NEW!)
+    path(
+        "",
+        VerseListView.as_view(),
+        name="verses_list",
+    ),
     path(
         "by-chapter/<str:book_name>/<int:chapter>/",
         VersesByChapterView.as_view(),
