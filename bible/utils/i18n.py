@@ -78,30 +78,38 @@ def _validate_language_code(lang_code: str) -> str | None:
     if not lang_code:
         return None
 
-    # Normalize to lowercase
-    lang_code = lang_code.strip().lower()
+    # Keep original casing but trim whitespace
+    lang_code = lang_code.strip()
 
-    # Try exact match first
-    if Language.objects.filter(code=lang_code).exists():
-        return lang_code
+    # Try exact match first (case-insensitive comparison)
+    existing_lang = Language.objects.filter(code__iexact=lang_code).first()
+    if existing_lang:
+        # Return the actual code from the database (preserves casing)
+        return existing_lang.code
+
+    # Normalize to lowercase for fallback logic
+    lang_lower = lang_code.lower()
 
     # Handle Portuguese variants (pt-BR → pt)
-    if lang_code.startswith("pt"):
-        if Language.objects.filter(code="pt").exists():
+    if lang_lower.startswith("pt"):
+        existing_lang = Language.objects.filter(code__iexact="pt").first()
+        if existing_lang:
             logger.debug("Language fallback applied: Portuguese variant to pt")
-            return "pt"
+            return existing_lang.code
 
     # Handle Spanish variants (es-ES → es)
-    if lang_code.startswith("es"):
-        if Language.objects.filter(code="es").exists():
+    if lang_lower.startswith("es"):
+        existing_lang = Language.objects.filter(code__iexact="es").first()
+        if existing_lang:
             logger.debug("Language fallback applied: Spanish variant to es")
-            return "es"
+            return existing_lang.code
 
     # Handle English variants (en-US → en)
-    if lang_code.startswith("en"):
-        if Language.objects.filter(code="en").exists():
+    if lang_lower.startswith("en"):
+        existing_lang = Language.objects.filter(code__iexact="en").first()
+        if existing_lang:
             logger.debug("Language fallback applied: English variant to en")
-            return "en"
+            return existing_lang.code
 
     # No fallback for completely invalid codes in validation
     # The resolve_language function handles final 'en' fallback
@@ -206,7 +214,7 @@ def get_language_from_context(context) -> str:
         context: Serializer context dictionary
 
     Returns:
-        str: Language code ('en', 'pt', etc.)
+        str: Language code ('en', 'pt', etc.')
     """
     if not context:
         return "en"

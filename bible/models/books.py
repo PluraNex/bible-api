@@ -42,16 +42,129 @@ class Testament(models.Model):
     """Biblical testaments (Old/New)."""
 
     name = models.CharField(max_length=45, blank=True, default="")  # AT/NT
+    abbreviation = models.CharField(max_length=10, blank=True, default="")
+
+    # Display names multilíngues para frontend
+    display_name = models.CharField(
+        max_length=100, blank=True, default="", help_text="Nome para exibição (ex: 'Antigo Testamento')"
+    )
+    display_name_en = models.CharField(max_length=100, blank=True, default="", help_text="Nome em inglês para exibição")
+    display_name_es = models.CharField(
+        max_length=100, blank=True, default="", help_text="Nome em espanhol para exibição"
+    )
+
+    order = models.IntegerField(default=0, help_text="Ordem de exibição (1=Antigo, 2=Novo)")
+
     description = models.TextField(blank=True, default="")
+    description_en = models.TextField(blank=True, default="")
+    description_es = models.TextField(blank=True, default="")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "testaments"
-        ordering = ["id"]
+        ordering = ["order", "id"]
 
     def __str__(self):
         return self.name or "Testament"
+
+    @property
+    def code(self):
+        """
+        Retorna código normalizado (old/new) baseado no nome do testamento.
+
+        Returns:
+            str: 'old' para Antigo Testamento, 'new' para Novo Testamento, None caso contrário
+
+        Examples:
+            >>> testament = Testament(name="Old Testament")
+            >>> testament.code
+            'old'
+            >>> testament = Testament(name="New Testament")
+            >>> testament.code
+            'new'
+        """
+        name_lower = self.name.lower()
+        if "old" in name_lower or "antigo" in name_lower:
+            return "old"
+        elif "new" in name_lower or "novo" in name_lower:
+            return "new"
+        return None
+
+    def get_display_name(self, language_code="en"):
+        """Retorna display_name localizado."""
+        if language_code in ("pt-BR", "pt"):
+            return self.display_name or self.name
+        elif language_code in ("en", "en-US"):
+            return self.display_name_en or self.name
+        elif language_code == "es":
+            return self.display_name_es or self.name
+        return self.display_name or self.name
+
+    def get_description(self, language_code="en"):
+        """Retorna descrição localizada."""
+        if language_code in ("pt-BR", "pt"):
+            return self.description
+        elif language_code in ("en", "en-US"):
+            return self.description_en
+        elif language_code == "es":
+            return self.description_es
+        return self.description
+
+
+class BookCategory(models.Model):
+    """
+    Representa uma categoria de livros dentro de um testamento.
+    Ex: Gospels, Pauline Epistles, Pentateuch, etc.
+    """
+
+    testament = models.ForeignKey(Testament, on_delete=models.CASCADE, related_name="categories")
+
+    name = models.CharField(max_length=100)
+    name_pt = models.CharField(max_length=100, blank=True, default="")
+    name_en = models.CharField(max_length=100, blank=True, default="")
+    name_es = models.CharField(max_length=100, blank=True, default="")
+
+    description = models.TextField(blank=True, default="")
+    description_pt = models.TextField(blank=True, default="")
+    description_en = models.TextField(blank=True, default="")
+    description_es = models.TextField(blank=True, default="")
+
+    order = models.IntegerField(default=0, help_text="Ordem dentro do testamento")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "book_categories"
+        ordering = ["testament", "order"]
+        unique_together = ["testament", "name"]
+        verbose_name = "Book Category"
+        verbose_name_plural = "Book Categories"
+
+    def __str__(self):
+        return f"{self.testament.name} - {self.name}"
+
+    def get_name(self, language_code="en"):
+        """Retorna nome localizado."""
+        if language_code in ("pt-BR", "pt"):
+            return self.name_pt or self.name
+        elif language_code in ("en", "en-US"):
+            return self.name_en or self.name
+        elif language_code == "es":
+            return self.name_es or self.name
+        return self.name
+
+    def get_description(self, language_code="en"):
+        """Retorna descrição localizada."""
+        if language_code in ("pt-BR", "pt"):
+            return self.description_pt or self.description
+        elif language_code in ("en", "en-US"):
+            return self.description_en or self.description
+        elif language_code == "es":
+            return self.description_es or self.description
+        return self.description
 
 
 class CanonicalBook(models.Model):
@@ -63,6 +176,7 @@ class CanonicalBook(models.Model):
     osis_code = models.CharField(max_length=12, unique=True, default="Unknown")  # 'Gen','Exod','Ps','Matt',...
     canonical_order = models.PositiveIntegerField(unique=True, default=1)
     testament = models.ForeignKey(Testament, on_delete=models.CASCADE, related_name="canonical_books")
+    category = models.ForeignKey(BookCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name="books")
     is_deuterocanonical = models.BooleanField(default=False)
     chapter_count = models.PositiveIntegerField()
     outline_data = models.JSONField(null=True, blank=True, help_text="Structured outline data for the book")

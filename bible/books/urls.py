@@ -7,6 +7,7 @@ from django.urls import path
 from .views import (
     BookAliasesView,
     BookCanonView,
+    BookCategoryListView,
     BookChapterVersesView,
     BookContextView,
     BookInfoView,
@@ -24,6 +25,7 @@ from .views import (
     BookStatisticsView,
     BookStructureView,
     ChaptersByBookView,
+    TestamentListView,
 )
 
 app_name = "books"
@@ -31,6 +33,8 @@ app_name = "books"
 urlpatterns = [
     # Basic endpoints
     path("", BookListView.as_view(), name="books_list"),
+    path("testaments/", TestamentListView.as_view(), name="testament_list"),
+    path("categories/", BookCategoryListView.as_view(), name="category_list"),
     path("by-author/<str:author_name>/", BooksByAuthorView.as_view(), name="books_by_author"),
     path("by-testament/<int:testament_id>/", BooksByTestamentView.as_view(), name="books_by_testament"),
     # Phase 1: Discovery/Normalization endpoints

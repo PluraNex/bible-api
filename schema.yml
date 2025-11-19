@@ -26,7 +26,6 @@ paths:
       - ai
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -134,7 +133,6 @@ paths:
               $ref: '#/components/schemas/AgentRunCreateRequest'
         required: true
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '201':
@@ -249,7 +247,6 @@ paths:
       - rag
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -333,7 +330,6 @@ paths:
       - rag
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -402,7 +398,6 @@ paths:
       tags:
       - ai
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -493,7 +488,6 @@ paths:
         required: true
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -570,7 +564,6 @@ paths:
       tags:
       - ai
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -655,7 +648,6 @@ paths:
       tags:
       - ai
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -765,7 +757,6 @@ paths:
         required: true
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -869,7 +860,6 @@ paths:
         required: true
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       - {}
       responses:
         '201':
@@ -943,7 +933,7 @@ paths:
       - auth
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -975,15 +965,56 @@ paths:
         to all response types (2xx, 4xx, 5xx).
       parameters:
       - in: query
+        name: canonical_order_max
+        schema:
+          type: integer
+        description: Maximum canonical order
+      - in: query
+        name: canonical_order_min
+        schema:
+          type: integer
+        description: Minimum canonical order
+      - in: query
+        name: category
+        schema:
+          type: integer
+        description: Filter by book category ID
+      - in: query
+        name: category_name
+        schema:
+          type: string
+        description: Filter by category name
+      - in: query
+        name: chapter_count_max
+        schema:
+          type: integer
+        description: Maximum number of chapters
+      - in: query
+        name: chapter_count_min
+        schema:
+          type: integer
+        description: Minimum number of chapters
+      - in: query
         name: is_deuterocanonical
         schema:
           type: boolean
+        description: Filter deuterocanonical books (true/false)
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: Search by book name in any language
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - in: query
+        name: osis_code
+        schema:
+          type: string
+        description: Filter by OSIS code (e.g., 'John', 'Gen')
       - name: page
         required: false
         in: query
@@ -1006,11 +1037,36 @@ paths:
         name: testament
         schema:
           type: integer
+          enum:
+          - new
+          - old
+        description: |-
+          Filter by testament code (old/new)
+
+          * `old` - Old Testament
+          * `new` - New Testament
+      - in: query
+        name: testament_code
+        schema:
+          type: string
+          enum:
+          - new
+          - old
+        description: |-
+          Filter by testament code (old/new)
+
+          * `old` - Old Testament
+          * `new` - New Testament
+      - in: query
+        name: testament_id
+        schema:
+          type: integer
+        description: Filter by testament ID
       tags:
       - bible
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -1021,7 +1077,8 @@ paths:
   /api/v1/bible/books/{book_name}/{chapter}/verses/:
     get:
       operationId: bible_books_verses_retrieve
-      description: Get all verses for a specific chapter in a book
+      description: Get all verses for a specific chapter in a book with full text
+        and metadata.
       summary: List verses in a book chapter
       parameters:
       - in: path
@@ -1035,14 +1092,20 @@ paths:
           type: integer
         required: true
       - in: query
+        name: lang
+        schema:
+          type: string
+        description: Language code for localized content (e.g., 'en', 'pt', 'es').
+          Overrides Accept-Language header.
+      - in: query
         name: version
         schema:
           type: string
-        description: 'Bible version code (default: first available)'
+        description: Bible version code to retrieve verses from (optional, uses first
+          available if not specified)
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1096,6 +1159,7 @@ paths:
   /api/v1/bible/books/{book_name}/chapters/:
     get:
       operationId: bible_books_chapters_retrieve
+      description: Get the list of all chapter numbers available for a specific book.
       summary: List chapters by book
       parameters:
       - in: path
@@ -1113,7 +1177,7 @@ paths:
       - books
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -1123,10 +1187,12 @@ paths:
                 properties:
                   book:
                     type: string
+                    description: Localized book name
                   chapters:
                     type: array
                     items:
                       type: integer
+                    description: List of chapter numbers
           description: ''
         '400':
           content:
@@ -1173,6 +1239,18 @@ paths:
   /api/v1/bible/books/{book_name}/context/:
     get:
       operationId: bible_books_context_retrieve
+      description: |-
+        Mixin to automatically add Vary: Accept-Language header to all responses.
+
+        This ensures proper HTTP caching behavior for internationalized endpoints
+        that may return different content based on Accept-Language header.
+
+        Usage:
+            class MyView(LanguageSensitiveMixin, APIView):
+                pass
+
+        The mixin works by overriding finalize_response to add the Vary header
+        to all response types (2xx, 4xx, 5xx).
       summary: Get book context
       parameters:
       - in: path
@@ -1189,7 +1267,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1248,18 +1325,8 @@ paths:
   /api/v1/bible/books/{book_name}/info/:
     get:
       operationId: bible_books_info_retrieve
-      description: |-
-        Mixin to automatically add Vary: Accept-Language header to all responses.
-
-        This ensures proper HTTP caching behavior for internationalized endpoints
-        that may return different content based on Accept-Language header.
-
-        Usage:
-            class MyView(LanguageSensitiveMixin, APIView):
-                pass
-
-        The mixin works by overriding finalize_response to add the Vary header
-        to all response types (2xx, 4xx, 5xx).
+      description: Retrieve detailed information about a specific book including names,
+        testament, and structure.
       summary: Get book info
       parameters:
       - in: path
@@ -1277,7 +1344,7 @@ paths:
       - books
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -1330,7 +1397,8 @@ paths:
   /api/v1/bible/books/{book_name}/neighbors/:
     get:
       operationId: bible_books_neighbors_retrieve
-      description: Get previous and next books in canonical order for navigation
+      description: Get previous and next books in canonical order for navigation purposes,
+        including testament-specific neighbors.
       summary: Get book navigation neighbors
       parameters:
       - in: path
@@ -1347,7 +1415,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1401,6 +1468,18 @@ paths:
   /api/v1/bible/books/{book_name}/outline/:
     get:
       operationId: bible_books_outline_retrieve
+      description: |-
+        Mixin to automatically add Vary: Accept-Language header to all responses.
+
+        This ensures proper HTTP caching behavior for internationalized endpoints
+        that may return different content based on Accept-Language header.
+
+        Usage:
+            class MyView(LanguageSensitiveMixin, APIView):
+                pass
+
+        The mixin works by overriding finalize_response to add the Vary header
+        to all response types (2xx, 4xx, 5xx).
       summary: Get book outline
       parameters:
       - in: path
@@ -1417,7 +1496,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1476,8 +1554,8 @@ paths:
   /api/v1/bible/books/{book_name}/range/:
     get:
       operationId: bible_books_range_retrieve
-      description: Get verses for a specific verse range within a book (e.g., John
-        3:16-18)
+      description: Get verses for a specific verse range within a book. Supports both
+        single-chapter and cross-chapter ranges.
       summary: Get verses for a book range
       parameters:
       - in: path
@@ -1488,34 +1566,40 @@ paths:
       - in: query
         name: end_chapter
         schema:
-          type: string
-        description: End chapter
+          type: integer
+        description: Ending chapter number (defaults to start_chapter if not provided)
       - in: query
         name: end_verse
         schema:
+          type: integer
+        description: Ending verse number (defaults to start_verse if not provided)
+      - in: query
+        name: lang
+        schema:
           type: string
-        description: End verse
+        description: Language code for localized content (e.g., 'en', 'pt', 'es').
+          Overrides Accept-Language header.
       - in: query
         name: start_chapter
         schema:
-          type: string
-        description: Start chapter
+          type: integer
+        description: Starting chapter number
         required: true
       - in: query
         name: start_verse
         schema:
-          type: string
-        description: Start verse
+          type: integer
+        description: Starting verse number
         required: true
       - in: query
         name: version
         schema:
           type: string
-        description: 'Bible version code (default: first available)'
+        description: Bible version code to retrieve verses from (optional, uses first
+          available if not specified)
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1569,7 +1653,8 @@ paths:
   /api/v1/bible/books/{book_name}/search/:
     get:
       operationId: bible_books_search_list_2
-      description: Search for text within a specific book's verses
+      description: Search for text within verses of a specific book. Returns matching
+        verses with text previews and relevance scores.
       summary: Search within a specific book
       parameters:
       - in: path
@@ -1578,25 +1663,31 @@ paths:
           type: string
         required: true
       - in: query
+        name: lang
+        schema:
+          type: string
+        description: Language code for localized content (e.g., 'en', 'pt', 'es').
+          Overrides Accept-Language header.
+      - in: query
         name: limit
         schema:
           type: string
-        description: 'Maximum results (default: 20)'
+        description: 'Maximum number of results to return (default: 20, max: 100)'
       - in: query
         name: q
         schema:
           type: string
-        description: Search query
+        description: Search query text
         required: true
       - in: query
         name: version
         schema:
           type: string
-        description: 'Bible version code (default: first available)'
+        description: Bible version code to search in (optional, searches all versions
+          if not specified)
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1652,7 +1743,8 @@ paths:
   /api/v1/bible/books/{book_name}/sections/:
     get:
       operationId: bible_books_sections_list
-      description: Get structural sections or perícopes for a book
+      description: Get structural sections or perícopes for a book. Currently supports
+        chapter-based sections.
       summary: List book sections/perícopes
       parameters:
       - in: path
@@ -1661,14 +1753,19 @@ paths:
           type: string
         required: true
       - in: query
+        name: lang
+        schema:
+          type: string
+        description: Language code for localized content (e.g., 'en', 'pt', 'es').
+          Overrides Accept-Language header.
+      - in: query
         name: type
         schema:
           type: string
-        description: 'Filter by section type: chapter, pericope, theme'
+        description: 'Filter by section type: chapter (default), pericope, theme'
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1725,6 +1822,7 @@ paths:
     get:
       operationId: bible_books_sections_retrieve
       description: Get detailed information about a specific book section/perícope
+        including verse ranges and context.
       summary: Get book section details
       parameters:
       - in: path
@@ -1732,6 +1830,12 @@ paths:
         schema:
           type: string
         required: true
+      - in: query
+        name: lang
+        schema:
+          type: string
+        description: Language code for localized content (e.g., 'en', 'pt', 'es').
+          Overrides Accept-Language header.
       - in: path
         name: section_id
         schema:
@@ -1740,7 +1844,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1794,6 +1897,18 @@ paths:
   /api/v1/bible/books/{book_name}/statistics/:
     get:
       operationId: bible_books_statistics_retrieve
+      description: |-
+        Mixin to automatically add Vary: Accept-Language header to all responses.
+
+        This ensures proper HTTP caching behavior for internationalized endpoints
+        that may return different content based on Accept-Language header.
+
+        Usage:
+            class MyView(LanguageSensitiveMixin, APIView):
+                pass
+
+        The mixin works by overriding finalize_response to add the Vary header
+        to all response types (2xx, 4xx, 5xx).
       summary: Get book statistics
       parameters:
       - in: path
@@ -1810,7 +1925,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1869,6 +1983,18 @@ paths:
   /api/v1/bible/books/{book_name}/structure/:
     get:
       operationId: bible_books_structure_retrieve
+      description: |-
+        Mixin to automatically add Vary: Accept-Language header to all responses.
+
+        This ensures proper HTTP caching behavior for internationalized endpoints
+        that may return different content based on Accept-Language header.
+
+        Usage:
+            class MyView(LanguageSensitiveMixin, APIView):
+                pass
+
+        The mixin works by overriding finalize_response to add the Vary header
+        to all response types (2xx, 4xx, 5xx).
       summary: Get book structure
       parameters:
       - in: path
@@ -1885,7 +2011,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -1944,10 +2069,11 @@ paths:
   /api/v1/bible/books/aliases/:
     get:
       operationId: bible_books_aliases_list
-      description: "Get comprehensive mapping of all book names and aliases organized\
-        \ by language.\n        \n        Note: The 'canonical_name' field uses the\
-        \ language specified by the 'lang' parameter for localization.\n        All\
-        \ other alias data shows names as they exist in each respective language/version."
+      description: |-
+        Get comprehensive mapping of all book names and aliases organized by language.
+
+                Note: The 'canonical_name' field uses the language specified by the 'lang' parameter for localization.
+                All other alias data shows names as they exist in each respective language/version.
       summary: Get book aliases
       parameters:
       - in: query
@@ -1969,7 +2095,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2025,6 +2150,18 @@ paths:
   /api/v1/bible/books/by-author/{author_name}/:
     get:
       operationId: bible_books_by_author_list
+      description: |-
+        Mixin to automatically add Vary: Accept-Language header to all responses.
+
+        This ensures proper HTTP caching behavior for internationalized endpoints
+        that may return different content based on Accept-Language header.
+
+        Usage:
+            class MyView(LanguageSensitiveMixin, APIView):
+                pass
+
+        The mixin works by overriding finalize_response to add the Vary header
+        to all response types (2xx, 4xx, 5xx).
       summary: List books by author
       parameters:
       - in: path
@@ -2035,7 +2172,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2125,7 +2261,7 @@ paths:
       - bible
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -2148,7 +2284,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2201,14 +2336,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/v1/bible/books/categories/:
+    get:
+      operationId: bible_books_categories_list
+      description: List book categories, optionally filtered by testament.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - bible
+      security:
+      - ApiKeyAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookCategoryList'
+          description: ''
   /api/v1/bible/books/resolve/{identifier}/:
     get:
       operationId: bible_books_resolve_retrieve
-      description: "Normalize any book identifier (OSIS code, name, abbreviation,\
-        \ or alias) to canonical format.\n        \n        The 'canonical_name' in\
-        \ the response uses the language specified by the 'lang' parameter (defaults\
-        \ to English).\n        The 'aliases' array shows all available names in their\
-        \ respective languages/versions."
+      description: |-
+        Normalize any book identifier (OSIS code, name, abbreviation, or alias) to canonical format.
+
+                The 'canonical_name' in the response uses the language specified by the 'lang' parameter (defaults to English).
+                The 'aliases' array shows all available names in their respective languages/versions.
       summary: Resolve book identifier
       parameters:
       - in: path
@@ -2225,7 +2389,6 @@ paths:
       tags:
       - books
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2279,11 +2442,11 @@ paths:
   /api/v1/bible/books/search/:
     get:
       operationId: bible_books_search_list
-      description: "Search books by name, OSIS code, abbreviation, or aliases across\
-        \ all languages.\n        \n        Language precedence: 'lang' parameter\
-        \ > 'language' parameter (for filtering) > Accept-Language header > 'en' default.\n\
-        \        The 'language' parameter filters results to specific language codes,\
-        \ while 'lang' affects localized names in responses."
+      description: |-
+        Search books by name, OSIS code, abbreviation, or aliases across all languages.
+
+                Language precedence: 'lang' parameter > 'language' parameter (for filtering) > Accept-Language header > 'en' default.
+                The 'language' parameter filters results to specific language codes, while 'lang' affects localized names in responses.
       summary: Search books
       parameters:
       - in: query
@@ -2302,7 +2465,19 @@ paths:
         name: limit
         schema:
           type: integer
-        description: 'Limit number of results (default: 20)'
+        description: Deprecated alias for page_size (will be removed in v2)
+        deprecated: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of results per page (default: 20, max: 100)'
       - in: query
         name: q
         schema:
@@ -2313,15 +2488,13 @@ paths:
       - books
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BookSearchResult'
+                $ref: '#/components/schemas/PaginatedBookSearchResultList'
           description: ''
         '400':
           content:
@@ -2365,11 +2538,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/v1/bible/books/testaments/:
+    get:
+      operationId: bible_books_testaments_list
+      description: List all testaments with localized names.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - bible
+      security:
+      - ApiKeyAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTestamentList'
+          description: ''
   /api/v1/bible/cross-references/by-theme/{theme_id}/:
     get:
       operationId: bible_cross_references_by_theme_list
       description: GET /api/v1/bible/cross-references/by-theme/<theme_id>/
-      summary: List cross-references by theme
       parameters:
       - name: page
         required: false
@@ -2389,9 +2590,8 @@ paths:
           type: integer
         required: true
       tags:
-      - cross-references
+      - bible
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2400,52 +2600,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCrossReferenceList'
           description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '405':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '429':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
   /api/v1/bible/cross-references/for/:
     get:
       operationId: bible_cross_references_for_list
-      summary: List cross-references for a verse (by id or textual ref)
+      description: Helpers to apply common query filters and expose them in responses.
       parameters:
       - name: page
         required: false
@@ -2459,15 +2617,9 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - in: query
-        name: ref
-        schema:
-          type: string
-        description: Text reference (e.g., 'Jo 3:16')
       tags:
-      - cross-references
+      - bible
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2475,66 +2627,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedCrossReferenceList'
-              examples:
-                ForByTextualRef:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - results:
-                      - from_book_code: John
-                        from_chapter: 3
-                        from_verse: 16
-                        to_book_code: Isa
-                        to_chapter: 53
-                        to_verse_start: 5
-                        to_verse_end: 5
-                        source: TSK
-                        confidence: 0.9
-                  summary: For by textual ref
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '405':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '429':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /api/v1/bible/cross-references/for/grouped/:
     get:
@@ -2549,6 +2641,11 @@ paths:
         - weak:        < 0.40
       summary: Group cross-references by strength
       parameters:
+      - in: query
+        name: min_confidence
+        schema:
+          type: string
+        description: Minimum confidence (0-1) to include in groups
       - name: page
         required: false
         in: query
@@ -2567,10 +2664,14 @@ paths:
           type: string
         description: Text reference (e.g., 'Jo 3:16')
         required: true
+      - in: query
+        name: source
+        schema:
+          type: string
+        description: Filter by source code (case-insensitive)
       tags:
       - cross-references
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2650,10 +2751,7 @@ paths:
   /api/v1/bible/cross-references/parallels/:
     get:
       operationId: bible_cross_references_parallels_list
-      description: |-
-        Return parallel passages (Gospels) for a textual reference.
-
-        Minimal implementation: filter CrossReference results for to_book within the four Gospels.
+      description: Return parallel passages (Gospels) for a textual reference.
       summary: List parallel gospel passages for a reference
       parameters:
       - name: page
@@ -2677,7 +2775,6 @@ paths:
       tags:
       - cross-references
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -2774,7 +2871,6 @@ paths:
       - cross-references
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       deprecated: true
       responses:
         '200':
@@ -2852,7 +2948,6 @@ paths:
       - languages
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -2911,7 +3006,6 @@ paths:
       - bible
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -2968,7 +3062,6 @@ paths:
               additionalProperties: {}
               description: Unspecified request body
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -3044,7 +3137,6 @@ paths:
         required: true
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -3107,7 +3199,6 @@ paths:
       tags:
       - references
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -3178,7 +3269,7 @@ paths:
         required: true
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -3249,7 +3340,6 @@ paths:
       - themes
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -3312,7 +3402,6 @@ paths:
       tags:
       - themes
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -3385,7 +3474,6 @@ paths:
       - themes
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -3455,7 +3543,6 @@ paths:
       tags:
       - themes
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -3527,7 +3614,6 @@ paths:
       - themes
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -3591,7 +3677,6 @@ paths:
       tags:
       - themes
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -3675,7 +3760,6 @@ paths:
       - themes
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
       responses:
         '200':
           content:
@@ -3725,21 +3809,187 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/v1/bible/verses/:
+    get:
+      operationId: bible_verses_list
+      description: |-
+        General verse listing with comprehensive filtering options.
+
+                Supports filtering by version, book, chapter ranges, testament, language, and more.
+                Returns paginated results with full nested objects for book and version.
+      summary: List verses with advanced filters
+      parameters:
+      - in: query
+        name: book
+        schema:
+          type: string
+        description: Filter by book ID
+      - in: query
+        name: book_name
+        schema:
+          type: string
+        description: Filter by book name (localized)
+      - in: query
+        name: book_osis
+        schema:
+          type: string
+        description: Filter by book OSIS code (e.g., 'John', 'Gen')
+      - in: query
+        name: chapter
+        schema:
+          type: string
+        description: Filter by chapter number
+      - in: query
+        name: chapter_max
+        schema:
+          type: string
+        description: Maximum chapter number
+      - in: query
+        name: chapter_min
+        schema:
+          type: string
+        description: Minimum chapter number
+      - in: query
+        name: include
+        schema:
+          type: string
+        description: 'Include nested objects: book,version (default: both)'
+      - in: query
+        name: is_deuterocanonical
+        schema:
+          type: string
+        description: Filter deuterocanonical books
+      - in: query
+        name: lang
+        schema:
+          type: string
+        description: Language code for localized content (e.g., 'en', 'pt', 'es').
+          Overrides Accept-Language header.
+      - in: query
+        name: language_code
+        schema:
+          type: string
+        description: Filter by language code (e.g., 'pt-BR', 'en')
+      - in: query
+        name: number
+        schema:
+          type: string
+        description: Filter by verse number
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: 'Order by: book__canonical_order, chapter, number, created_at'
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in verse text and reference
+      - in: query
+        name: testament
+        schema:
+          type: string
+        description: Filter by testament (old/new)
+      - in: query
+        name: testament_id
+        schema:
+          type: string
+        description: Filter by testament ID
+      - in: query
+        name: verse_max
+        schema:
+          type: string
+        description: Maximum verse number
+      - in: query
+        name: verse_min
+        schema:
+          type: string
+        description: Minimum verse number
+      - in: query
+        name: version
+        schema:
+          type: string
+        description: Filter by version ID
+      - in: query
+        name: version_code
+        schema:
+          type: string
+        description: Filter by version code (e.g., 'NVI', 'KJV')
+      - in: query
+        name: version_name
+        schema:
+          type: string
+        description: Filter by version name
+      tags:
+      - verses
+      security:
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVerseList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/v1/bible/verses/{id}/:
     get:
       operationId: bible_verses_retrieve
-      description: |-
-        Mixin to automatically add Vary: Accept-Language header to all responses.
-
-        This ensures proper HTTP caching behavior for internationalized endpoints
-        that may return different content based on Accept-Language header.
-
-        Usage:
-            class MyView(LanguageSensitiveMixin, APIView):
-                pass
-
-        The mixin works by overriding finalize_response to add the Vary header
-        to all response types (2xx, 4xx, 5xx).
+      description: Retrieve a single verse by its unique identifier with full nested
+        book and version information.
       summary: Get verse by id
       parameters:
       - in: path
@@ -3756,7 +4006,6 @@ paths:
       tags:
       - verses
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -3810,18 +4059,9 @@ paths:
   /api/v1/bible/verses/by-chapter/{book_name}/{chapter}/:
     get:
       operationId: bible_verses_by_chapter_list
-      description: |-
-        Mixin to automatically add Vary: Accept-Language header to all responses.
-
-        This ensures proper HTTP caching behavior for internationalized endpoints
-        that may return different content based on Accept-Language header.
-
-        Usage:
-            class MyView(LanguageSensitiveMixin, APIView):
-                pass
-
-        The mixin works by overriding finalize_response to add the Vary header
-        to all response types (2xx, 4xx, 5xx).
+      description: Retrieve all verses from a specific book chapter. Supports URL-encoded
+        book names for special characters and automatic version selection based on
+        language.
       summary: List verses by chapter
       parameters:
       - in: path
@@ -3856,17 +4096,18 @@ paths:
         name: search
         schema:
           type: string
-        description: Search in verse text
+        description: Search within verse text content (optional)
       - in: query
         name: version
         schema:
           type: string
-        description: Filter by version ID
+        description: Filter by version ID. If not provided, uses default version for
+          request language (optional)
       tags:
       - verses
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -3919,18 +4160,8 @@ paths:
   /api/v1/bible/verses/by-reference/:
     get:
       operationId: bible_verses_by_reference_list
-      description: |-
-        Mixin to automatically add Vary: Accept-Language header to all responses.
-
-        This ensures proper HTTP caching behavior for internationalized endpoints
-        that may return different content based on Accept-Language header.
-
-        Usage:
-            class MyView(LanguageSensitiveMixin, APIView):
-                pass
-
-        The mixin works by overriding finalize_response to add the Vary header
-        to all response types (2xx, 4xx, 5xx).
+      description: Parse and retrieve verses using natural language reference strings.
+        Supports various formats like 'John 3:16', 'Jo 3:16', or localized book names.
       summary: List verses by free-text reference
       parameters:
       - in: query
@@ -3955,18 +4186,20 @@ paths:
         name: ref
         schema:
           type: string
-        description: Reference string (e.g., 'Jo 3:16')
+        description: Reference string in formats like 'John 3:16', 'Jo 3:16-18', or
+          localized names. Supports single verses and ranges within the same chapter.
         required: true
       - in: query
         name: version
         schema:
           type: string
-        description: Version code or id (optional)
+        description: Version code (e.g., 'NVI', 'KJV') or ID. If not provided, uses
+          default version for request language (optional)
       tags:
       - verses
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -4019,14 +4252,15 @@ paths:
   /api/v1/bible/verses/by-theme/{theme_id}/:
     get:
       operationId: bible_verses_by_theme_list
-      description: GET /api/v1/bible/verses/by-theme/<theme_id>/
+      description: Retrieve all verses associated with a specific theme. Themes are
+        categorized topics or concepts found in the Bible text.
       summary: List verses by theme
       parameters:
       - in: query
         name: book
         schema:
           type: string
-        description: Filter by book ID
+        description: Filter by book ID to limit results to specific book (optional)
       - in: query
         name: lang
         schema:
@@ -4049,7 +4283,7 @@ paths:
         name: search
         schema:
           type: string
-        description: Search in verse text
+        description: Search within verse text content (optional)
       - in: path
         name: theme_id
         schema:
@@ -4059,11 +4293,10 @@ paths:
         name: version
         schema:
           type: string
-        description: Filter by version ID
+        description: Filter by version ID (optional)
       tags:
       - verses
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -4117,18 +4350,8 @@ paths:
   /api/v1/bible/verses/compare/:
     get:
       operationId: bible_verses_compare_list
-      description: |-
-        Mixin to automatically add Vary: Accept-Language header to all responses.
-
-        This ensures proper HTTP caching behavior for internationalized endpoints
-        that may return different content based on Accept-Language header.
-
-        Usage:
-            class MyView(LanguageSensitiveMixin, APIView):
-                pass
-
-        The mixin works by overriding finalize_response to add the Vary header
-        to all response types (2xx, 4xx, 5xx).
+      description: Compare the same verse or verse range across multiple Bible versions.
+        Useful for studying textual variations and translations.
       summary: Compare verse across versions
       parameters:
       - in: query
@@ -4141,18 +4364,19 @@ paths:
         name: ref
         schema:
           type: string
-        description: Reference string (e.g., 'Jo 3:16')
+        description: Reference string for the verse(s) to compare (e.g., 'John 3:16').
+          Supports single verses and same-chapter ranges.
         required: true
       - in: query
         name: versions
         schema:
           type: string
-        description: Comma-separated version codes/ids (e.g., 'KJV,NVI,ARA')
+        description: Comma-separated list of version codes or IDs (e.g., 'KJV,NVI,ARA').
+          Maximum 5 versions per request.
         required: true
       tags:
       - verses
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -4208,18 +4432,9 @@ paths:
   /api/v1/bible/verses/range/:
     get:
       operationId: bible_verses_range_list
-      description: |-
-        Mixin to automatically add Vary: Accept-Language header to all responses.
-
-        This ensures proper HTTP caching behavior for internationalized endpoints
-        that may return different content based on Accept-Language header.
-
-        Usage:
-            class MyView(LanguageSensitiveMixin, APIView):
-                pass
-
-        The mixin works by overriding finalize_response to add the Vary header
-        to all response types (2xx, 4xx, 5xx).
+      description: Retrieve verses using range references that can span multiple chapters.
+        Supports formats like 'John 1:31-2:3' for cross-chapter ranges or 'John 1-3'
+        for chapter ranges.
       summary: List verses by range reference
       parameters:
       - in: query
@@ -4244,17 +4459,18 @@ paths:
         name: ref
         schema:
           type: string
-        description: Range reference (e.g., 'Jo 3:16-18')
+        description: Range reference supporting cross-chapter formats like 'John 1:31-2:3'
+          or chapter ranges like 'John 1-3'. Maximum 300 verses per request.
         required: true
       - in: query
         name: version
         schema:
           type: string
-        description: Version code or id (optional)
+        description: Version code (e.g., 'NVI', 'KJV') or ID. If not provided, uses
+          default version for request language (optional)
       tags:
       - verses
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -4332,7 +4548,7 @@ paths:
       - versions
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -4420,7 +4636,7 @@ paths:
       - versions
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -4496,7 +4712,7 @@ paths:
       - versions
       security:
       - ApiKeyAuth: []
-      - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -4576,7 +4792,6 @@ paths:
       tags:
       - health
       security:
-      - ApiKeyAuth: []
       - ApiKeyAuth: []
       responses:
         '200':
@@ -4689,11 +4904,16 @@ components:
       - status
     Book:
       type: object
-      description: Serializer for canonical books with backward compatibility.
+      description: |-
+        Serializer melhorado para livros - frontend-friendly.
+
+        Inclui objeto testament normalizado com código (old/new).
+        Inclui objeto category para categorização de livros.
+        Resposta otimizada sem campos duplicados.
       properties:
-        id:
-          type: integer
-          readOnly: true
+        osis_code:
+          type: string
+          maxLength: 12
         name:
           type: string
           description: Get localized name using the existing utility function with
@@ -4704,18 +4924,33 @@ components:
           description: Get localized abbreviation using the existing utility function
             with fallback logic.
           readOnly: true
+        aliases:
+          type: string
+          readOnly: true
         order:
           type: integer
         testament:
           type: string
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/BookCategory'
+          readOnly: true
         chapter_count:
           type: integer
           maximum: 2147483647
           minimum: 0
+        is_deuterocanonical:
+          type: boolean
+        language_code:
+          type: string
+          readOnly: true
       required:
       - abbreviation
+      - aliases
+      - category
       - chapter_count
-      - id
+      - language_code
       - name
       - order
       - testament
@@ -4771,6 +5006,28 @@ components:
       - name
       - osis_code
       - testament
+    BookCategory:
+      type: object
+      description: Serializer para categorias de livros com localização.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        order:
+          type: integer
+          readOnly: true
+          description: Ordem dentro do testamento
+      required:
+      - description
+      - id
+      - name
+      - order
     BookChapterVerses:
       type: object
       description: Serializer for chapter verses listing.
@@ -4821,6 +5078,22 @@ components:
       - next
       - previous
       - testament_neighbors
+    BookNested:
+      type: object
+      description: Serializer aninhado para livro em verses - domínio simplificado.
+      properties:
+        osis_code:
+          type: string
+          maxLength: 12
+        name:
+          type: string
+          readOnly: true
+        testament_code:
+          type: string
+          readOnly: true
+      required:
+      - name
+      - testament_code
     BookRange:
       type: object
       description: Serializer for verse range results.
@@ -5101,7 +5374,6 @@ components:
           minimum: 0
         source:
           type: string
-          nullable: true
           description: 'Ex: TSK, OpenBible'
           maxLength: 120
         votes:
@@ -5115,7 +5387,6 @@ components:
           description: Confiança na referência (0.0 a 1.0)
         explanation:
           type: string
-          nullable: true
           description: Nota explicativa sobre a referência
       required:
       - from_book
@@ -5208,6 +5479,26 @@ components:
       - id
       - name
       - updated_at
+    PaginatedBookCategoryList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookCategory'
     PaginatedBookList:
       type: object
       properties:
@@ -5228,6 +5519,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Book'
+    PaginatedBookSearchResultList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookSearchResult'
     PaginatedCrossReferenceList:
       type: object
       properties:
@@ -5268,6 +5579,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Language'
+    PaginatedTestamentList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Testament'
     PaginatedThemeList:
       type: object
       properties:
@@ -5388,6 +5719,28 @@ components:
             additionalProperties: {}
       required:
       - results
+    Testament:
+      type: object
+      description: Shared serializer for Testament - simplified structure with localization.
+      properties:
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        order:
+          type: integer
+          readOnly: true
+          description: Ordem de exibição (1=Antigo, 2=Novo)
+      required:
+      - code
+      - description
+      - name
+      - order
     Theme:
       type: object
       properties:
@@ -5531,60 +5884,48 @@ components:
       - tool
     Verse:
       type: object
-      description: Verse serializer with enhanced blueprint support.
+      description: |-
+        Verse serializer melhorado - frontend-friendly.
+
+        Inclui objetos aninhados para book e version, evitando múltiplas requisições.
+        Renomeia 'number' para 'verse' para melhor clareza.
+        Resposta otimizada sem campos duplicados.
       properties:
         id:
           type: integer
           readOnly: true
         book:
-          type: integer
-        book_osis:
-          type: string
-          readOnly: true
-        book_name:
-          type: string
-          description: Get localized book name using standardized utility with fallback
-            logic.
+          allOf:
+          - $ref: '#/components/schemas/BookNested'
           readOnly: true
         version:
-          type: integer
-        version_code:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/VersionNested'
           readOnly: true
         chapter:
           type: integer
           maximum: 2147483647
           minimum: 0
-        number:
+        verse:
           type: integer
-          maximum: 2147483647
-          minimum: 0
+          readOnly: true
         text:
           type: string
         reference:
           type: string
           readOnly: true
-        created_at:
+        language_code:
           type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
           readOnly: true
       required:
       - book
-      - book_name
-      - book_osis
       - chapter
-      - created_at
       - id
-      - number
+      - language_code
       - reference
       - text
-      - updated_at
+      - verse
       - version
-      - version_code
     Version:
       type: object
       properties:
@@ -5602,7 +5943,6 @@ components:
           readOnly: true
         language:
           type: string
-          readOnly: true
         description:
           type: string
         is_active:
@@ -5612,6 +5952,24 @@ components:
       - id
       - language
       - name
+    VersionNested:
+      type: object
+      description: Serializer aninhado para versão - estrutura simplificada.
+      properties:
+        code:
+          type: string
+          maxLength: 40
+        language_code:
+          type: string
+          readOnly: true
+        license:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+      required:
+      - language_code
+      - license
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

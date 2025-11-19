@@ -2,41 +2,80 @@
 
 from rest_framework import serializers
 
-from ..models import License, Verse, Version
+from ..models import CanonicalBook, License, Verse, Version
+
+
+class BookNestedSerializer(serializers.ModelSerializer):
+    """Serializer aninhado para livro em verses - domínio simplificado."""
+
+    name = serializers.SerializerMethodField()
+    testament_code = serializers.CharField(source="testament.code", read_only=True)
+
+    class Meta:
+        model = CanonicalBook
+        fields = [
+            "osis_code",
+            "name",
+            "testament_code",
+        ]
+
+    def get_name(self, obj):
+        """Nome localizado do livro."""
+        from bible.utils import get_book_display_name
+        from bible.utils.i18n import get_language_from_context
+
+        lang_code = get_language_from_context(self.context)
+        return get_book_display_name(obj, lang_code)
+
+
+class VersionNestedSerializer(serializers.ModelSerializer):
+    """Serializer aninhado para versão - estrutura simplificada."""
+
+    language_code = serializers.CharField(source="language.code", read_only=True)
+    license = serializers.CharField(source="license.code", read_only=True)
+
+    class Meta:
+        model = Version
+        fields = [
+            "code",
+            "language_code",
+            "license",
+            "is_active",
+        ]
 
 
 class VerseSerializer(serializers.ModelSerializer):
-    """Verse serializer with enhanced blueprint support."""
+    """
+    Verse serializer melhorado - frontend-friendly.
 
+    Inclui objetos aninhados para book e version, evitando múltiplas requisições.
+    Renomeia 'number' para 'verse' para melhor clareza.
+    Resposta otimizada sem campos duplicados.
+    """
+
+    # Renomear 'number' para 'verse' (mais intuitivo)
+    verse = serializers.IntegerField(source="number", read_only=True)
+
+    # Objetos aninhados (frontend-friendly)
+    book = BookNestedSerializer(read_only=True)
+    version = VersionNestedSerializer(read_only=True)
+
+    # Language code diretamente no versículo (evita acessar version.language.code)
+    language_code = serializers.CharField(source="version.language.code", read_only=True)
     reference = serializers.CharField(read_only=True)
-    book_osis = serializers.CharField(source="book.osis_code", read_only=True)
-    book_name = serializers.SerializerMethodField()
-    version_code = serializers.CharField(source="version.code", read_only=True)
 
     class Meta:
         model = Verse
         fields = [
             "id",
             "book",
-            "book_osis",
-            "book_name",
             "version",
-            "version_code",
             "chapter",
-            "number",
+            "verse",
             "text",
             "reference",
-            "created_at",
-            "updated_at",
+            "language_code",
         ]
-
-    def get_book_name(self, obj) -> str:
-        """Get localized book name using standardized utility with fallback logic."""
-        from bible.utils import get_book_display_name
-        from bible.utils.i18n import get_language_from_context
-
-        lang_code = get_language_from_context(self.context)
-        return get_book_display_name(obj.book, lang_code)
 
 
 class VersionSerializer(serializers.ModelSerializer):

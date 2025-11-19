@@ -3,19 +3,48 @@
 from rest_framework import serializers
 
 from ..models import BookName, CanonicalBook, Language
+from ..shared_serializers import BookCategorySerializer, TestamentSerializer
 
 
 class BookSerializer(serializers.ModelSerializer):
-    """Serializer for canonical books with backward compatibility."""
+    """
+    Serializer melhorado para livros - frontend-friendly.
+
+    Inclui objeto testament normalizado com código (old/new).
+    Inclui objeto category para categorização de livros.
+    Resposta otimizada sem campos duplicados.
+    """
 
     name = serializers.SerializerMethodField()
     abbreviation = serializers.SerializerMethodField()
     order = serializers.IntegerField(source="canonical_order")
-    testament = serializers.CharField(source="testament.name")
+
+    # Objeto testament normalizado (único, sem duplicação)
+    testament = serializers.SerializerMethodField()
+
+    # Objeto category (categorização de livros)
+    category = BookCategorySerializer(read_only=True)
+
+    # Aliases do livro
+    aliases = serializers.SerializerMethodField()
+
+    # Idioma da resposta
+    language_code = serializers.SerializerMethodField()
 
     class Meta:
         model = CanonicalBook
-        fields = ["id", "osis_code", "name", "abbreviation", "order", "testament", "chapter_count"]
+        fields = [
+            "osis_code",
+            "name",
+            "abbreviation",
+            "aliases",
+            "order",
+            "testament",
+            "category",
+            "chapter_count",
+            "is_deuterocanonical",
+            "language_code",
+        ]
 
     def get_name(self, obj) -> str:
         """Get localized name using the existing utility function with fallback logic."""
@@ -32,6 +61,39 @@ class BookSerializer(serializers.ModelSerializer):
 
         lang_code = get_language_from_context(self.context)
         return get_book_abbreviation(obj, lang_code)
+
+    def get_testament(self, obj):
+        """Testament serializado com context."""
+        serializer = TestamentSerializer(obj.testament, context=self.context)
+        return serializer.data
+
+    def get_aliases(self, obj):
+        """Todos os aliases do livro no idioma da requisição."""
+        from bible.utils.i18n import get_language_from_context
+
+        lang_code = get_language_from_context(self.context)
+
+        # Otimização: usar values_list para evitar instanciar objetos
+        aliases = set()
+        names_qs = obj.names.filter(language__code=lang_code).values_list("name", "abbreviation")
+
+        for name, abbr in names_qs:
+            if name:
+                aliases.add(name)
+            if abbr:
+                aliases.add(abbr)
+
+        # Remove o nome principal
+        primary_name = self.get_name(obj)
+        aliases.discard(primary_name)
+
+        return sorted(aliases)  # Ordena para consistência
+
+    def get_language_code(self, obj):
+        """Idioma da resposta."""
+        from bible.utils.i18n import get_language_from_context
+
+        return get_language_from_context(self.context)
 
 
 class CanonicalBookSerializer(serializers.ModelSerializer):

@@ -2,16 +2,21 @@
 
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import filters, generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from common.exceptions import build_error_response
 from common.mixins import LanguageSensitiveMixin
 from common.openapi import LANG_PARAMETER, get_error_responses
+from common.pagination import StandardResultsSetPagination
 
-from ..models import BookName, CanonicalBook, Theme, Verse
+from ..models import BookCategory, BookName, CanonicalBook, Testament, Theme, Verse
+from ..shared_serializers import BookCategorySerializer, TestamentSerializer
 from ..utils import get_book_display_name, get_canonical_book_by_name
+from .filters import BookFilter
 from .serializers import (
     BookAliasSerializer,
     BookCanonResultSerializer,
@@ -29,10 +34,20 @@ from .serializers import (
 
 
 class BookListView(LanguageSensitiveMixin, generics.ListAPIView):
-    queryset = CanonicalBook.objects.select_related("testament").prefetch_related("names").order_by("canonical_order")
     serializer_class = BookSerializer
+    filterset_class = BookFilter
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [AllowAny]  # Public endpoint for development
+
+    def get_queryset(self):
+        """Otimizar queries com select_related e prefetch_related."""
+        return (
+            CanonicalBook.objects.select_related("testament")
+            .prefetch_related("names", "names__language")
+            .order_by("canonical_order")
+        )
+
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["testament", "is_deuterocanonical"]
     search_fields = ["osis_code", "names__name", "names__abbreviation"]
     ordering_fields = ["canonical_order", "chapter_count"]
     ordering = ["canonical_order"]
@@ -42,8 +57,15 @@ class BookListView(LanguageSensitiveMixin, generics.ListAPIView):
         tags=["books"],
         parameters=[
             LANG_PARAMETER,
-            OpenApiParameter(name="testament", description="Filter by testament ID"),
+            OpenApiParameter(name="testament", description="Filter by testament code (old/new)"),
+            OpenApiParameter(name="testament_id", description="Filter by testament ID"),
+            OpenApiParameter(name="category", description="Filter by book category ID"),
+            OpenApiParameter(name="category_name", description="Filter by category name"),
             OpenApiParameter(name="is_deuterocanonical", description="Filter by deuterocanonical books"),
+            OpenApiParameter(name="osis_code", description="Filter by OSIS code"),
+            OpenApiParameter(name="name", description="Search by book name in any language"),
+            OpenApiParameter(name="chapter_count_min", description="Minimum number of chapters"),
+            OpenApiParameter(name="chapter_count_max", description="Maximum number of chapters"),
             OpenApiParameter(name="search", description="Search in book names and abbreviations"),
             OpenApiParameter(name="ordering", description="Order results by: canonical_order, chapter_count"),
         ],
@@ -60,14 +82,25 @@ class BookListView(LanguageSensitiveMixin, generics.ListAPIView):
 
 
 class BookInfoView(LanguageSensitiveMixin, APIView):
+    permission_classes = [AllowAny]  # Public endpoint for development
+
     @extend_schema(
         summary="Get book info",
+        description="Retrieve detailed information about a specific book including names, testament, and structure.",
         tags=["books"],
         parameters=[LANG_PARAMETER],
         responses={
             200: BookSerializer,
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample("Get book info", value={"book_name": "John"}, request_only=True),
+            OpenApiExample(
+                "Get book info with Portuguese localization",
+                value={"book_name": "João", "lang": "pt-BR"},
+                request_only=True,
+            ),
+        ],
     )
     def get(self, request, book_name):
         try:
@@ -76,24 +109,40 @@ class BookInfoView(LanguageSensitiveMixin, APIView):
             response = Response(serializer.data, status=status.HTTP_200_OK)
             return response
         except Exception:
-            return Response({"detail": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
+            return build_error_response(
+                "Book not found",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
 
-class ChaptersByBookView(APIView):
+class ChaptersByBookView(LanguageSensitiveMixin, APIView):
+    permission_classes = [AllowAny]  # Public endpoint for development
+
     @extend_schema(
         summary="List chapters by book",
+        description="Get the list of all chapter numbers available for a specific book.",
         tags=["books"],
         parameters=[LANG_PARAMETER],
         responses={
             200: {
                 "type": "object",
                 "properties": {
-                    "book": {"type": "string"},
-                    "chapters": {"type": "array", "items": {"type": "integer"}},
+                    "book": {"type": "string", "description": "Localized book name"},
+                    "chapters": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "List of chapter numbers",
+                    },
                 },
             },
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample("Get chapters for John", value={"book_name": "John"}, request_only=True),
+        ],
     )
     def get(self, request, book_name):
         try:
@@ -103,10 +152,16 @@ class ChaptersByBookView(APIView):
             response = Response({"book": display_name, "chapters": chapters}, status=status.HTTP_200_OK)
             return response
         except Exception:
-            return Response({"detail": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
+            return build_error_response(
+                "Book not found",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
 
-class BooksByAuthorView(APIView):
+class BooksByAuthorView(LanguageSensitiveMixin, APIView):
     @extend_schema(
         summary="List books by author",
         tags=["books"],
@@ -118,20 +173,33 @@ class BooksByAuthorView(APIView):
     def get(self, request, author_name):
         # TODO: Implementar a lógica para buscar livros por autor
         # Esta é uma implementação temporária que retorna uma resposta 501 Not Implemented
-        return Response({"detail": "Not implemented"}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        return build_error_response(
+            "Not implemented",
+            "not_implemented",
+            status.HTTP_501_NOT_IMPLEMENTED,
+            request=request,
+            vary_accept_language=True,
+        )
 
 
 class BooksByTestamentView(LanguageSensitiveMixin, generics.ListAPIView):
+    permission_classes = [AllowAny]  # Public endpoint for development
     serializer_class = BookSerializer
+    pagination_class = StandardResultsSetPagination
 
     @extend_schema(
         summary="List books by testament",
+        description="Retrieve all books belonging to a specific testament (old or new).",
         tags=["books"],
         parameters=[LANG_PARAMETER],
         responses={
             200: BookSerializer(many=True),
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample("Get Old Testament books", value={"testament_id": 1}, request_only=True),
+            OpenApiExample("Get New Testament books", value={"testament_id": 2}, request_only=True),
+        ],
     )
     def get_serializer_context(self):
         """Add request context for language resolution."""
@@ -144,12 +212,12 @@ class BooksByTestamentView(LanguageSensitiveMixin, generics.ListAPIView):
         return (
             CanonicalBook.objects.filter(testament_id=testament_id)
             .select_related("testament")
-            .prefetch_related("names")
+            .prefetch_related("names", "names__language")
             .order_by("canonical_order")
         )
 
 
-class BookOutlineView(APIView):
+class BookOutlineView(LanguageSensitiveMixin, APIView):
     @extend_schema(
         summary="Get book outline",
         tags=["books"],
@@ -178,10 +246,16 @@ class BookOutlineView(APIView):
             response = Response({"book": display_name, "outline": outline}, status=status.HTTP_200_OK)
             return response
         except Exception:
-            return Response({"detail": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
+            return build_error_response(
+                "Book not found",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
 
-class BookContextView(APIView):
+class BookContextView(LanguageSensitiveMixin, APIView):
     @extend_schema(
         summary="Get book context",
         tags=["books"],
@@ -219,10 +293,16 @@ class BookContextView(APIView):
             response = Response({"book": display_name, "context": context}, status=status.HTTP_200_OK)
             return response
         except Exception:
-            return Response({"detail": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
+            return build_error_response(
+                "Book not found",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
 
-class BookStructureView(APIView):
+class BookStructureView(LanguageSensitiveMixin, APIView):
     @extend_schema(
         summary="Get book structure",
         tags=["books"],
@@ -260,10 +340,16 @@ class BookStructureView(APIView):
             response = Response({"book": display_name, "structure": structure}, status=status.HTTP_200_OK)
             return response
         except Exception:
-            return Response({"detail": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
+            return build_error_response(
+                "Book not found",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
 
-class BookStatisticsView(APIView):
+class BookStatisticsView(LanguageSensitiveMixin, APIView):
     @extend_schema(
         summary="Get book statistics",
         tags=["books"],
@@ -306,13 +392,22 @@ class BookStatisticsView(APIView):
             response = Response({"book": display_name, "statistics": statistics}, status=status.HTTP_200_OK)
             return response
         except Exception:
-            return Response({"detail": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
+            return build_error_response(
+                "Book not found",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
 
 # Phase 1: Discovery/Normalization Endpoints
 
 
-class BookSearchView(LanguageSensitiveMixin, APIView):
+class BookSearchView(LanguageSensitiveMixin, generics.GenericAPIView):
+    permission_classes = [AllowAny]  # Public endpoint for development
+    serializer_class = BookSearchResultSerializer
+    pagination_class = StandardResultsSetPagination
     """Search books by name, OSIS code, or aliases with multilingual support."""
 
     @extend_schema(
@@ -334,7 +429,17 @@ class BookSearchView(LanguageSensitiveMixin, APIView):
                 type=str,
             ),
             OpenApiParameter(
-                name="limit", description="Limit number of results (default: 20)", required=False, type=int
+                name="page_size",
+                description="Number of results per page (default: 20, max: 100)",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="limit",
+                description="Deprecated alias for page_size (will be removed in v2)",
+                required=False,
+                type=int,
+                deprecated=True,
             ),
         ],
         responses={
@@ -345,7 +450,13 @@ class BookSearchView(LanguageSensitiveMixin, APIView):
     def get(self, request, *args, **kwargs):
         query = request.query_params.get("q", "").strip()
         if not query:
-            return Response({"detail": 'Query parameter "q" is required.'}, status=400)
+            return build_error_response(
+                'Query parameter "q" is required.',
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # Language filter precedence: 'language' param for filtering (backward compatibility)
         language_filter = request.query_params.get("language", "").strip()
@@ -353,11 +464,6 @@ class BookSearchView(LanguageSensitiveMixin, APIView):
         # the search to that language to improve i18n relevance
         if not language_filter and "lang" in request.query_params:
             language_filter = getattr(request, "lang_code", "").strip()
-        limit = int(request.query_params.get("limit", 20))
-
-        # Store request for context (needed for _format_search_result)
-        self.request = request
-
         search_results = []
 
         # 1. Search by OSIS code first (exact match has highest priority)
@@ -395,13 +501,19 @@ class BookSearchView(LanguageSensitiveMixin, APIView):
                 )
                 added_books.add(book_name.canonical_book.osis_code)
 
-        # Limit results
-        search_results = search_results[:limit]
-
         if not search_results:
-            return Response({"detail": f'No books found matching "{query}".'}, status=404)
+            return build_error_response(
+                f'No books found matching "{query}".',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
-        serializer = BookSearchResultSerializer(search_results, many=True)
+        page = self.paginate_queryset(search_results)
+        serializer = self.get_serializer(page if page is not None else search_results, many=True)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
 
     def _format_search_result(self, book, query, match_type, language):
@@ -436,7 +548,7 @@ class BookSearchView(LanguageSensitiveMixin, APIView):
         }
 
 
-class BookAliasesView(APIView):
+class BookAliasesView(LanguageSensitiveMixin, APIView):
     """Get comprehensive mapping of book names and aliases by language."""
 
     @extend_schema(
@@ -480,7 +592,13 @@ class BookAliasesView(APIView):
 
         books = books_query.all()
         if not books:
-            return Response({"detail": "No books found."}, status=404)
+            return build_error_response(
+                "No books found.",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         results = []
         for book in books:
@@ -522,7 +640,7 @@ class BookAliasesView(APIView):
         return Response(serializer.data)
 
 
-class BookResolveView(APIView):
+class BookResolveView(LanguageSensitiveMixin, APIView):
     """Normalize any book identifier (OSIS, name, abbreviation) to canonical format."""
 
     @extend_schema(
@@ -540,7 +658,13 @@ class BookResolveView(APIView):
     )
     def get(self, request, identifier, *args, **kwargs):
         if not identifier or not identifier.strip():
-            return Response({"detail": "Book identifier is required."}, status=400)
+            return build_error_response(
+                "Book identifier is required.",
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
+            )
 
         identifier = identifier.strip()
         book = None
@@ -591,7 +715,13 @@ class BookResolveView(APIView):
                 resolution_type = "name_partial"
 
         if not book:
-            return Response({"detail": f'Book identifier "{identifier}" could not be resolved.'}, status=404)
+            return build_error_response(
+                f'Book identifier "{identifier}" could not be resolved.',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # Format response
         canonical_name = get_book_display_name(book, request.lang_code)
@@ -640,7 +770,7 @@ class BookResolveView(APIView):
         return Response(serializer.data)
 
 
-class BookCanonView(APIView):
+class BookCanonView(LanguageSensitiveMixin, APIView):
     """Get books filtered by canonical tradition (Protestant, Catholic, Orthodox, etc.)."""
 
     # Define canonical traditions and their rules
@@ -685,9 +815,13 @@ class BookCanonView(APIView):
 
         if tradition not in self.CANON_TRADITIONS:
             available_traditions = ", ".join(self.CANON_TRADITIONS.keys())
-            return Response(
-                {"detail": f'Invalid canonical tradition "{tradition}". Available options: {available_traditions}'},
-                status=400,
+            return build_error_response(
+                f'Invalid canonical tradition "{tradition}". Available options: {available_traditions}',
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
+                errors={"available_traditions": list(self.CANON_TRADITIONS.keys())},
             )
 
         tradition_config = self.CANON_TRADITIONS[tradition]
@@ -710,7 +844,13 @@ class BookCanonView(APIView):
         books = books_query.all()
 
         if not books:
-            return Response({"detail": f'No books found for tradition "{tradition}".'}, status=404)
+            return build_error_response(
+                f'No books found for tradition "{tradition}".',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # Format results
         results = []
@@ -763,23 +903,33 @@ class BookCanonView(APIView):
 # Phase 2: Navigation/Structure Views
 
 
-class BookNeighborsView(APIView):
+class BookNeighborsView(LanguageSensitiveMixin, APIView):
     """Get navigation information for a book (previous/next books)."""
 
     @extend_schema(
         summary="Get book navigation neighbors",
-        description="Get previous and next books in canonical order for navigation",
+        description="Get previous and next books in canonical order for navigation purposes, including testament-specific neighbors.",
         tags=["books"],
         parameters=[LANG_PARAMETER],
         responses={
             200: BookNeighborsSerializer,
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample("Get navigation for John", value={"book_name": "John"}, request_only=True),
+        ],
     )
     def get(self, request, book_name, *args, **kwargs):
-        book = get_canonical_book_by_name(book_name)
-        if not book:
-            return Response({"detail": f'Book "{book_name}" not found.'}, status=404)
+        try:
+            book = get_canonical_book_by_name(book_name)
+        except Exception:
+            return build_error_response(
+                f'Book "{book_name}" not found.',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # Get current book info
         current_name = get_book_display_name(book, request.lang_code)
@@ -866,25 +1016,38 @@ class BookNeighborsView(APIView):
         return Response(serializer.data)
 
 
-class BookSectionsView(APIView):
+class BookSectionsView(LanguageSensitiveMixin, APIView):
     """List sections/perícopes for a book."""
 
     @extend_schema(
         summary="List book sections/perícopes",
-        description="Get structural sections or perícopes for a book",
+        description="Get structural sections or perícopes for a book. Currently supports chapter-based sections.",
         tags=["books"],
         parameters=[
-            OpenApiParameter(name="type", description="Filter by section type: chapter, pericope, theme"),
+            LANG_PARAMETER,
+            OpenApiParameter(
+                name="type", description="Filter by section type: chapter (default), pericope, theme", required=False
+            ),
         ],
         responses={
             200: BookSectionSerializer(many=True),
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample("Get chapters for John", value={"book_name": "John", "type": "chapter"}, request_only=True),
+        ],
     )
     def get(self, request, book_name, *args, **kwargs):
-        book = get_canonical_book_by_name(book_name)
-        if not book:
-            return Response({"detail": f'Book "{book_name}" not found.'}, status=404)
+        try:
+            book = get_canonical_book_by_name(book_name)
+        except Exception:
+            return build_error_response(
+                f'Book "{book_name}" not found.',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         section_type = request.query_params.get("type", "chapter")
 
@@ -920,31 +1083,56 @@ class BookSectionsView(APIView):
         return Response(serializer.data)
 
 
-class BookSectionDetailView(APIView):
+class BookSectionDetailView(LanguageSensitiveMixin, APIView):
     """Get detailed information about a specific book section."""
 
     @extend_schema(
         summary="Get book section details",
-        description="Get detailed information about a specific book section/perícope",
+        description="Get detailed information about a specific book section/perícope including verse ranges and context.",
         tags=["books"],
+        parameters=[LANG_PARAMETER],
         responses={
             200: BookSectionDetailSerializer,
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample(
+                "Get details for John chapter 3", value={"book_name": "John", "section_id": 3}, request_only=True
+            ),
+        ],
     )
     def get(self, request, book_name, section_id, *args, **kwargs):
-        book = get_canonical_book_by_name(book_name)
-        if not book:
-            return Response({"detail": f'Book "{book_name}" not found.'}, status=404)
+        try:
+            book = get_canonical_book_by_name(book_name)
+        except Exception:
+            return build_error_response(
+                f'Book "{book_name}" not found.',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         try:
             section_id = int(section_id)
         except ValueError:
-            return Response({"detail": "Invalid section ID format."}, status=400)
+            return build_error_response(
+                "Invalid section ID format.",
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # For now, assume chapter-based sections
         if section_id < 1 or section_id > book.chapter_count:
-            return Response({"detail": f'Section {section_id} not found in book "{book_name}".'}, status=404)
+            return build_error_response(
+                f'Section {section_id} not found in book "{book_name}".',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         book_display_name = get_book_display_name(book, request.lang_code)
 
@@ -971,31 +1159,59 @@ class BookSectionDetailView(APIView):
         return Response(serializer.data)
 
 
-class BookRestrictedSearchView(APIView):
+class BookRestrictedSearchView(LanguageSensitiveMixin, APIView):
     """Search for verses within a specific book."""
 
     @extend_schema(
         summary="Search within a specific book",
-        description="Search for text within a specific book's verses",
+        description="Search for text within verses of a specific book. Returns matching verses with text previews and relevance scores.",
         tags=["books"],
         parameters=[
-            OpenApiParameter(name="q", description="Search query", required=True),
-            OpenApiParameter(name="version", description="Bible version code (default: first available)"),
-            OpenApiParameter(name="limit", description="Maximum results (default: 20)"),
+            LANG_PARAMETER,
+            OpenApiParameter(name="q", description="Search query text", required=True),
+            OpenApiParameter(
+                name="version",
+                description="Bible version code to search in (optional, searches all versions if not specified)",
+                required=False,
+            ),
+            OpenApiParameter(
+                name="limit", description="Maximum number of results to return (default: 20, max: 100)", required=False
+            ),
         ],
         responses={
             200: BookRestrictedSearchSerializer(many=True),
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample("Search for 'love' in John", value={"book_name": "John", "q": "love"}, request_only=True),
+            OpenApiExample(
+                "Search for 'light' in John NIV",
+                value={"book_name": "John", "q": "light", "version": "NIV"},
+                request_only=True,
+            ),
+        ],
     )
     def get(self, request, book_name, *args, **kwargs):
-        book = get_canonical_book_by_name(book_name)
-        if not book:
-            return Response({"detail": f'Book "{book_name}" not found.'}, status=404)
+        try:
+            book = get_canonical_book_by_name(book_name)
+        except Exception:
+            return build_error_response(
+                f'Book "{book_name}" not found.',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         query = request.query_params.get("q", "").strip()
         if not query:
-            return Response({"detail": 'Search query "q" parameter is required.'}, status=400)
+            return build_error_response(
+                'Search query "q" parameter is required.',
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
+            )
 
         version_code = request.query_params.get("version")
         limit = int(request.query_params.get("limit", 20))
@@ -1043,35 +1259,64 @@ class BookRestrictedSearchView(APIView):
         return Response(serializer.data)
 
 
-class BookChapterVersesView(APIView):
+class BookChapterVersesView(LanguageSensitiveMixin, APIView):
     """List all verses in a specific chapter of a book."""
 
     @extend_schema(
         summary="List verses in a book chapter",
-        description="Get all verses for a specific chapter in a book",
+        description="Get all verses for a specific chapter in a book with full text and metadata.",
         tags=["books"],
         parameters=[
-            OpenApiParameter(name="version", description="Bible version code (default: first available)"),
+            LANG_PARAMETER,
+            OpenApiParameter(
+                name="version",
+                description="Bible version code to retrieve verses from (optional, uses first available if not specified)",
+                required=False,
+            ),
         ],
         responses={
             200: BookChapterVersesSerializer,
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample("Get all verses in John 3", value={"book_name": "John", "chapter": 3}, request_only=True),
+            OpenApiExample(
+                "Get John 3 in NIV version",
+                value={"book_name": "John", "chapter": 3, "version": "NIV"},
+                request_only=True,
+            ),
+        ],
     )
     def get(self, request, book_name, chapter, *args, **kwargs):
-        book = get_canonical_book_by_name(book_name)
-        if not book:
-            return Response({"detail": f'Book "{book_name}" not found.'}, status=404)
+        try:
+            book = get_canonical_book_by_name(book_name)
+        except Exception:
+            return build_error_response(
+                f'Book "{book_name}" not found.',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         try:
             chapter = int(chapter)
         except ValueError:
-            return Response({"detail": "Invalid chapter number format."}, status=400)
+            return build_error_response(
+                "Invalid chapter number format.",
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
+            )
 
         if chapter < 1 or chapter > book.chapter_count:
-            return Response(
-                {"detail": f'Chapter {chapter} not found in book "{book_name}" (max: {book.chapter_count}).'},
-                status=404,
+            return build_error_response(
+                f'Chapter {chapter} not found in book "{book_name}" (max: {book.chapter_count}).',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
             )
 
         version_code = request.query_params.get("version")
@@ -1088,7 +1333,13 @@ class BookChapterVersesView(APIView):
         verses = verses_query.select_related("version").order_by("number")
 
         if not verses:
-            return Response({"detail": f"No verses found for {book_name} {chapter}."}, status=404)
+            return build_error_response(
+                f"No verses found for {book_name} {chapter}.",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # Format verse data
         verse_list = []
@@ -1117,29 +1368,63 @@ class BookChapterVersesView(APIView):
         return Response(serializer.data)
 
 
-class BookRangeView(APIView):
+class BookRangeView(LanguageSensitiveMixin, APIView):
     """Get verses for a specific range within a book."""
 
     @extend_schema(
         summary="Get verses for a book range",
-        description="Get verses for a specific verse range within a book (e.g., John 3:16-18)",
+        description="Get verses for a specific verse range within a book. Supports both single-chapter and cross-chapter ranges.",
         tags=["books"],
         parameters=[
-            OpenApiParameter(name="start_chapter", description="Start chapter", required=True),
-            OpenApiParameter(name="start_verse", description="Start verse", required=True),
-            OpenApiParameter(name="end_chapter", description="End chapter"),
-            OpenApiParameter(name="end_verse", description="End verse"),
-            OpenApiParameter(name="version", description="Bible version code (default: first available)"),
+            LANG_PARAMETER,
+            OpenApiParameter(name="start_chapter", description="Starting chapter number", required=True, type=int),
+            OpenApiParameter(name="start_verse", description="Starting verse number", required=True, type=int),
+            OpenApiParameter(
+                name="end_chapter",
+                description="Ending chapter number (defaults to start_chapter if not provided)",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="end_verse",
+                description="Ending verse number (defaults to start_verse if not provided)",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="version",
+                description="Bible version code to retrieve verses from (optional, uses first available if not specified)",
+                required=False,
+            ),
         ],
         responses={
             200: BookRangeSerializer,
             **get_error_responses(),
         },
+        examples=[
+            OpenApiExample(
+                "Get John 3:16-18",
+                value={"book_name": "John", "start_chapter": 3, "start_verse": 16, "end_chapter": 3, "end_verse": 18},
+                request_only=True,
+            ),
+            OpenApiExample(
+                "Get cross-chapter range John 3:16-4:3",
+                value={"book_name": "John", "start_chapter": 3, "start_verse": 16, "end_chapter": 4, "end_verse": 3},
+                request_only=True,
+            ),
+        ],
     )
     def get(self, request, book_name, *args, **kwargs):
-        book = get_canonical_book_by_name(book_name)
-        if not book:
-            return Response({"detail": f'Book "{book_name}" not found.'}, status=404)
+        try:
+            book = get_canonical_book_by_name(book_name)
+        except Exception:
+            return build_error_response(
+                f'Book "{book_name}" not found.',
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # Parse range parameters
         try:
@@ -1148,23 +1433,41 @@ class BookRangeView(APIView):
             end_chapter = int(request.query_params.get("end_chapter", start_chapter))
             end_verse = int(request.query_params.get("end_verse", start_verse))
         except (ValueError, TypeError):
-            return Response(
-                {"detail": "Invalid range parameters. start_chapter and start_verse are required."}, status=400
+            return build_error_response(
+                "Invalid range parameters. start_chapter and start_verse are required.",
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
             )
 
         # Validate range
         if start_chapter < 1 or start_chapter > book.chapter_count:
-            return Response(
-                {"detail": f'Start chapter {start_chapter} is out of range for book "{book_name}".'}, status=400
+            return build_error_response(
+                f'Start chapter {start_chapter} is out of range for book "{book_name}".',
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
             )
 
         if end_chapter < 1 or end_chapter > book.chapter_count:
-            return Response(
-                {"detail": f'End chapter {end_chapter} is out of range for book "{book_name}".'}, status=400
+            return build_error_response(
+                f'End chapter {end_chapter} is out of range for book "{book_name}".',
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
             )
 
         if start_chapter > end_chapter or (start_chapter == end_chapter and start_verse > end_verse):
-            return Response({"detail": "Invalid range: start must be before or equal to end."}, status=400)
+            return build_error_response(
+                "Invalid range: start must be before or equal to end.",
+                "validation_error",
+                status.HTTP_400_BAD_REQUEST,
+                request=request,
+                vary_accept_language=True,
+            )
 
         version_code = request.query_params.get("version")
 
@@ -1189,7 +1492,13 @@ class BookRangeView(APIView):
         verses = verses_query.select_related("version").order_by("chapter", "number")
 
         if not verses:
-            return Response({"detail": "No verses found for the specified range."}, status=404)
+            return build_error_response(
+                "No verses found for the specified range.",
+                "not_found",
+                status.HTTP_404_NOT_FOUND,
+                request=request,
+                vary_accept_language=True,
+            )
 
         # Format verse data
         verse_list = []
@@ -1223,3 +1532,107 @@ class BookRangeView(APIView):
 
         serializer = BookRangeSerializer(result)
         return Response(serializer.data)
+
+
+# New endpoints for frontend filters
+
+
+class TestamentListView(LanguageSensitiveMixin, generics.ListAPIView):
+    """List all testaments with localized names."""
+
+    serializer_class = TestamentSerializer
+    permission_classes = [AllowAny]
+    queryset = Testament.objects.all().order_by("order")
+
+    @extend_schema(
+        summary="List testaments",
+        description="Get all testaments (Old/New) with localized names and descriptions.",
+        tags=["books"],
+        parameters=[LANG_PARAMETER],
+        responses={
+            200: TestamentSerializer(many=True),
+            **get_error_responses(),
+        },
+        examples=[
+            OpenApiExample(
+                "List testaments in Portuguese",
+                value=[
+                    {
+                        "code": "old",
+                        "name": "Antigo Testamento",
+                        "description": "Livros escritos antes de Cristo",
+                        "order": 1,
+                    },
+                    {
+                        "code": "new",
+                        "name": "Novo Testamento",
+                        "description": "Livros escritos após Cristo",
+                        "order": 2,
+                    },
+                ],
+                response_only=True,
+            ),
+        ],
+    )
+    def get_serializer_context(self):
+        """Add request context for language resolution."""
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
+
+class BookCategoryListView(LanguageSensitiveMixin, generics.ListAPIView):
+    """List book categories, optionally filtered by testament."""
+
+    serializer_class = BookCategorySerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        """Get categories with optional testament filter."""
+        qs = BookCategory.objects.select_related("testament").order_by("testament__order", "order")
+        testament_code = self.request.query_params.get("testament")
+
+        if testament_code:
+            # Filter by testament code (old/new)
+            if testament_code.lower() == "old":
+                qs = qs.filter(testament__name__icontains="old")
+            elif testament_code.lower() == "new":
+                qs = qs.filter(testament__name__icontains="new")
+
+        return qs
+
+    @extend_schema(
+        summary="List book categories",
+        description="Get all book categories (Pentateuch, Gospels, Epistles, etc.) with optional testament filter.",
+        tags=["books"],
+        parameters=[
+            LANG_PARAMETER,
+            OpenApiParameter(
+                name="testament",
+                description="Filter by testament code (old/new)",
+                required=False,
+                type=str,
+            ),
+        ],
+        responses={
+            200: BookCategorySerializer(many=True),
+            **get_error_responses(),
+        },
+        examples=[
+            OpenApiExample(
+                "List all categories",
+                summary="Get all book categories",
+                response_only=True,
+            ),
+            OpenApiExample(
+                "List Old Testament categories",
+                value={"testament": "old"},
+                request_only=True,
+            ),
+        ],
+    )
+    def get_serializer_context(self):
+        """Add request context for language resolution."""
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context

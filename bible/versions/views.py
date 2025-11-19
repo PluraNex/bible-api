@@ -2,10 +2,10 @@
 
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bible.auth.permissions import HasAPIScopes
 from common.openapi import LANG_PARAMETER, get_error_responses
 
 from ..models import Version
@@ -14,8 +14,7 @@ from .serializers import VersionSerializer
 
 class VersionListView(generics.ListAPIView):
     serializer_class = VersionSerializer
-    permission_classes = [HasAPIScopes]
-    required_scopes = ["read"]
+    permission_classes = [AllowAny]  # Public endpoint for development
 
     def get_queryset(self):
         qs = Version.objects.all().order_by("name")
@@ -26,7 +25,16 @@ class VersionListView(generics.ListAPIView):
                 qs = qs.filter(language__id=language_id)
             except (ValueError, TypeError):
                 # If language is not a number, try to filter by language code
-                qs = qs.filter(language__code__iexact=language)
+                # Support both exact match and base language fallback (e.g., "pt" matches "pt" and "pt-BR")
+                from django.db.models import Q
+
+                if "-" not in language:
+                    # Base language: match exact or regional variants (e.g., "pt" matches "pt" and "pt-BR")
+                    qs = qs.filter(Q(language__code__iexact=language) | Q(language__code__istartswith=f"{language}-"))
+                else:
+                    # Regional language: match exact or base (e.g., "pt-BR" matches "pt-BR" and "pt")
+                    base_lang = language.split("-")[0]
+                    qs = qs.filter(Q(language__code__iexact=language) | Q(language__code__iexact=base_lang))
         is_active = self.request.query_params.get("is_active")
         if is_active is not None:
             normalized = str(is_active).lower() in {"1", "true", "yes"}
@@ -74,8 +82,7 @@ class VersionListView(generics.ListAPIView):
 class VersionDetailView(generics.RetrieveAPIView):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
-    permission_classes = [HasAPIScopes]
-    required_scopes = ["read"]
+    permission_classes = [AllowAny]  # Public endpoint for development
 
     def get_object(self):
         """Get version by code or abbreviation (case-insensitive)."""
@@ -113,9 +120,7 @@ class VersionDetailView(generics.RetrieveAPIView):
 class VersionDefaultView(APIView):
     """Return default active version for a given language."""
 
-    permission_classes = [HasAPIScopes]
-    required_scopes = ["read"]
-    throttle_scope = "read"
+    permission_classes = [AllowAny]  # Public endpoint for development
 
     def _get_default_version_for_language(self, lang_code):
         """Get default version with base → regional fallback logic.

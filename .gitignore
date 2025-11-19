@@ -258,3 +258,4 @@ scraped/
 # Observability and monitoring
 grafana/data/
 prometheus/data/
+.env.local
