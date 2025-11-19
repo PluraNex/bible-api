@@ -147,7 +147,12 @@ class VersesViewsTest(TestCase):
         response = view.get(request, book_name="InvalidBook", chapter=1)
 
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.data, {"detail": "Book not found"})
+        # Standardized error response includes code and request_id
+        self.assertIn("detail", response.data)
+        self.assertEqual(response.data["detail"], "Book not found")
+        self.assertIn("code", response.data)
+        self.assertEqual(response.data["code"], "not_found")
+        self.assertIn("request_id", response.data)
 
     def test_verse_detail_view_queryset(self):
         """Test VerseDetailView queryset."""

@@ -77,3 +77,20 @@ class VersesApiTest(TestCase):
         resp = self.client.get("/api/v1/bible/verses/by-theme/999/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(resp.json().get("results", [])), 0)
+
+    def test_url_encoding_special_characters(self):
+        """Test that URLs with special characters are properly decoded."""
+        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
+
+        # Test with URL-encoded book name (João -> Jo%C3%A3o)
+        import urllib.parse
+
+        encoded_name = urllib.parse.quote("João")
+
+        # This should work even though "João" doesn't exist in test data
+        # The important thing is that the URL is properly decoded
+        resp = self.client.get(f"/api/v1/bible/verses/by-chapter/{encoded_name}/3/")
+
+        # Should return 404 for book not found, not 400 for bad URL
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("Book not found", resp.json().get("detail", ""))

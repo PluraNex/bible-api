@@ -41,7 +41,7 @@ class VerseSerializerTest(TestCase):
         data = serializer.data
 
         self.assertEqual(data["chapter"], 3)
-        self.assertEqual(data["number"], 16)
+        self.assertEqual(data["verse"], 16)  # Field renamed from 'number' to 'verse'
         self.assertEqual(data["text"], "For God so loved the world...")
         self.assertEqual(data["reference"], "Test John 3:16")  # Property field
 

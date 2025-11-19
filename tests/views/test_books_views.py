@@ -93,7 +93,7 @@ class BooksViewsTest(TestCase):
         """Test BookListView filterset fields."""
         view = BookListView()
         expected_fields = ["testament", "is_deuterocanonical"]
-        self.assertEqual(view.filterset_fields, expected_fields)
+        self.assertEqual(view.filterset_class.filterset_fields, expected_fields)
 
     def test_book_list_view_search_fields(self):
         """Test BookListView search fields."""
@@ -135,7 +135,12 @@ class BooksViewsTest(TestCase):
         response = view.get(request, book_name="InvalidBook")
 
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.data, {"detail": "Book not found"})
+        # Standardized error response includes code and request_id
+        self.assertIn("detail", response.data)
+        self.assertEqual(response.data["detail"], "Book not found")
+        self.assertIn("code", response.data)
+        self.assertEqual(response.data["code"], "not_found")
+        self.assertIn("request_id", response.data)
 
     @patch("bible.books.views.get_canonical_book_by_name")
     @patch("bible.books.views.get_book_display_name")
@@ -166,7 +171,12 @@ class BooksViewsTest(TestCase):
         response = view.get(request, book_name="InvalidBook")
 
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.data, {"detail": "Book not found"})
+        # Standardized error response includes code and request_id
+        self.assertIn("detail", response.data)
+        self.assertEqual(response.data["detail"], "Book not found")
+        self.assertIn("code", response.data)
+        self.assertEqual(response.data["code"], "not_found")
+        self.assertIn("request_id", response.data)
 
     def test_book_list_view_query_efficiency(self):
         """Test that BookListView uses select_related for efficiency."""

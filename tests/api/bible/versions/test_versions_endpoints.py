@@ -26,7 +26,10 @@ class VersionsApiTest(TestCase):
         Version.objects.create(name="Outdated Version", code="EN_OV", language=self.en_lang, is_active=False)
 
     def test_requires_auth(self):
-        self.assertEqual(self.client.get("/api/v1/bible/versions/").status_code, status.HTTP_401_UNAUTHORIZED)
+        # SKIP: Version endpoints are now public (AllowAny) for frontend access
+        # self.assertEqual(self.client.get("/api/v1/bible/versions/").status_code, status.HTTP_401_UNAUTHORIZED)
+        resp = self.client.get("/api/v1/bible/versions/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, "Versions endpoint should be publicly accessible")
 
     def test_list_versions(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
@@ -98,18 +101,18 @@ class VersionsApiTest(TestCase):
                 self.assertTrue(all(item["is_active"] is True for item in items))
 
     def test_requires_read_scope(self):
-        """Endpoints should require 'read' scope."""
+        """SKIP: Endpoints no longer require 'read' scope (now AllowAny for public access)."""
         # API key without 'read' scope
         no_read_key = APIKey.objects.create(name="No Read Key", user=self.user, scopes=["write"])  # Missing 'read'
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {no_read_key.key}")
 
-        # Both endpoints should return 403
+        # Both endpoints should be publicly accessible (200, not 403)
         list_resp = self.client.get("/api/v1/bible/versions/")
-        self.assertEqual(list_resp.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(list_resp.status_code, status.HTTP_200_OK, "Versions list should be public")
 
         detail_resp = self.client.get("/api/v1/bible/versions/KJV/")
-        self.assertEqual(detail_resp.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(detail_resp.status_code, status.HTTP_200_OK, "Version detail should be public")
 
 
 class VersionDefaultApiTest(TestCase):
@@ -146,17 +149,17 @@ class VersionDefaultApiTest(TestCase):
         Version.objects.create(name="Outdated Version", code="EN_OLD", language=self.en_lang, is_active=False)
 
     def test_requires_auth(self):
-        """Default endpoint should require authentication."""
+        """SKIP: Default endpoint is now public (AllowAny) for frontend access."""
         resp = self.client.get("/api/v1/bible/versions/default/")
-        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, "Default version endpoint should be publicly accessible")
 
     def test_requires_read_scope(self):
-        """Default endpoint should require 'read' scope."""
+        """SKIP: Default endpoint no longer requires 'read' scope (now AllowAny for public access)."""
         no_read_key = APIKey.objects.create(name="No Read Key", user=self.user, scopes=["write"])
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {no_read_key.key}")
 
         resp = self.client.get("/api/v1/bible/versions/default/")
-        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, "Default version should be publicly accessible")
 
     def test_default_without_lang_returns_english(self):
         """Default endpoint without lang param should return English version."""

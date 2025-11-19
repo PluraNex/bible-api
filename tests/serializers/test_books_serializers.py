@@ -48,7 +48,14 @@ class BookSerializersTest(TestCase):
         data = serializer.data
 
         # Verify all expected fields are present
-        expected_fields = ["id", "name", "abbreviation", "order", "testament", "chapter_count"]
+        expected_fields = [
+            "osis_code",
+            "name",
+            "abbreviation",
+            "order",
+            "testament",
+            "chapter_count",
+        ]  # Removed 'id' from simplified serializer
         for field in expected_fields:
             self.assertIn(field, data)
 
@@ -56,7 +63,9 @@ class BookSerializersTest(TestCase):
         self.assertEqual(data["name"], "Genesis")
         self.assertEqual(data["abbreviation"], "Gen")
         self.assertEqual(data["order"], 1)
-        self.assertEqual(data["testament"], "Old Testament")
+        # Testament is now a nested object, not a string
+        self.assertEqual(data["testament"]["name"], "Old Testament")
+        self.assertEqual(data["testament"]["code"], "old")
         self.assertEqual(data["chapter_count"], 50)
 
     def test_book_serializer_get_name_method(self):

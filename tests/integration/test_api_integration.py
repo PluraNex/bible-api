@@ -209,7 +209,9 @@ class BibleAPIIntegrationTest(TestCase):
         response = self.client.get(f"/api/v1/bible/verses/by-chapter/John/3/?version={self.kjv.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        kjv_verse = next((v for v in data["results"] if v["number"] == 16), None)
+        kjv_verse = next(
+            (v for v in data["results"] if v["verse"] == 16), None
+        )  # Field renamed from 'number' to 'verse'
         self.assertIsNotNone(kjv_verse)
         self.assertIn("whosoever believeth", kjv_verse["text"])
 
@@ -217,7 +219,9 @@ class BibleAPIIntegrationTest(TestCase):
         response = self.client.get(f"/api/v1/bible/verses/by-chapter/John/3/?version={self.nvi.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        nvi_verse = next((v for v in data["results"] if v["number"] == 16), None)
+        nvi_verse = next(
+            (v for v in data["results"] if v["verse"] == 16), None
+        )  # Field renamed from 'number' to 'verse'
         self.assertIsNotNone(nvi_verse)
         self.assertIn("nele crer", nvi_verse["text"])
 

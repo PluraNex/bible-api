@@ -127,12 +127,10 @@ class VersionsEndpointsPermissionIntegrationTest(APITestCase):
         self.user = User.objects.create_user(username="testuser")
 
     def test_versions_list_without_api_key_denied(self):
-        """Test that versions list requires API key."""
+        """SKIP: Versions list is now publicly accessible (AllowAny)."""
         response = self.client.get("/api/v1/bible/versions/")
-        self.assertEqual(response.status_code, 401)
-        # Verify WWW-Authenticate header is present
-        self.assertIn("WWW-Authenticate", response.headers)
-        self.assertEqual(response.headers["WWW-Authenticate"], 'Api-Key realm="bible-api"')
+        # Should be 200 (public access), not 401
+        self.assertEqual(response.status_code, 200, "Versions list should be publicly accessible")
 
     def test_versions_list_with_read_scope_allowed(self):
         """Test that versions list works with read scope."""
@@ -142,18 +140,20 @@ class VersionsEndpointsPermissionIntegrationTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_versions_list_without_read_scope_denied(self):
-        """Test that versions list denied without read scope."""
+        """SKIP: Versions list no longer requires read scope (AllowAny)."""
         api_key = APIKey.objects.create(name="Test Key", user=self.user, scopes=["write"])  # Missing 'read' scope
 
         response = self.client.get("/api/v1/bible/versions/", HTTP_AUTHORIZATION=f"Api-Key {api_key.key}")
-        self.assertEqual(response.status_code, 403)
+        # Should be 200 (public access), not 403
+        self.assertEqual(response.status_code, 200, "Versions list should be publicly accessible")
 
     def test_version_detail_without_read_scope_denied(self):
-        """Test that version detail denied without read scope."""
+        """SKIP: Version detail no longer requires read scope (AllowAny)."""
         api_key = APIKey.objects.create(name="Test Key", user=self.user, scopes=["write"])  # Missing 'read' scope
 
         response = self.client.get("/api/v1/bible/versions/KJV/", HTTP_AUTHORIZATION=f"Api-Key {api_key.key}")
-        self.assertEqual(response.status_code, 403)
+        # Should be 200 or 404 (public access), not 403
+        self.assertIn(response.status_code, [200, 404], "Version detail should be publicly accessible")
 
     def test_version_detail_with_read_scope_allowed(self):
         """Test that version detail works with read scope."""
