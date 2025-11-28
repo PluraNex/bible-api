@@ -128,6 +128,8 @@ class Author(models.Model):
             models.Index(fields=["century"]),
             models.Index(fields=["tradition"]),
             models.Index(fields=["birth_year", "death_year"]),
+            models.Index(fields=["author_type"], name="author_type_idx"),
+            models.Index(fields=["author_type", "tradition"], name="author_type_tradition_idx"),
         ]
 
     def __str__(self):
@@ -150,8 +152,16 @@ class CommentarySource(models.Model):
     Metadados do acervo de comentários (ex.: 'Matthew Henry', 'TSK', 'Barnes', 'Bíblia de Genebra').
     """
 
-    name = models.CharField(max_length=120)
-    short_code = models.CharField(max_length=40, unique=True)  # 'MHCC','TSK','BARNES'
+    name = models.CharField(
+        max_length=120,
+        unique=True,
+        help_text="Full name of the commentary source (e.g., 'Matthew Henry Complete Commentary')"
+    )
+    short_code = models.CharField(
+        max_length=40,
+        unique=True,
+        help_text="Unique identifier (e.g., 'MHCC', 'TSK', 'BARNES')"
+    )
     license = models.ForeignKey(
         License, on_delete=models.SET_NULL, null=True, blank=True, related_name="commentary_sources"
     )
@@ -160,7 +170,28 @@ class CommentarySource(models.Model):
     )
     url = models.URLField(blank=True, default="")
     description = models.TextField(blank=True)
+
+    # Metadata fields
+    publication_year = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Year of publication or primary edition"
+    )
+    author_type = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Type of authors (e.g., 'Medieval', 'Reformation', 'Modern')"
+    )
+    cover_image_url = models.URLField(
+        blank=True,
+        help_text="URL to cover image/icon for UI display"
+    )
+
     is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(
+        default=False,
+        help_text="Whether to feature prominently in UI"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -168,12 +199,15 @@ class CommentarySource(models.Model):
         db_table = "commentary_sources"
         ordering = ["short_code"]
         indexes = [
-            models.Index(fields=["language", "is_active"]),
-            models.Index(fields=["short_code"]),
+            models.Index(fields=["language", "is_active"], name="cs_lang_active_idx"),
+            models.Index(fields=["short_code"], name="cs_short_code_idx"),
+            models.Index(fields=["author_type", "is_active"], name="cs_type_active_idx"),
+            models.Index(fields=["is_featured"], name="cs_featured_idx"),
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.short_code})"
+        year = f" ({self.publication_year})" if self.publication_year else ""
+        return f"{self.name}{year} [{self.short_code}]"
 
 
 class CommentaryEntry(models.Model):
@@ -182,8 +216,7 @@ class CommentaryEntry(models.Model):
     """
 
     source = models.ForeignKey(CommentarySource, on_delete=models.CASCADE, related_name="entries")
-    # TODO: Add author relationship after migration
-    # author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="commentary_entries", null=True, blank=True)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="commentary_entries", null=True, blank=True)
     book = models.ForeignKey(CanonicalBook, on_delete=models.CASCADE, related_name="commentary_entries")
     chapter = models.PositiveIntegerField()
     verse_start = models.PositiveIntegerField()
@@ -192,6 +225,34 @@ class CommentaryEntry(models.Model):
     body_text = models.TextField()
     body_html = models.TextField(blank=True, default="")
     original_reference = models.CharField(max_length=100, blank=True, help_text="Original reference format from source")
+
+    # Enrichment Fields (AI & Theological Analysis)
+    ai_summary = models.JSONField(default=dict, blank=True, help_text="AI generated summary")
+    argumentative_structure = models.JSONField(default=dict, blank=True, help_text="Thesis, arguments, conclusion")
+    theological_analysis = models.JSONField(default=dict, blank=True, help_text="Doctrines, traditions, method")
+    spiritual_insight = models.JSONField(default=dict, blank=True, help_text="Themes and practical reflection")
+
+    # Quality & Completeness Tracking
+    is_complete = models.BooleanField(
+        default=True,
+        help_text="Whether this entry is complete (vs. excerpt/summary)"
+    )
+    original_language = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Original language of text (e.g., 'Latin', 'Greek', 'English')"
+    )
+    word_count = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Approximate word count for length indication"
+    )
+    confidence_score = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Data quality/accuracy score (0.0-1.0)"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -203,6 +264,11 @@ class CommentaryEntry(models.Model):
                 fields=["source", "book", "chapter", "verse_start", "verse_end"], name="commentary_entry_ref_idx"
             ),
             models.Index(fields=["book", "chapter"], name="commentary_book_chapter_idx"),
+            models.Index(fields=["author"], name="commentary_author_idx"),
+            models.Index(
+                fields=["book", "chapter", "is_complete"],
+                name="commentary_complete_idx"
+            ),
         ]
         constraints = [
             models.UniqueConstraint(
@@ -215,6 +281,10 @@ class CommentaryEntry(models.Model):
             models.CheckConstraint(check=models.Q(chapter__gte=1), name="commentary_chapter_pos"),
             models.CheckConstraint(check=models.Q(verse_start__gte=1), name="commentary_verse_start_pos"),
             models.CheckConstraint(check=models.Q(verse_end__gte=1), name="commentary_verse_end_pos"),
+            models.CheckConstraint(
+                check=models.Q(confidence_score__gte=0.0) & models.Q(confidence_score__lte=1.0),
+                name="commentary_confidence_0_1"
+            ),
         ]
 
     def __str__(self):
@@ -231,6 +301,19 @@ class CommentaryEntry(models.Model):
         )
         return f"{self.book.osis_code} {self.chapter}:{verse_range}"
 
+    @property
+    def length_category(self):
+        """Categorize entry by length for UI."""
+        if not self.word_count:
+            return "unknown"
+        if self.word_count < 100:
+            return "brief"
+        elif self.word_count < 500:
+            return "medium"
+        elif self.word_count < 2000:
+            return "detailed"
+        return "comprehensive"
+
     def covers_verse(self, chapter, verse):
         """Check if this commentary entry covers a specific verse."""
         return self.chapter == chapter and self.verse_start <= verse <= self.verse_end
@@ -244,8 +327,41 @@ class VerseComment(models.Model):
     verse = models.ForeignKey(Verse, related_name="user_comments", on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="verse_comments")
     comment = models.TextField()
-    is_public = models.BooleanField(default=False, help_text="Whether this comment is visible to other users")
-    is_favorite = models.BooleanField(default=False, help_text="User's favorite/starred comment")
+
+    # Visibility & Status
+    is_public = models.BooleanField(
+        default=False,
+        help_text="Whether visible to other authenticated users"
+    )
+    is_favorite = models.BooleanField(
+        default=False,
+        help_text="User's favorite/starred comment"
+    )
+
+    # Interaction metrics
+    like_count = models.IntegerField(
+        default=0,
+        help_text="Number of users who marked this helpful"
+    )
+    reply_count = models.IntegerField(
+        default=0,
+        help_text="Number of replies to this comment"
+    )
+
+    # Categorization
+    category = models.CharField(
+        max_length=50,
+        blank=True,
+        choices=[
+            ("reflection", "Personal Reflection"),
+            ("question", "Question"),
+            ("insight", "Theological Insight"),
+            ("study_note", "Study Note"),
+            ("prayer", "Prayer Request"),
+        ],
+        help_text="Type of comment"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -256,6 +372,7 @@ class VerseComment(models.Model):
             models.Index(fields=["user", "created_at"], name="vcomment_user_created_idx"),
             models.Index(fields=["verse", "is_public"], name="vcomment_verse_public_idx"),
             models.Index(fields=["user", "is_favorite"], name="vcomment_user_favorite_idx"),
+            models.Index(fields=["verse", "category"], name="vcomment_verse_category_idx"),
         ]
         constraints = [
             models.UniqueConstraint(

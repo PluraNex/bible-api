@@ -259,3 +259,4 @@ scraped/
 grafana/data/
 prometheus/data/
 .env.local
+new_testament/acts/*

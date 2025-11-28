@@ -566,6 +566,8 @@ class VersesRangeView(LanguageSensitiveMixin, generics.ListAPIView):
 
 
 class VersesCompareView(LanguageSensitiveMixin, APIView):
+    permission_classes = [AllowAny]  # Public endpoint for verse comparison
+
     @extend_schema(
         summary="Compare verse across versions",
         description="Compare the same verse or verse range across multiple Bible versions. Useful for studying textual variations and translations.",

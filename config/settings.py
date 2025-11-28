@@ -45,6 +45,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "bible.apps.BibleConfig",  # label = bible
     "bible.auth.apps.BibleAuthConfig",  # Authentication app
+    "bible.comments",  # Commentary app
     "bible.ai",  # pode deixar assim se não tiver AppConfig própria
     "common",
     "data",  # Data management commands

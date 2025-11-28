@@ -175,8 +175,11 @@ class ErrorHandlerIntegrationTests(APITestCase):
         self.api_key = APIKey.objects.create(name="test-key", user=self.user, scopes=["read"], is_active=True)
 
     def test_authentication_required_error(self):
-        """Test authentication error with real API call."""
-        response = self.client.get("/api/v1/bible/versions/")
+        """Test authentication error with real API call.
+
+        Use a known protected endpoint (overview) to assert 401 when no API key is provided.
+        """
+        response = self.client.get("/api/v1/bible/overview/")
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.data["code"], "authentication_failed")

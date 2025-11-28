@@ -119,7 +119,6 @@ class VersionDetailView(generics.RetrieveAPIView):
 
 class VersionDefaultView(APIView):
     """Return default active version for a given language."""
-
     permission_classes = [AllowAny]  # Public endpoint for development
 
     def _get_default_version_for_language(self, lang_code):

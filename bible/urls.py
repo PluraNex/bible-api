@@ -19,5 +19,6 @@ urlpatterns = [
     path("versions/", include(("bible.versions.urls", "versions"), namespace="versions")),
     path("languages/", include(("bible.languages.urls", "languages"), namespace="languages")),
     path("references/", include(("bible.references.urls", "references"), namespace="references")),
+    path("comments/", include(("bible.comments.urls", "comments"), namespace="comments")),
     path("rag/", include(("bible.rag.urls", "rag"), namespace="rag")),
 ]
