@@ -469,219 +469,193 @@ def _expand_query_with_mode(
     return result
 
 
-def hybrid_search(
+def _stage_nlp_analysis(
     query: str,
-    query_embedding: list[float],
-    *,
-    top_k: int = 20,
-    pool_size: int = 100,
-    versions: list[str] | None = None,
-    book_id: int | None = None,
-    alpha: float = 0.5,
-    rrf_k: int = 60,
-    expand_query_flag: bool = False,
-    expand_mode: Literal["static", "dynamic", "auto"] = "auto",
-    max_synonyms: int = 3,
-    rerank_with_large: bool = False,
-    mmr_lambda: float | None = None,
-    deduplicate_versions: bool = False,
-    embedding_source: Literal["verse", "unified"] = "verse",
-    use_nlp_analysis: bool = True,
-    bm25_original_boost: float = 1.5,
-) -> dict[str, Any]:
+    use_nlp_analysis: bool,
+    alpha: float,
+    expand_query_flag: bool,
+    alpha_user_provided: bool = False,
+) -> tuple[float, bool, float, str | None, dict[str, Any], float]:
+    """Stage 0: NLP analysis for dynamic boost strategy.
+
+    Returns (alpha, expand_query_flag, entity_boost, optimized_tsquery, nlp_info, elapsed_ms).
     """
-    Executa busca híbrida completa: BM25 + Vetorial + RRF Fusion.
-    
-    Pipeline completo:
-    0. NLP Analysis (novo) - Analisa query para determinar boost strategy
-       - Detecta entidades (Gazetteer), classifica tipo semântico
-       - Calcula alpha dinâmico, boost de entidade, distância de palavras
-    1. Query Expansion (opcional) - Expande com sinônimos teológicos
-       - static: usa dicionário estático (rápido, offline)
-       - dynamic: usa LLM GPT-4o com cache (mais preciso, primeira vez lento)
-       - auto: tenta dynamic primeiro, fallback para static
-    2. BM25 Search - Busca léxica com full-text search
-    3. Vector Search - Busca semântica com embeddings
-    4. RRF Fusion - Combina rankings com Reciprocal Rank Fusion
-    5. Two-Stage Reranking (opcional) - Reordena com embedding large
-    6. MMR Diversification (opcional) - Diversifica resultados com MMR
-    
-    Args:
-        query: Texto da consulta
-        query_embedding: Vetor embedding da query (small, dim=1536)
-        top_k: Número final de resultados
-        pool_size: Candidatos a buscar de cada fonte
-        versions: Filtro de versões (ignorado se embedding_source='unified')
-        book_id: Filtro de livro
-        alpha: Peso BM25 vs Vetorial (0.5 = balanceado)
-        rrf_k: Constante k do RRF
-        expand_query_flag: Se True, expande query com sinônimos teológicos
-        expand_mode: Modo de expansão ('static', 'dynamic', 'auto')
-        max_synonyms: Máximo de sinônimos por termo na expansão
-        rerank_with_large: Se True, reordena usando embedding large (3072 dim)
-        mmr_lambda: Se fornecido (0.0-1.0), aplica MMR diversification
-                   0.0 = máxima diversidade, 1.0 = máxima relevância
-                   Recomendado: 0.5-0.7 para balanço
-        deduplicate_versions: Se True, remove versículos duplicados de diferentes versões
-        embedding_source: Fonte dos embeddings para busca vetorial:
-            - 'verse': usa verse_embeddings (528K, por versão, PT+EN)
-            - 'unified': usa unified_verse_embeddings (31K, canônico, só PT)
-        use_nlp_analysis: Se True, usa NLP Tool para boost dinâmico (default: True)
-    
-    Returns:
-        Dict com hits, timing e métricas
-    """
-    start_time = time.time()
-    timings = {}
-    expansion_info: dict[str, Any] = {}
-    reranking_info: dict[str, Any] = {}
-    mmr_info: dict[str, Any] = {}
-    nlp_info: dict[str, Any] = {}
-    
-    # 0. NLP Analysis (novo) - Analisa query para estratégia de boost
-    nlp_analysis = None
     entity_boost = 1.0
     optimized_tsquery = None
-    
-    if use_nlp_analysis:
-        t0 = time.time()
-        nlp_analysis = analyze_query_nlp(query)
-        
-        if nlp_analysis:
-            boost_strategy = nlp_analysis.boost_strategy
-            
-            # Alpha dinâmico baseado no tipo semântico
-            if "alpha" in boost_strategy:
-                alpha = boost_strategy["alpha"]
-            
-            # Expansão desabilitada para entidades/frases
-            if not boost_strategy.get("expand", True):
-                expand_query_flag = False
-            
-            # Boost de entidade para BM25
-            entity_boost = boost_strategy.get("entity_boost", 1.0)
-            
-            # TSQuery otimizado com distância dinâmica
-            optimized_tsquery = nlp_analysis.to_tsquery()
-            
-            nlp_info = {
-                "enabled": True,
-                "semantic_type": nlp_analysis.semantic_type.value,
-                "tokens": nlp_analysis.tokens_clean,
-                "stopwords_removed": nlp_analysis.stopwords_removed,
-                "entities": [
-                    {"name": e.get("text", e.get("canonical_id", "?")), 
-                     "type": e.get("type", "?"), 
-                     "boost": e.get("boost", 1.0)}
-                    for e in nlp_analysis.entities
-                ],
-                "boost_strategy": {
-                    "method": boost_strategy.get("method"),
-                    "alpha": alpha,
-                    "entity_boost": entity_boost,
-                    "expand": expand_query_flag,
-                    "phrase_boost": boost_strategy.get("phrase_boost", 1.0),
-                },
-                "tsquery_optimized": optimized_tsquery,
-                "from_cache": nlp_analysis.from_cache,
-                "processing_time_ms": nlp_analysis.processing_time_ms,
-            }
-            
-            cache_status = "CACHE HIT" if nlp_analysis.from_cache else "CACHE MISS"
-            logger.info(
-                f"NLP Analysis [{cache_status}]: type={nlp_analysis.semantic_type.value}, "
-                f"entities={len(nlp_analysis.entities)}, "
-                f"alpha={alpha:.2f}, entity_boost={entity_boost:.1f}, "
-                f"expand={expand_query_flag}"
-            )
-        else:
-            nlp_info = {"enabled": True, "failed": True}
-        
-        timings["nlp_ms"] = (time.time() - t0) * 1000
+
+    if not use_nlp_analysis:
+        return alpha, expand_query_flag, entity_boost, optimized_tsquery, {"enabled": False}, 0.0
+
+    t0 = time.time()
+    nlp_analysis = analyze_query_nlp(query)
+
+    if not nlp_analysis:
+        elapsed = (time.time() - t0) * 1000
+        return alpha, expand_query_flag, entity_boost, optimized_tsquery, {"enabled": True, "failed": True}, elapsed
+
+    boost_strategy = nlp_analysis.boost_strategy
+
+    if "alpha" in boost_strategy and not alpha_user_provided:
+        alpha = boost_strategy["alpha"]
+    # Only let NLP disable expand if the user didn't explicitly request it
+    if not boost_strategy.get("expand", True) and not expand_query_flag:
+        expand_query_flag = False
+
+    entity_boost = boost_strategy.get("entity_boost", 1.0)
+    optimized_tsquery = nlp_analysis.to_tsquery()
+
+    nlp_info = {
+        "enabled": True,
+        "semantic_type": nlp_analysis.semantic_type.value,
+        "tokens": nlp_analysis.tokens_clean,
+        "stopwords_removed": nlp_analysis.stopwords_removed,
+        "entities": [
+            {"name": e.get("text", e.get("canonical_id", "?")),
+             "type": e.get("type", "?"),
+             "boost": e.get("boost", 1.0)}
+            for e in nlp_analysis.entities
+        ],
+        "boost_strategy": {
+            "method": boost_strategy.get("method"),
+            "alpha": alpha,
+            "entity_boost": entity_boost,
+            "expand": expand_query_flag,
+            "phrase_boost": boost_strategy.get("phrase_boost", 1.0),
+        },
+        "tsquery_optimized": optimized_tsquery,
+        "from_cache": nlp_analysis.from_cache,
+        "processing_time_ms": nlp_analysis.processing_time_ms,
+    }
+
+    cache_status = "CACHE HIT" if nlp_analysis.from_cache else "CACHE MISS"
+    logger.info(
+        f"NLP Analysis [{cache_status}]: type={nlp_analysis.semantic_type.value}, "
+        f"entities={len(nlp_analysis.entities)}, "
+        f"alpha={alpha:.2f}, entity_boost={entity_boost:.1f}, "
+        f"expand={expand_query_flag}"
+    )
+
+    elapsed = (time.time() - t0) * 1000
+    return alpha, expand_query_flag, entity_boost, optimized_tsquery, nlp_info, elapsed
+
+
+def _stage_query_expansion(
+    query: str,
+    expand_query_flag: bool,
+    expand_mode: Literal["static", "dynamic", "auto"],
+    max_synonyms: int,
+) -> tuple[str, dict[str, Any], float]:
+    """Stage 0b: Query expansion with theological synonyms.
+
+    Returns (search_query, expansion_info, elapsed_ms).
+    """
+    if not expand_query_flag:
+        return query, {"enabled": False}, 0.0
+
+    t0 = time.time()
+    expansion_result = _expand_query_with_mode(query, expand_mode, max_synonyms)
+
+    if expansion_result.get("expanded_terms"):
+        search_query = expansion_result.get("tsquery", query)
+        expansion_info = {
+            "enabled": True,
+            "original": query,
+            "mode": expansion_result.get("mode", "static"),
+            "from_cache": expansion_result.get("from_cache", False),
+            "model_used": expansion_result.get("model_used"),
+            "expanded_terms": expansion_result.get("expanded_terms", []),
+            "theological_synonyms": expansion_result.get("theological_synonyms", []),
+            "morphological_variants": expansion_result.get("morphological_variants", []),
+            "related_concepts": expansion_result.get("related_concepts", []),
+            "expansion_type": expansion_result.get("expansion_type", "none"),
+        }
+        logger.info(
+            f"Query expanded ({expansion_result.get('mode', 'static')}): "
+            f"'{query}' → '{search_query}' "
+            f"(cache: {expansion_result.get('from_cache', False)})"
+        )
     else:
-        nlp_info = {"enabled": False}
-    
-    # 0. Query Expansion (opcional)
-    search_query = query
-    if expand_query_flag:
-        t0 = time.time()
-        expansion_result = _expand_query_with_mode(query, expand_mode, max_synonyms)
-        
-        if expansion_result.get("expanded_terms"):
-            # Usar query expandida para BM25
-            search_query = expansion_result.get("tsquery", query)
-            expansion_info = {
-                "enabled": True,
-                "original": query,
-                "mode": expansion_result.get("mode", "static"),
-                "from_cache": expansion_result.get("from_cache", False),
-                "model_used": expansion_result.get("model_used"),
-                "expanded_terms": expansion_result.get("expanded_terms", []),
-                "theological_synonyms": expansion_result.get("theological_synonyms", []),
-                "morphological_variants": expansion_result.get("morphological_variants", []),
-                "related_concepts": expansion_result.get("related_concepts", []),
-                "expansion_type": expansion_result.get("expansion_type", "none"),
-            }
-            logger.info(
-                f"Query expanded ({expansion_result.get('mode', 'static')}): "
-                f"'{query}' → '{search_query}' "
-                f"(cache: {expansion_result.get('from_cache', False)})"
-            )
-        else:
-            expansion_info = {"enabled": True, "original": query, "no_synonyms_found": True}
-        timings["expansion_ms"] = (time.time() - t0) * 1000
-    else:
-        expansion_info = {"enabled": False}
-    
-    # 1. Busca BM25 (com query expandida se disponível)
+        search_query = query
+        expansion_info = {"enabled": True, "original": query, "no_synonyms_found": True}
+
+    elapsed = (time.time() - t0) * 1000
+    return search_query, expansion_info, elapsed
+
+
+def _stage_bm25(
+    query: str,
+    search_query: str,
+    optimized_tsquery: str | None,
+    expand_query_flag: bool,
+    expansion_info: dict[str, Any],
+    entity_boost: float,
+    bm25_original_boost: float,
+    pool_size: int,
+    versions: list[str] | None,
+    book_id: int | None,
+) -> tuple[list[dict[str, Any]], float]:
+    """Stage 1: BM25 lexical search.
+
+    Returns (bm25_results, elapsed_ms).
+    """
     t0 = time.time()
     has_expansion = expand_query_flag and expansion_info.get("expanded_terms")
-    
-    # Determinar qual tsquery usar:
-    # 1. Se tem expansão, usa tsquery da expansão
-    # 2. Se tem NLP com tsquery otimizado, usa esse
-    # 3. Senão, usa query original
+
     if has_expansion:
-        bm25_query = search_query
-        use_raw = True
+        # Keep original query for BM25 (expanded terms like "senhor" for "Deus"
+        # are too common and flood results). Expansion only benefits the embedding
+        # search where expanded terms enrich the semantic context.
+        bm25_query = query
+        use_raw = False
     elif optimized_tsquery:
-        bm25_query = optimized_tsquery
-        use_raw = True
-        logger.debug(f"Using NLP optimized tsquery: {optimized_tsquery}")
+        # Use plainto_tsquery instead of NLP proximity tsquery to avoid
+        # severely restricting BM25 recall (proximity reduces matches by ~90%)
+        bm25_query = query
+        use_raw = False
+        logger.debug(f"NLP tsquery available but using plainto for better recall: {optimized_tsquery}")
     else:
         bm25_query = query
         use_raw = False
-    
-    bm25_results = bm25_search(
+
+    results = bm25_search(
         bm25_query,
         top_k=pool_size,
         versions=versions,
         book_id=book_id,
         use_raw_tsquery=use_raw,
-        # Passar query original para boost quando há expansão
         original_query=query if has_expansion else None,
-        original_boost=bm25_original_boost * entity_boost,  # Combinar boost configurável + entity boost
+        original_boost=bm25_original_boost * entity_boost,
     )
-    timings["bm25_ms"] = (time.time() - t0) * 1000
-    
-    # 2. Busca Vetorial (escolhe fonte baseado em embedding_source)
+    elapsed = (time.time() - t0) * 1000
+    return results, elapsed
+
+
+def _stage_vector_search(
+    query_embedding: list[float],
+    pool_size: int,
+    versions: list[str] | None,
+    book_id: int | None,
+    embedding_source: Literal["verse", "unified"],
+    embedding_model: str = "small",
+) -> tuple[list[dict[str, Any]], dict[str, Any], float]:
+    """Stage 2: Vector semantic search.
+
+    Returns (vector_results, embedding_info, elapsed_ms).
+    """
     t0 = time.time()
     embedding_info: dict[str, Any] = {"source": embedding_source}
-    
+
     if embedding_source == "unified":
-        # Usar unified_verse_embeddings (fusão de versões PT, 31K registros)
-        # Nota: ignora filtro de versões pois embeddings são canônicos
         if versions:
             logger.info(
                 f"embedding_source='unified' ignora filtro de versões {versions}. "
                 "Embeddings são agnósticos de versão."
             )
+        unified_col = "unified_embedding_large" if embedding_model == "large" else "unified_embedding_small"
         vector_results_raw = _vector_search_unified(
-            query_embedding,
-            top_k=pool_size,
-            book_id=book_id,
+            query_embedding, top_k=pool_size, book_id=book_id,
+            embedding_column=unified_col,
         )
-        # Enriquecer com dados reais do versículo
         preferred_version = versions[0] if versions else "NAA"
         vector_results = _enrich_unified_results(vector_results_raw, preferred_version)
         embedding_info.update({
@@ -692,12 +666,10 @@ def hybrid_search(
             "source_versions": ["NVI", "ARA", "NAA", "AS21", "ACF", "NTLH", "NVT", "ARC"],
         })
     else:
-        # Usar verse_embeddings (por versão, 529K registros, PT+EN)
+        embedding_col = "embedding_large" if embedding_model == "large" else "embedding_small"
         vector_results = _vector_search(
-            query_embedding,
-            top_k=pool_size,
-            versions=versions,
-            book_id=book_id,
+            query_embedding, top_k=pool_size, versions=versions, book_id=book_id,
+            embedding_column=embedding_col,
         )
         embedding_info.update({
             "table": "verse_embeddings",
@@ -705,45 +677,33 @@ def hybrid_search(
             "languages": ["pt", "en"],
             "versions_filter": versions,
         })
-    
-    timings["vector_ms"] = (time.time() - t0) * 1000
-    
-    # 3. Fusão RRF
-    t0 = time.time()
-    fused_results = reciprocal_rank_fusion(
-        bm25_results,
-        vector_results,
-        k=rrf_k,
-        alpha=alpha,
-    )
-    timings["fusion_ms"] = (time.time() - t0) * 1000
-    
-    # 4. Preparar candidatos para reranking/MMR (ou top_k final)
-    # Se reranking ou MMR habilitado, pegar mais candidatos
-    if rerank_with_large or mmr_lambda is not None:
-        candidates_for_rerank = fused_results[:pool_size]
-    else:
-        candidates_for_rerank = fused_results[:top_k]
-    
-    # Formatar para compatibilidade com API existente
-    # Normalizar query para verificar se texto contém a palavra
+
+    elapsed = (time.time() - t0) * 1000
+    return vector_results, embedding_info, elapsed
+
+
+def _format_hits(
+    candidates: list[dict[str, Any]],
+    query: str,
+) -> list[dict[str, Any]]:
+    """Format fused candidates into hit dicts with text-match flags."""
     import unicodedata
+
     query_normalized = query.lower().strip()
     query_normalized = "".join(
-        c for c in unicodedata.normalize("NFKD", query_normalized) 
+        c for c in unicodedata.normalize("NFKD", query_normalized)
         if not unicodedata.combining(c)
     )
-    
+
     hits = []
-    for result in candidates_for_rerank:
-        # Verificar se o texto contém a query original
+    for result in candidates:
         text_normalized = result["text"].lower()
         text_normalized = "".join(
             c for c in unicodedata.normalize("NFKD", text_normalized)
             if not unicodedata.combining(c)
         )
         contains_query = query_normalized in text_normalized
-        
+
         hits.append({
             "verse_id": result["verse_id"],
             "book_id": result["book_id"],
@@ -754,108 +714,149 @@ def hybrid_search(
             "version": result["version_code"],
             "similarity": result["final_score"],
             "distance": 1.0 - result["final_score"],
-            # Métricas extras
             "bm25_score": result.get("bm25_score"),
             "vector_score": result.get("vector_score"),
             "rrf_score": result["rrf_score"],
-            # Flags de origem
             "match_source": result.get("match_source", "unknown"),
             "contains_query": contains_query,
         })
-    
-    # 5. Two-Stage Reranking com embedding large (se habilitado)
-    if rerank_with_large and hits:
-        from .reranking import rerank_with_large_embeddings, compare_rankings
-        
-        t0 = time.time()
-        original_hits = hits.copy()
-        rerank_result = rerank_with_large_embeddings(
-            hits=hits,
-            query=query,
-            top_k=top_k,
-        )
-        hits = rerank_result.hits
-        timings["rerank_ms"] = (time.time() - t0) * 1000
-        
-        # Análise de mudanças no ranking
-        comparison = compare_rankings(original_hits[:top_k], hits)
-        
-        reranking_info = {
-            "enabled": True,
-            "model": "text-embedding-3-large",
-            "dimension": 3072,
-            "candidates_evaluated": rerank_result.metrics.candidates_count,
-            "rank_changes": rerank_result.metrics.rank_changes,
-            "avg_rank_shift": round(rerank_result.metrics.avg_rank_shift, 2),
-            "top_k_preserved": round(rerank_result.metrics.top_k_preserved, 2),
-            "kendall_tau": comparison["kendall_tau"],
-            "timing_ms": round(rerank_result.metrics.total_time_ms, 2),
-        }
-    else:
-        # Limitar ao top_k se não houver reranking nem MMR
+    return hits
+
+
+def _stage_reranking(
+    hits: list[dict[str, Any]],
+    query: str,
+    top_k: int,
+    rerank_with_large: bool,
+    mmr_lambda: float | None,
+) -> tuple[list[dict[str, Any]], dict[str, Any], float]:
+    """Stage 5: Optional two-stage reranking with large embeddings.
+
+    Returns (hits, reranking_info, elapsed_ms).
+    """
+    if not (rerank_with_large and hits):
         if mmr_lambda is None:
             hits = hits[:top_k]
-        reranking_info = {"enabled": False}
-    
-    # 6. MMR Diversification (se habilitado)
-    if mmr_lambda is not None and hits:
-        from .mmr import mmr_diversify, deduplicate_by_version
-        
-        t0 = time.time()
-        
-        # Primeiro, opcionalmente deduplica versões
-        pre_dedup_count = len(hits)
+        return hits, {"enabled": False}, 0.0
+
+    from .reranking import rerank_with_large_embeddings, compare_rankings
+
+    t0 = time.time()
+    original_hits = hits.copy()
+    rerank_result = rerank_with_large_embeddings(hits=hits, query=query, top_k=top_k)
+    hits = rerank_result.hits
+    elapsed = (time.time() - t0) * 1000
+
+    comparison = compare_rankings(original_hits[:top_k], hits)
+
+    reranking_info = {
+        "enabled": True,
+        "model": "text-embedding-3-large",
+        "dimension": 3072,
+        "candidates_evaluated": rerank_result.metrics.candidates_count,
+        "rank_changes": rerank_result.metrics.rank_changes,
+        "avg_rank_shift": round(rerank_result.metrics.avg_rank_shift, 2),
+        "top_k_preserved": round(rerank_result.metrics.top_k_preserved, 2),
+        "kendall_tau": comparison["kendall_tau"],
+        "timing_ms": round(rerank_result.metrics.total_time_ms, 2),
+    }
+    return hits, reranking_info, elapsed
+
+
+def _stage_mmr(
+    hits: list[dict[str, Any]],
+    top_k: int,
+    mmr_lambda: float | None,
+    deduplicate_versions: bool,
+) -> tuple[list[dict[str, Any]], dict[str, Any], float]:
+    """Stage 6: Optional MMR diversification.
+
+    Returns (hits, mmr_info, elapsed_ms).
+    """
+    if not hits:
+        return hits, {"enabled": False}, 0.0
+
+    from .mmr import mmr_diversify, deduplicate_by_version
+
+    # Dedupe-only mode: deduplicate without MMR reranking
+    if mmr_lambda is None:
         if deduplicate_versions:
+            t0 = time.time()
+            pre_count = len(hits)
             hits = deduplicate_by_version(hits)
-            dedup_removed = pre_dedup_count - len(hits)
-        else:
-            dedup_removed = 0
-        
-        # Agora aplica MMR
-        pre_mmr_count = len(hits)
-        
-        # mmr_diversify retorna MMRResult
-        mmr_result = mmr_diversify(
-            hits=hits,
-            top_k=top_k,
-            lambda_param=mmr_lambda,
-            use_embeddings=False,  # Por ora, usar deduplicação por ID canônico
-        )
-        hits = mmr_result.hits
-        
-        timings["mmr_ms"] = (time.time() - t0) * 1000
-        
-        # Análise de diversificação
-        mmr_info = {
-            "enabled": True,
-            "lambda": mmr_lambda,
-            "deduplicate_versions": deduplicate_versions,
-            "duplicates_removed": mmr_result.duplicates_removed + dedup_removed,
-            "candidates_processed": pre_mmr_count,
-            "results_selected": len(hits),
-            "diversity_score": round(mmr_result.diversity_score, 3),
-            "timing_ms": round(timings["mmr_ms"], 2),
-        }
-        
-        logger.info(
-            f"MMR diversification: {pre_mmr_count} → {len(hits)} results "
-            f"(λ={mmr_lambda}, diversity={mmr_result.diversity_score:.2f}) in {timings['mmr_ms']:.1f}ms"
-        )
+            elapsed = (time.time() - t0) * 1000
+            return hits[:top_k], {"enabled": False, "dedupe_only": True, "duplicates_removed": pre_count - len(hits)}, elapsed
+        return hits, {"enabled": False}, 0.0
+
+    t0 = time.time()
+
+    pre_dedup_count = len(hits)
+    if deduplicate_versions:
+        hits = deduplicate_by_version(hits)
+        dedup_removed = pre_dedup_count - len(hits)
     else:
-        mmr_info = {"enabled": False}
-    
-    total_time = (time.time() - start_time) * 1000
-    
+        dedup_removed = 0
+
+    pre_mmr_count = len(hits)
+    mmr_result = mmr_diversify(
+        hits=hits, top_k=top_k, lambda_param=mmr_lambda, use_embeddings=False,
+    )
+    hits = mmr_result.hits
+
+    elapsed = (time.time() - t0) * 1000
+
+    mmr_info = {
+        "enabled": True,
+        "lambda": mmr_lambda,
+        "deduplicate_versions": deduplicate_versions,
+        "duplicates_removed": mmr_result.duplicates_removed + dedup_removed,
+        "candidates_processed": pre_mmr_count,
+        "results_selected": len(hits),
+        "diversity_score": round(mmr_result.diversity_score, 3),
+        "timing_ms": round(elapsed, 2),
+    }
+
+    logger.info(
+        f"MMR diversification: {pre_mmr_count} → {len(hits)} results "
+        f"(λ={mmr_lambda}, diversity={mmr_result.diversity_score:.2f}) in {elapsed:.1f}ms"
+    )
+    return hits, mmr_info, elapsed
+
+
+def _assemble_result(
+    hits: list[dict[str, Any]],
+    timings: dict[str, float],
+    alpha: float,
+    rrf_k: int,
+    pool_size: int,
+    expand_query_flag: bool,
+    rerank_with_large: bool,
+    mmr_lambda: float | None,
+    deduplicate_versions: bool,
+    embedding_source: str,
+    use_nlp_analysis: bool,
+    bm25_count: int,
+    vector_count: int,
+    fused_count: int,
+    embedding_info: dict[str, Any],
+    nlp_info: dict[str, Any],
+    expansion_info: dict[str, Any],
+    reranking_info: dict[str, Any],
+    mmr_info: dict[str, Any],
+    total_time: float,
+) -> dict[str, Any]:
+    """Assemble the final result dictionary."""
+    # Log summary
     expansion_log = ""
     if expand_query_flag and expansion_info.get("expanded_terms"):
         mode = expansion_info.get("mode", "static")
         term_count = len(expansion_info.get("expanded_terms", []))
         expansion_log = f" (expanded[{mode}]: {term_count} terms)"
-    
+
     rerank_log = ""
     if rerank_with_large:
         rerank_log = f" (reranked: {reranking_info.get('rank_changes', 0)} changes)"
-    
+
     mmr_log = ""
     if mmr_lambda is not None:
         mmr_log = f" (MMR λ={mmr_lambda}, dedup={mmr_info.get('duplicates_removed', 0)})"
@@ -865,7 +866,7 @@ def hybrid_search(
         f"(BM25: {timings['bm25_ms']:.1f}ms, Vector: {timings['vector_ms']:.1f}ms)"
         f"{expansion_log}{rerank_log}{mmr_log}"
     )
-    
+
     result_dict: dict[str, Any] = {
         "hits": hits,
         "total": len(hits),
@@ -887,38 +888,137 @@ def hybrid_search(
             "use_nlp_analysis": use_nlp_analysis,
         },
         "stats": {
-            "bm25_candidates": len(bm25_results),
-            "vector_candidates": len(vector_results),
-            "unique_candidates": len(fused_results),
+            "bm25_candidates": bm25_count,
+            "vector_candidates": vector_count,
+            "unique_candidates": fused_count,
         },
         "embedding_source_info": embedding_info,
     }
-    
-    # Adicionar informações de análise NLP
+
     if use_nlp_analysis:
         result_dict["nlp_analysis"] = nlp_info
         if "nlp_ms" in timings:
             result_dict["timing"]["nlp_ms"] = round(timings["nlp_ms"], 2)
-    
-    # Adicionar informações de expansão se habilitada
+
     if expand_query_flag:
         result_dict["query_expansion"] = expansion_info
         if "expansion_ms" in timings:
             result_dict["timing"]["expansion_ms"] = round(timings["expansion_ms"], 2)
-    
-    # Adicionar informações de reranking se habilitado
+
     if rerank_with_large:
         result_dict["reranking"] = reranking_info
         if "rerank_ms" in timings:
             result_dict["timing"]["rerank_ms"] = round(timings["rerank_ms"], 2)
-    
-    # Adicionar informações de MMR se habilitado
+
     if mmr_lambda is not None:
         result_dict["mmr_diversification"] = mmr_info
         if "mmr_ms" in timings:
             result_dict["timing"]["mmr_ms"] = round(timings["mmr_ms"], 2)
-    
+
     return result_dict
+
+
+def hybrid_search(
+    query: str,
+    query_embedding: list[float],
+    *,
+    top_k: int = 20,
+    pool_size: int = 100,
+    versions: list[str] | None = None,
+    book_id: int | None = None,
+    alpha: float = 0.5,
+    alpha_user_provided: bool = False,
+    rrf_k: int = 60,
+    expand_query_flag: bool = False,
+    expand_mode: Literal["static", "dynamic", "auto"] = "auto",
+    max_synonyms: int = 3,
+    rerank_with_large: bool = False,
+    mmr_lambda: float | None = None,
+    deduplicate_versions: bool = False,
+    embedding_source: Literal["verse", "unified"] = "verse",
+    embedding_model: str = "small",
+    reembed_after_expansion: bool = False,
+    embed_model_name: str = "text-embedding-3-small",
+    use_nlp_analysis: bool = False,
+    bm25_original_boost: float = 1.5,
+) -> dict[str, Any]:
+    """
+    Executa busca híbrida completa: BM25 + Vetorial + RRF Fusion.
+
+    Pipeline: NLP Analysis → Query Expansion → BM25 → Vector → RRF Fusion
+              → Reranking → MMR Diversification.
+    """
+    start_time = time.time()
+    timings: dict[str, float] = {}
+
+    # Stage 0: NLP Analysis
+    alpha, expand_query_flag, entity_boost, optimized_tsquery, nlp_info, nlp_ms = (
+        _stage_nlp_analysis(query, use_nlp_analysis, alpha, expand_query_flag, alpha_user_provided)
+    )
+    if nlp_ms:
+        timings["nlp_ms"] = nlp_ms
+
+    # Stage 0b: Query Expansion
+    search_query, expansion_info, expansion_ms = (
+        _stage_query_expansion(query, expand_query_flag, expand_mode, max_synonyms)
+    )
+    if expansion_ms:
+        timings["expansion_ms"] = expansion_ms
+
+    # Stage 1: BM25 Search
+    bm25_results, timings["bm25_ms"] = _stage_bm25(
+        query, search_query, optimized_tsquery, expand_query_flag, expansion_info,
+        entity_boost, bm25_original_boost, pool_size, versions, book_id,
+    )
+
+    # Stage 1b: Re-embed with expanded terms (Opção D)
+    if reembed_after_expansion and expansion_info.get("expanded_terms"):
+        from .embedding_cache import EmbeddingCache
+        expanded_text = query + " " + " ".join(expansion_info["expanded_terms"])
+        _cache = EmbeddingCache()
+        query_embedding, _ = _cache.get_embedding(expanded_text, model=embed_model_name)
+        timings["reembed_ms"] = 0.0  # timing included in vector_ms
+
+    # Stage 2: Vector Search
+    vector_results, embedding_info, timings["vector_ms"] = _stage_vector_search(
+        query_embedding, pool_size, versions, book_id, embedding_source, embedding_model,
+    )
+
+    # Stage 3: RRF Fusion
+    t0 = time.time()
+    fused_results = reciprocal_rank_fusion(
+        bm25_results, vector_results, k=rrf_k, alpha=alpha,
+    )
+    timings["fusion_ms"] = (time.time() - t0) * 1000
+
+    # Stage 4: Format hits
+    candidate_limit = pool_size if (rerank_with_large or mmr_lambda is not None or deduplicate_versions) else top_k
+    hits = _format_hits(fused_results[:candidate_limit], query)
+
+    # Stage 5: Reranking
+    hits, reranking_info, rerank_ms = _stage_reranking(
+        hits, query, top_k, rerank_with_large, mmr_lambda,
+    )
+    if rerank_ms:
+        timings["rerank_ms"] = rerank_ms
+
+    # Stage 6: MMR Diversification
+    hits, mmr_info, mmr_ms = _stage_mmr(hits, top_k, mmr_lambda, deduplicate_versions)
+    if mmr_ms:
+        timings["mmr_ms"] = mmr_ms
+
+    # Assemble result
+    total_time = (time.time() - start_time) * 1000
+    return _assemble_result(
+        hits=hits, timings=timings, alpha=alpha, rrf_k=rrf_k, pool_size=pool_size,
+        expand_query_flag=expand_query_flag, rerank_with_large=rerank_with_large,
+        mmr_lambda=mmr_lambda, deduplicate_versions=deduplicate_versions,
+        embedding_source=embedding_source, use_nlp_analysis=use_nlp_analysis,
+        bm25_count=len(bm25_results), vector_count=len(vector_results),
+        fused_count=len(fused_results), embedding_info=embedding_info,
+        nlp_info=nlp_info, expansion_info=expansion_info,
+        reranking_info=reranking_info, mmr_info=mmr_info, total_time=total_time,
+    )
 
 
 def _vector_search(
@@ -927,12 +1027,15 @@ def _vector_search(
     top_k: int = 100,
     versions: list[str] | None = None,
     book_id: int | None = None,
+    embedding_column: str = "embedding_small",
 ) -> list[dict[str, Any]]:
     """Busca vetorial simples para uso interno."""
     dim = len(embedding)
     nums = ",".join(format(float(x), ".8g") for x in embedding)
     vec_sql = f"ARRAY[{nums}]::vector({dim})"
-    
+
+    col = "embedding_small" if embedding_column not in ("embedding_small", "embedding_large") else embedding_column
+
     sql_parts = [
         "SELECT",
         "  v.id as verse_id,",
@@ -942,11 +1045,11 @@ def _vector_search(
         "  v.number as verse,",
         "  v.text,",
         "  ve.version_code,",
-        f"  (ve.embedding_small <=> {vec_sql}) as distance",
+        f"  (ve.{col} <=> {vec_sql}) as distance",
         "FROM verse_embeddings ve",
         "JOIN verses v ON v.id = ve.verse_id",
         "JOIN canonical_books cb ON cb.id = v.book_id",
-        "WHERE ve.embedding_small IS NOT NULL",
+        f"WHERE ve.{col} IS NOT NULL",
     ]
     
     params: list[Any] = []
@@ -996,41 +1099,44 @@ def _vector_search_unified(
     *,
     top_k: int = 100,
     book_id: int | None = None,
+    embedding_column: str = "unified_embedding_small",
 ) -> list[dict[str, Any]]:
     """
     Busca vetorial usando unified_verse_embeddings (fusão de versões PT).
-    
+
     Esta tabela contém embeddings canônicos que combinam múltiplas traduções
     portuguesas (NVI, ARA, NAA, etc.) para melhor recall semântico.
-    
+
     Args:
-        embedding: Vetor da query (1536 dim para small)
+        embedding: Vetor da query (1536 dim para small, 3072 para large)
         top_k: Número de resultados
         book_id: Filtro opcional por livro
-        
+        embedding_column: Coluna de embedding a usar (unified_embedding_small ou unified_embedding_large)
+
     Returns:
         Lista de resultados com canonical_verse_id
-        
+
     Nota: Não suporta filtro por versão (embeddings são agnósticos de versão).
           Para versões em inglês, use _vector_search() com verse_embeddings.
     """
+    col = embedding_column if embedding_column in ("unified_embedding_small", "unified_embedding_large") else "unified_embedding_small"
     dim = len(embedding)
     nums = ",".join(format(float(x), ".8g") for x in embedding)
     vec_sql = f"ARRAY[{nums}]::vector({dim})"
-    
+
     sql_parts = [
         "SELECT",
         "  uve.canonical_verse_id,",
         "  uve.source_versions,",
         "  uve.fusion_strategy,",
         "  uve.quality_score,",
-        f"  (uve.unified_embedding_small <=> {vec_sql}) as distance",
+        f"  (uve.{col} <=> {vec_sql}) as distance",
         "FROM unified_verse_embeddings uve",
-        "WHERE uve.unified_embedding_small IS NOT NULL",
+        f"WHERE uve.{col} IS NOT NULL",
     ]
-    
+
     params: list[Any] = []
-    
+
     # Filtro por livro usando prefixo do canonical_verse_id (ex: "Gen.1.1" → "Gen")
     if book_id is not None:
         # Precisamos fazer JOIN com canonical_books para filtrar
@@ -1040,10 +1146,10 @@ def _vector_search_unified(
             "  uve.source_versions,",
             "  uve.fusion_strategy,",
             "  uve.quality_score,",
-            f"  (uve.unified_embedding_small <=> {vec_sql}) as distance",
+            f"  (uve.{col} <=> {vec_sql}) as distance",
             "FROM unified_verse_embeddings uve",
             "JOIN canonical_books cb ON cb.osis_code = SPLIT_PART(uve.canonical_verse_id, '.', 1)",
-            "WHERE uve.unified_embedding_small IS NOT NULL",
+            f"WHERE uve.{col} IS NOT NULL",
             "AND cb.id = %s",
         ]
         params.append(book_id)
