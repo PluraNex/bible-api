@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from bible.commentaries import Author, CommentaryEntry, CommentarySource
@@ -21,6 +22,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
     Supports filtering by type, tradition, hermeneutic, and search.
     """
 
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = [
         "author_type",
@@ -81,6 +83,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
 class SourceViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for commentary sources (Catena Bible, CCEL, etc.)."""
 
+    permission_classes = [AllowAny]
     queryset = CommentarySource.objects.filter(is_active=True)
     serializer_class = CommentarySourceSerializer
     filter_backends = [filters.SearchFilter]
@@ -101,6 +104,7 @@ class CommentaryViewSet(viewsets.ReadOnlyModelViewSet):
     Supports filtering by book, chapter, verse range, author, and source.
     """
 
+    permission_classes = [AllowAny]
     queryset = CommentaryEntry.objects.select_related("author", "source", "book").all()
     serializer_class = CommentaryEntrySerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
