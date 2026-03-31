@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # OSIS mapping: Catena Bible uses short codes in folder names
 CATENA_BOOK_TO_OSIS = {
-    # OT
+    # OT — full names
     "genesis": "Gen", "exodus": "Exod", "leviticus": "Lev", "numbers": "Num",
     "deuteronomy": "Deut", "joshua": "Josh", "judges": "Judg", "ruth": "Ruth",
     "1samuel": "1Sam", "2samuel": "2Sam", "1kings": "1Kgs", "2kings": "2Kgs",
@@ -34,10 +34,24 @@ CATENA_BOOK_TO_OSIS = {
     "obadiah": "Obad", "jonah": "Jonah", "micah": "Mic", "nahum": "Nah",
     "habakkuk": "Hab", "zephaniah": "Zeph", "haggai": "Hag", "zechariah": "Zech",
     "malachi": "Mal",
+    # OT — Catena Bible short folder codes (used in dataset directory names)
+    "gn": "Gen", "ex": "Exod", "lv": "Lev", "nm": "Num", "dt": "Deut",
+    "jo": "Josh", "jgs": "Judg", "ru": "Ruth",
+    "1sm": "1Sam", "2sm": "2Sam", "1kgs": "1Kgs", "2kgs": "2Kgs",
+    "1chr": "1Chr", "2chr": "2Chr", "ezr": "Ezra", "neh": "Neh",
+    "est": "Esth", "jb": "Job", "ps": "Ps", "prv": "Prov",
+    "eccl": "Eccl", "sg": "Song",
+    "is": "Isa", "jer": "Jer", "lam": "Lam", "ez": "Ezek",
+    "dn": "Dan", "hos": "Hos", "jl": "Joel", "am": "Amos",
+    "ob": "Obad", "jon": "Jonah", "mi": "Mic", "na": "Nah",
+    "hb": "Hab", "zep": "Zeph", "hg": "Hag", "zec": "Zech",
+    "mal": "Mal",
+    # NT — short codes (used in some filenames)
+    "1thes": "1Thess", "2thes": "2Thess",
     # Deuterocanonical
     "tobit": "Tob", "judith": "Jdt", "wisdom": "Wis", "sirach": "Sir",
     "baruch": "Bar", "1maccabees": "1Macc", "2maccabees": "2Macc",
-    # NT
+    # NT — full names
     "matthew": "Matt", "mark": "Mark", "luke": "Luke", "john": "John",
     "acts": "Acts", "romans": "Rom", "1corinthians": "1Cor", "2corinthians": "2Cor",
     "galatians": "Gal", "ephesians": "Eph", "philippians": "Phil",
@@ -327,23 +341,30 @@ class CatenaImporter:
 
         # Resolve book from file path
         # Path: .../catena_bible/new_testament/pauline_epistles/romans/verses/rom_12_01.json
+        # or:   .../catena_bible/old_testament/pentateuch/gn/verses/gn_01_01.json
         filename = os.path.basename(filepath)
         book_part, chapter, verse = self._parse_verse_ref(filename)
 
         if not chapter or not verse:
             return []
 
-        # Try to find book from parent directory
-        parent = os.path.basename(os.path.dirname(os.path.dirname(filepath)))
-        book = self._resolve_book(parent)
+        # Try to find book from the direct parent of "verses/" directory
+        # e.g., .../romans/verses/rom_12_01.json → parent of verses/ = "romans"
+        verses_dir = os.path.dirname(filepath)  # .../romans/verses
+        book_dir = os.path.basename(os.path.dirname(verses_dir))  # "romans" or "gn"
+        book = self._resolve_book(book_dir)
 
         if not book:
-            # Try book_part from filename
+            # Try book_part from filename (e.g., "gn" from "gn_01_01.json")
             if book_part:
                 book = self._resolve_book(book_part)
-            if not book:
-                result.books_not_found += 1
-                return []
+        if not book:
+            # Try grandparent (category dir like "pentateuch")
+            grandparent = os.path.basename(os.path.dirname(os.path.dirname(verses_dir)))
+            book = self._resolve_book(grandparent)
+        if not book:
+            result.books_not_found += 1
+            return []
 
         entries = []
         for idx, commentary in enumerate(commentaries):
