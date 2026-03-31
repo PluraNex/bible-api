@@ -45,8 +45,17 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "bible.apps.BibleConfig",  # label = bible
     "bible.auth.apps.BibleAuthConfig",  # Authentication app
-    "bible.comments",  # Commentary app
+    "bible.comments",  # Commentary app (legacy)
+    "bible.commentaries",  # Commentaries domain (enriched)
     "bible.ai",  # pode deixar assim se não tiver AppConfig própria
+    "bible.entities",  # Canonical entities domain
+    "bible.symbols",  # Biblical symbols domain
+    "bible.theology",  # Systematic theology domain
+    "bible.themes",  # Biblical themes domain
+    "bible.people",  # Unified person identity hub
+    "bible.images",  # Biblical art images domain
+    "bible.integration",  # Cross-domain integration (image↔entity matching)
+    "bible.studies",  # User-authored biblical studies
     "common",
     "data",  # Data management commands
 ]
@@ -105,7 +114,7 @@ try:
     engine = DATABASES["default"].get("ENGINE", "")
     if engine.endswith("postgresql") or engine.endswith("postgresql_psycopg2"):
         DATABASES["default"]["ENGINE"] = "django_prometheus.db.backends.postgresql"
-except Exception:
+except (KeyError, AttributeError, ValueError):
     pass
 
 # pgvector tuning via env (session options) - HNSW + IVFFlat support
@@ -145,7 +154,7 @@ try:
         else:
             opts["options"] = extra
 
-except Exception:
+except (KeyError, AttributeError, ValueError):
     # Fail silently to avoid breaking other configurations
     pass
 
@@ -284,16 +293,23 @@ CORS_ALLOW_METHODS = [
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "request_context": {
+            "()": "common.logging.ContextFilter",
+        },
+    },
     "formatters": {
         "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "format": "{levelname} {asctime} {module} [rid:{request_id}] {process:d} {thread:d} {message}",
             "style": "{",
+            "defaults": {"request_id": "-"},
         },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
+            "filters": ["request_context"],
         },
     },
     "root": {
