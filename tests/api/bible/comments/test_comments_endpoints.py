@@ -1,5 +1,13 @@
 """
-API tests for comments endpoints.
+API tests for commentary endpoints: Authors, Sources, Entries.
+
+Tests cover:
+- Authentication (§5): all endpoints require API key
+- Author endpoints: list, detail, filters (type, tradition, hermeneutic, orthodoxy, doctor), search, entries action
+- Source endpoints: list, detail
+- Entry endpoints: list, detail, filters (book, chapter, verse, author, source), search, ordering, pagination
+- Response structure (§4): contract compliance for all endpoints
+- Nested serialization: author/source/book in entry responses
 """
 
 from django.contrib.auth.models import User
@@ -7,326 +15,479 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from bible.commentaries.models import Author, CommentaryEntry, CommentarySource
 from bible.models import (
     APIKey,
-    Author,
-    Book,
-    BookName,
     CanonicalBook,
-    CommentaryEntry,
-    CommentarySource,
     Language,
-    License,
     Testament,
-    Version,
 )
 
 
-class CommentariesApiTest(TestCase):
+class CommentaryTestBase(TestCase):
+    """Shared setUp for all commentary tests."""
+
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(username="comments_user")
         self.api_key = APIKey.objects.create(name="Comments Key", user=self.user, scopes=["read"])
 
-        # Create languages
-        self.english = Language.objects.create(name="English", code="en-US")
-        self.portuguese = Language.objects.create(name="Portuguese (Brazil)", code="pt-BR")
+        # Base data
+        self.lang_en = Language.objects.create(name="English", code="en")
+        self.testament_ot = Testament.objects.create(name="OLD", description="Old Testament")
+        self.testament_nt = Testament.objects.create(name="NEW", description="New Testament")
 
-        # Create testament and canonical books
-        self.new_testament = Testament.objects.create(name="New Testament")
-
-        # Create Acts book
-        self.acts_canonical = CanonicalBook.objects.create(
-            osis_code="Acts",
-            canonical_order=44,
-            testament=self.new_testament,
-            chapter_count=28,
+        self.book_rom = CanonicalBook.objects.create(
+            osis_code="Rom", canonical_order=45, testament=self.testament_nt, chapter_count=16
+        )
+        self.book_eph = CanonicalBook.objects.create(
+            osis_code="Eph", canonical_order=49, testament=self.testament_nt, chapter_count=6
+        )
+        self.book_gen = CanonicalBook.objects.create(
+            osis_code="Gen", canonical_order=1, testament=self.testament_ot, chapter_count=50
         )
 
-        # Create John book
-        self.john_canonical = CanonicalBook.objects.create(
-            osis_code="John",
-            canonical_order=43,
-            testament=self.new_testament,
-            chapter_count=21,
-        )
-
-        # Create book names
-        BookName.objects.create(
-            canonical_book=self.acts_canonical,
-            language=self.english,
-            name="Acts",
-            abbreviation="Acts",
-        )
-        BookName.objects.create(
-            canonical_book=self.john_canonical,
-            language=self.english,
-            name="John",
-            abbreviation="Joh",
-        )
-
-        # Create version
-        self.version = Version.objects.create(
-            name="King James Version", code="EN_KJV", language=self.english
-        )
-
-        # Create license
-        self.license = License.objects.create(
-            code="public-domain", name="Public Domain"
-        )
-
-        # Create commentary source
-        self.source = CommentarySource.objects.create(
-            name="Church Fathers Commentary",
-            short_code="CF",
-            publication_year=2024,
-            author_type="church_father",
-            description="Patristic commentaries",
-            language=self.english,
-            license=self.license,
+        # Source
+        self.catena = CommentarySource.objects.create(
+            name="Catena Bible Commentary",
+            short_code="CATENA",
+            source_type="catena",
+            description="Church Fathers commentaries",
+            is_active=True,
             is_featured=True,
+            entry_count=0,
         )
 
-        # Create authors
-        self.author1 = Author.objects.create(
+        # Authors with rich theological data
+        self.chrysostom = Author.objects.create(
             name="John Chrysostom",
+            short_name="Chrysostom",
             author_type="church_father",
-            period="347-407 AD",
-            century="4th",
-            tradition="Eastern Orthodox",
+            birth_year=347,
+            death_year=407,
+            birthplace="Antioch, Syria",
+            death_location="Comana, Pontus",
+            tradition="Eastern Orthodox / Catholic",
+            theological_school="Antiochene",
+            era="nicene",
+            primary_hermeneutic="mixed_antiochene",
+            orthodoxy_status="orthodox",
+            recognized_by=["catholic", "orthodox", "anglican"],
+            councils=[],
+            is_saint=True,
+            is_doctor_of_church=True,
+            major_works=["Homilies on Matthew", "Homilies on Romans"],
+            biography_summary="Greatest preacher of the early Church.",
+            theological_contributions="Established homiletical exegesis applying Antiochene literal-historical interpretation.",
+            portrait_image="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Johnchrysostom.jpg/200px-Johnchrysostom.jpg",
+            wikipedia_url="https://en.wikipedia.org/wiki/John_Chrysostom",
         )
-        self.author2 = Author.objects.create(
+        self.augustine = Author.objects.create(
             name="Augustine of Hippo",
+            short_name="Augustine",
             author_type="church_father",
-            period="354-430 AD",
-            century="4th-5th",
-            tradition="Western Christian",
+            birth_year=354,
+            death_year=430,
+            birthplace="Thagaste, Numidia",
+            tradition="Western Catholic",
+            theological_school="Western/Latin",
+            era="nicene",
+            primary_hermeneutic="mixed_alexandrian",
+            orthodoxy_status="orthodox",
+            recognized_by=["catholic", "orthodox", "protestant", "anglican"],
+            is_saint=True,
+            is_doctor_of_church=True,
+            biography_summary="Most influential theologian of Western Christianity.",
+            portrait_image="https://upload.wikimedia.org/example/augustine.jpg",
+        )
+        self.tertullian = Author.objects.create(
+            name="Tertullian",
+            short_name="Tertullian",
+            author_type="church_father",
+            birth_year=155,
+            death_year=220,
+            tradition="Western (later Montanist)",
+            era="ante_nicene",
+            primary_hermeneutic="literal_historical",
+            orthodoxy_status="controversial",
+            recognized_by=[],
+            is_saint=False,
+            is_doctor_of_church=False,
+            biography_summary="Father of Latin Christianity, later joined Montanist movement.",
+        )
+        self.aquinas = Author.objects.create(
+            name="Thomas Aquinas",
+            short_name="Aquinas",
+            author_type="medieval",
+            birth_year=1225,
+            death_year=1274,
+            tradition="Roman Catholic (Dominican)",
+            era="medieval",
+            primary_hermeneutic="scholastic",
+            orthodoxy_status="orthodox",
+            recognized_by=["catholic", "anglican"],
+            is_saint=True,
+            is_doctor_of_church=True,
         )
 
-        # Create commentary entries
-        self.commentary1 = CommentaryEntry.objects.create(
-            source=self.source,
-            author=self.author1,
-            book=self.acts_canonical,
-            chapter=1,
-            verse_start=1,
-            verse_end=1,
-            title="On Acts 1:1",
-            body_text="The opening of the Acts of the Apostles... " * 50,  # ~450 words
-            original_language="Greek",
-            word_count=450,
-            is_complete=True,
-            confidence_score=0.95,
-            ai_summary={"summary": "Commentary on Acts 1:1"},
-            theological_analysis={"analysis": "Key theological themes"},
-            spiritual_insight={"insight": "Spiritual lessons"},
+        # Commentary entries
+        self.entry1 = CommentaryEntry.objects.create(
+            source=self.catena, author=self.chrysostom, book=self.book_rom,
+            chapter=12, verse_start=1, verse_end=1,
+            original_reference="ROM 12:1",
+            body_text="Here he goes on to alarm them also by the figure he uses...",
+            original_language="en", word_count=45, is_complete=True, confidence_score=0.9,
+        )
+        self.entry2 = CommentaryEntry.objects.create(
+            source=self.catena, author=self.augustine, book=self.book_rom,
+            chapter=12, verse_start=1, verse_end=1,
+            original_reference="ROM 12:1",
+            body_text="If the body, which is less than the soul, is a sacrifice when used correctly...",
+            original_language="en", word_count=52, is_complete=True, confidence_score=0.9,
+        )
+        self.entry3 = CommentaryEntry.objects.create(
+            source=self.catena, author=self.chrysostom, book=self.book_eph,
+            chapter=6, verse_start=12, verse_end=12,
+            original_reference="EPH 6:12",
+            body_text="For we wrestle not against flesh and blood, but against principalities...",
+            original_language="en", word_count=38, is_complete=True, confidence_score=0.9,
+        )
+        self.entry4 = CommentaryEntry.objects.create(
+            source=self.catena, author=self.augustine, book=self.book_gen,
+            chapter=3, verse_start=15, verse_end=15,
+            original_reference="GEN 3:15",
+            body_text="The seed of the woman shall crush the head of the serpent...",
+            original_language="en", word_count=30, is_complete=True, confidence_score=0.85,
         )
 
-        self.commentary2 = CommentaryEntry.objects.create(
-            source=self.source,
-            author=self.author1,
-            book=self.acts_canonical,
-            chapter=1,
-            verse_start=8,
-            verse_end=8,
-            title="On Acts 1:8",
-            body_text="You will receive power... " * 30,  # ~150 words
-            original_language="Greek",
-            word_count=150,
-            is_complete=True,
-            confidence_score=0.88,
-            ai_summary={"summary": "Commentary on Acts 1:8"},
-        )
+    def _auth(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
 
-        self.commentary3 = CommentaryEntry.objects.create(
-            source=self.source,
-            author=self.author2,
-            book=self.john_canonical,
-            chapter=1,
-            verse_start=1,
-            verse_end=1,
-            title="On John 1:1",
-            body_text="In the beginning was the Word... " * 60,  # ~600 words
-            original_language="Greek",
-            word_count=600,
-            is_complete=True,
-            confidence_score=0.92,
-        )
 
-    def test_requires_auth(self):
-        """Test that comments endpoint requires authentication."""
-        resp = self.client.get("/api/v1/bible/comments/")
+# ─── Author Tests ─────────────────────────────────────────────
+
+class AuthorEndpointsTest(CommentaryTestBase):
+    """Tests for /comments/authors/ endpoints."""
+
+    # Authentication
+    def test_unauthenticated_returns_401(self):
+        endpoints = [
+            "/api/v1/bible/comments/authors/",
+            f"/api/v1/bible/comments/authors/{self.chrysostom.id}/",
+        ]
+        for ep in endpoints:
+            self.assertEqual(self.client.get(ep).status_code, status.HTTP_401_UNAUTHORIZED, ep)
+
+    # List
+    def test_list_returns_all_authors(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 4)
+
+    def test_list_response_has_compact_fields(self):
+        """List should return compact fields: id, name, short_name, author_type, tradition, portrait_image."""
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/")
+        author = resp.json()["results"][0]
+        for field in ("id", "name", "short_name", "author_type", "tradition", "portrait_image"):
+            self.assertIn(field, author, f"Missing field: {field}")
+        # Should NOT have detail-only fields
+        for field in ("biography_summary", "theological_contributions", "recognized_by", "entry_count"):
+            self.assertNotIn(field, author, f"List should not have: {field}")
+
+    # Detail
+    def test_detail_returns_full_profile(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/authors/{self.chrysostom.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+
+        self.assertEqual(data["name"], "John Chrysostom")
+        self.assertEqual(data["lifespan"], "347-407")
+        self.assertEqual(data["primary_hermeneutic"], "mixed_antiochene")
+        self.assertEqual(data["orthodoxy_status"], "orthodox")
+        self.assertIn("catholic", data["recognized_by"])
+        self.assertIn("orthodox", data["recognized_by"])
+        self.assertTrue(data["is_doctor_of_church"])
+        self.assertTrue(data["is_saint"])
+        self.assertIn("Homilies on Matthew", data["major_works"])
+        self.assertIn("portrait_image", data)
+        self.assertIn("wikipedia_url", data)
+        self.assertIn("entry_count", data)
+        self.assertEqual(data["entry_count"], 2)
+
+    def test_detail_not_found_returns_404(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/99999/")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Filters
+    def test_filter_by_author_type(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?author_type=church_father")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+        self.assertEqual(data["pagination"]["count"], 3)  # Chrysostom, Augustine, Tertullian
+        for a in data["results"]:
+            self.assertEqual(a["author_type"], "church_father")
+
+    def test_filter_by_tradition(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?tradition=Western+Catholic")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        for a in resp.json()["results"]:
+            self.assertEqual(a["tradition"], "Western Catholic")
+
+    def test_filter_by_hermeneutic(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?primary_hermeneutic=scholastic")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["name"], "Thomas Aquinas")
+
+    def test_filter_by_orthodoxy_status(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?orthodoxy_status=controversial")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["name"], "Tertullian")
+
+    def test_filter_by_doctor_of_church(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?is_doctor_of_church=true")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        names = [a["name"] for a in resp.json()["results"]]
+        self.assertIn("John Chrysostom", names)
+        self.assertIn("Augustine of Hippo", names)
+        self.assertIn("Thomas Aquinas", names)
+        self.assertNotIn("Tertullian", names)
+
+    def test_filter_by_era(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?era=nicene")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 2)  # Chrysostom, Augustine
+
+    def test_filter_by_is_saint(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?is_saint=true")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 3)  # Not Tertullian
+
+    # Search
+    def test_search_by_name(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?search=Chrysostom")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 1)
+
+    def test_search_by_biography(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/?search=Montanist")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["name"], "Tertullian")
+
+    # Entries action
+    def test_author_entries_action(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/authors/{self.chrysostom.id}/entries/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+        self.assertEqual(len(data), 2)
+        for entry in data:
+            self.assertEqual(entry["author"]["name"], "John Chrysostom")
+
+    # Response structure
+    def test_list_has_pagination(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/")
+        data = resp.json()
+        for field in ("count", "num_pages", "current_page", "page_size"):
+            self.assertIn(field, data["pagination"])
+
+    def test_response_content_type(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/authors/")
+        self.assertEqual(resp["Content-Type"], "application/json")
+
+
+# ─── Source Tests ─────────────────────────────────────────────
+
+class SourceEndpointsTest(CommentaryTestBase):
+    """Tests for /comments/sources/ endpoints."""
+
+    def test_unauthenticated_returns_401(self):
+        resp = self.client.get("/api/v1/bible/comments/sources/")
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_list_all_commentaries(self):
-        """Test listing all commentaries."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/")
+    def test_list_sources(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/sources/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.json()
-        self.assertIn("results", data)
-        self.assertEqual(len(data["results"]), 3)
+        self.assertEqual(data["pagination"]["count"], 1)
+        source = data["results"][0]
+        self.assertEqual(source["short_code"], "CATENA")
+        self.assertTrue(source["is_featured"])
 
-    def test_filter_by_book(self):
-        """Test filtering commentaries by book OSIS code."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/?book__osis_code=Acts")
+    def test_source_detail(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/sources/{self.catena.id}/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.json()
-        self.assertEqual(len(data["results"]), 2)
-        for result in data["results"]:
-            self.assertEqual(result["book"]["osis_code"], "Acts")
+        self.assertEqual(data["name"], "Catena Bible Commentary")
+        self.assertIn("entry_count", data)
+
+    def test_source_response_fields(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/sources/{self.catena.id}/")
+        data = resp.json()
+        for field in ("id", "name", "short_code", "source_type", "description", "is_featured", "entry_count"):
+            self.assertIn(field, data, f"Missing field: {field}")
+
+
+# ─── Entry Tests ──────────────────────────────────────────────
+
+class EntryEndpointsTest(CommentaryTestBase):
+    """Tests for /comments/entries/ endpoints."""
+
+    def test_unauthenticated_returns_401(self):
+        resp = self.client.get("/api/v1/bible/comments/entries/")
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_all_entries(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 4)
+
+    # Filters
+    def test_filter_by_book(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?book__osis_code=Rom")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+        self.assertEqual(data["pagination"]["count"], 2)
+        for r in data["results"]:
+            self.assertEqual(r["book"]["osis_code"], "Rom")
 
     def test_filter_by_chapter(self):
-        """Test filtering commentaries by chapter."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/?book__osis_code=Acts&chapter=1")
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?book__osis_code=Rom&chapter=12")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        self.assertEqual(len(data["results"]), 2)
-        for result in data["results"]:
-            self.assertEqual(result["chapter"], 1)
+        self.assertEqual(resp.json()["pagination"]["count"], 2)
 
-    def test_filter_by_author(self):
-        """Test filtering commentaries by author name."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/?author__name=John+Chrysostom")
+    def test_filter_by_verse(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?book__osis_code=Eph&chapter=6&verse=12")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        self.assertEqual(len(data["results"]), 2)
-        for result in data["results"]:
-            self.assertEqual(result["author"]["name"], "John Chrysostom")
+        self.assertEqual(resp.json()["pagination"]["count"], 1)
+        self.assertIn("principalities", resp.json()["results"][0]["body_text"])
+
+    def test_filter_by_author_name(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?author__name=Augustine+of+Hippo")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 2)
 
     def test_filter_by_source(self):
-        """Test filtering commentaries by source short code."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/?source__short_code=CF")
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?source__short_code=CATENA")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        self.assertEqual(len(data["results"]), 3)
-
-    def test_search_by_title(self):
-        """Test searching commentaries by title."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/?search=On+John")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        self.assertGreaterEqual(len(data["results"]), 1)
-        # Verify that the searched title is in results
-        titles = [r["title"] for r in data["results"]]
-        self.assertIn("On John 1:1", titles)
-
-    def test_search_by_author_name(self):
-        """Test searching commentaries by author name."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/?search=Augustine")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["author"]["name"], "Augustine of Hippo")
-
-    def test_ordering_by_book_chapter_verse(self):
-        """Test default ordering by book, chapter, verse."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        results = data["results"]
-
-        # John should come before Acts (John has canonical_order=43, Acts=44)
-        john_results = [r for r in results if r["book"]["osis_code"] == "John"]
-        acts_results = [r for r in results if r["book"]["osis_code"] == "Acts"]
-
-        if john_results and acts_results:
-            john_order = results.index(john_results[0])
-            acts_order = results.index(acts_results[0])
-            self.assertLess(john_order, acts_order)
-
-    def test_nested_serialization(self):
-        """Test that nested objects (author, source, book) are properly serialized."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get(f"/api/v1/bible/comments/{self.commentary1.id}/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-
-        # Check author
-        self.assertIn("author", data)
-        self.assertEqual(data["author"]["name"], "John Chrysostom")
-        self.assertEqual(data["author"]["author_type"], "church_father")
-
-        # Check source
-        self.assertIn("source", data)
-        self.assertEqual(data["source"]["short_code"], "CF")
-        self.assertEqual(data["source"]["is_featured"], True)
-
-        # Check book
-        self.assertIn("book", data)
-        self.assertEqual(data["book"]["osis_code"], "Acts")
-
-    def test_enrichment_fields_in_response(self):
-        """Test that enrichment fields are included in the response."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get(f"/api/v1/bible/comments/{self.commentary1.id}/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-
-        # Check enrichment fields
-        self.assertIn("ai_summary", data)
-        self.assertIn("theological_analysis", data)
-        self.assertIn("spiritual_insight", data)
-        self.assertIn("word_count", data)
-        self.assertIn("confidence_score", data)
-        self.assertIn("is_complete", data)
-        self.assertIn("original_language", data)
-
-        # Verify values
-        self.assertEqual(data["word_count"], 450)
-        self.assertEqual(data["confidence_score"], 0.95)
-        self.assertEqual(data["is_complete"], True)
-        self.assertEqual(data["original_language"], "Greek")
-
-    def test_length_category_property(self):
-        """Test the length_category computed property."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-
-        # Brief (< 100 words)
-        resp = self.client.get(f"/api/v1/bible/comments/{self.commentary2.id}/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp.json()["length_category"], "medium")  # 150 words
-
-        # Detailed (500-2000 words)
-        resp = self.client.get(f"/api/v1/bible/comments/{self.commentary3.id}/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp.json()["length_category"], "detailed")  # 600 words
-
-    def test_pagination(self):
-        """Test pagination of results."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get("/api/v1/bible/comments/?page=1&page_size=2")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        self.assertIn("results", data)
-        self.assertEqual(len(data["results"]), 2)
+        self.assertEqual(resp.json()["pagination"]["count"], 4)
 
     def test_combined_filters(self):
-        """Test combining multiple filters."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
+        self._auth()
         resp = self.client.get(
-            "/api/v1/bible/comments/?book__osis_code=Acts&chapter=1&author__name=John+Chrysostom"
+            "/api/v1/bible/comments/entries/?book__osis_code=Rom&chapter=12&author__name=John+Chrysostom"
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
-        self.assertEqual(len(data["results"]), 2)
-        for result in data["results"]:
-            self.assertEqual(result["book"]["osis_code"], "Acts")
-            self.assertEqual(result["chapter"], 1)
-            self.assertEqual(result["author"]["name"], "John Chrysostom")
+        self.assertEqual(resp.json()["pagination"]["count"], 1)
 
-    def test_reference_field(self):
-        """Test that reference field is properly formatted."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        resp = self.client.get(f"/api/v1/bible/comments/{self.commentary1.id}/")
+    # Search
+    def test_search_in_body_text(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?search=sacrifice")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(resp.json()["pagination"]["count"], 1)
+
+    def test_search_by_author_name(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?search=Chrysostom")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["pagination"]["count"], 2)
+
+    # Detail
+    def test_entry_detail(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/entries/{self.entry1.id}/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.json()
-        self.assertIn("reference", data)
-        self.assertIsNotNone(data["reference"])
+        self.assertEqual(data["chapter"], 12)
+        self.assertEqual(data["verse_start"], 1)
+        self.assertIn("body_text", data)
+
+    def test_entry_not_found(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/99999/")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Nested serialization
+    def test_entry_has_nested_author(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/entries/{self.entry1.id}/")
+        author = resp.json()["author"]
+        self.assertEqual(author["name"], "John Chrysostom")
+        self.assertEqual(author["author_type"], "church_father")
+        self.assertIn("portrait_image", author)
+
+    def test_entry_has_nested_source(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/entries/{self.entry1.id}/")
+        source = resp.json()["source"]
+        self.assertEqual(source["short_code"], "CATENA")
+
+    def test_entry_has_nested_book(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/entries/{self.entry1.id}/")
+        book = resp.json()["book"]
+        self.assertEqual(book["osis_code"], "Rom")
+
+    # Ordering
+    def test_default_ordering_by_book_chapter_verse(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/")
+        results = resp.json()["results"]
+        # Gen (order 1) should come before Eph (49) and Rom (45)
+        books = [r["book"]["osis_code"] for r in results]
+        gen_idx = books.index("Gen")
+        rom_idx = books.index("Rom")
+        self.assertLess(gen_idx, rom_idx)
+
+    # Pagination
+    def test_pagination(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/?page_size=2")
+        data = resp.json()
+        self.assertEqual(len(data["results"]), 2)
+        self.assertIsNotNone(data["pagination"]["next"])
+
+    # Response structure
+    def test_entry_response_fields(self):
+        self._auth()
+        resp = self.client.get(f"/api/v1/bible/comments/entries/{self.entry1.id}/")
+        data = resp.json()
+        required = [
+            "id", "source", "author", "book", "chapter", "verse_start", "verse_end",
+            "body_text", "original_language", "word_count", "is_complete",
+            "confidence_score", "created_at",
+        ]
+        for field in required:
+            self.assertIn(field, data, f"Missing field: {field}")
+
+    def test_content_type_is_json(self):
+        self._auth()
+        resp = self.client.get("/api/v1/bible/comments/entries/")
+        self.assertEqual(resp["Content-Type"], "application/json")

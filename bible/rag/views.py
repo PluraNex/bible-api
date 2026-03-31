@@ -18,8 +18,8 @@ import statistics
 import time
 from typing import Any
 
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -32,23 +32,24 @@ class RagEvalSimpleView(APIView):
 
     @extend_schema(
         summary="RAG Eval (simples) — retrieval-only",
-        request={
-            "type": "object",
-            "properties": {
-                "queries": {"type": "array", "items": {"type": "string"}},
-                "k": {"type": "integer", "default": 10},
-                "versions": {"type": "array", "items": {"type": "string"}},
+        request=inline_serializer(
+            name="RagEvalSimpleRequest",
+            fields={
+                "queries": serializers.ListField(child=serializers.CharField()),
+                "k": serializers.IntegerField(default=10, required=False),
+                "versions": serializers.ListField(
+                    child=serializers.CharField(), required=False
+                ),
             },
-            "required": ["queries"],
-        },
+        ),
         responses={
-            200: {
-                "type": "object",
-                "properties": {
-                    "summary": {"type": "object"},
-                    "per_query": {"type": "array"},
+            200: inline_serializer(
+                name="RagEvalSimpleResponse",
+                fields={
+                    "summary": serializers.DictField(),
+                    "per_query": serializers.ListField(child=serializers.DictField()),
                 },
-            },
+            ),
             **get_error_responses(),
         },
         tags=["rag"],

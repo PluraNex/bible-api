@@ -14,5 +14,7 @@ requests==2.31.0
 beautifulsoup4==4.12.2
 pgvector==0.2.5
 openai>=1.30.0
+anthropic>=0.45.0
+pyarrow>=14.0.0
 numpy>=1.26.0
 django-prometheus==2.3.1

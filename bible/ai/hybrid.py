@@ -303,7 +303,7 @@ def reciprocal_rank_fusion(
     vector_results: list[dict[str, Any]],
     *,
     k: int = 60,
-    alpha: float = 0.5,
+    alpha: float = 0.7,
 ) -> list[dict[str, Any]]:
     """
     Combina resultados de BM25 e vetorial usando Reciprocal Rank Fusion.
@@ -926,7 +926,7 @@ def hybrid_search(
     pool_size: int = 100,
     versions: list[str] | None = None,
     book_id: int | None = None,
-    alpha: float = 0.5,
+    alpha: float = 0.7,
     alpha_user_provided: bool = False,
     rrf_k: int = 60,
     expand_query_flag: bool = False,
@@ -936,7 +936,7 @@ def hybrid_search(
     mmr_lambda: float | None = None,
     deduplicate_versions: bool = False,
     embedding_source: Literal["verse", "unified"] = "verse",
-    embedding_model: str = "small",
+    embedding_model: str = "large",
     reembed_after_expansion: bool = False,
     embed_model_name: str = "text-embedding-3-small",
     use_nlp_analysis: bool = False,

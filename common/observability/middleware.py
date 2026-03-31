@@ -1,8 +1,11 @@
+import logging
 import time
 
 from django.utils.deprecation import MiddlewareMixin
 
 from .metrics import BUILD_INFO, LATENCY, REQUESTS
+
+logger = logging.getLogger(__name__)
 
 
 class ObservabilityMiddleware(MiddlewareMixin):
@@ -22,6 +25,7 @@ class ObservabilityMiddleware(MiddlewareMixin):
                     else "v1"
                 )
             except Exception:
+                logger.debug("Failed to resolve API version for metrics", exc_info=True)
                 version = "v1"
             BUILD_INFO.info({"service": "bible-api", "version": version})
             ObservabilityMiddleware._inited = True
@@ -35,6 +39,7 @@ class ObservabilityMiddleware(MiddlewareMixin):
         try:
             view_name = getattr(request.resolver_match, "view_name", None) or "unknown"
         except Exception:
+            logger.debug("Failed to resolve view_name for metrics", exc_info=True)
             view_name = "unknown"
 
         response = self.get_response(request)
@@ -51,7 +56,6 @@ class ObservabilityMiddleware(MiddlewareMixin):
                 version=version,
             ).inc()
         except Exception:
-            # Metrics should never break requests
-            pass
+            logger.debug("Failed to record metrics", exc_info=True)
 
         return response

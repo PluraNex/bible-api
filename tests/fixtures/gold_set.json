@@ -1,0 +1,2132 @@
+[
+  {
+    "query_id": "v2_ext_01",
+    "query": "silêncio de Deus",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "1 Reis 19:12",
+        "relevance": 3
+      },
+      {
+        "verse": "Habacuque 1:2",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 22:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 22:2",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 28:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Jó 30:20",
+        "relevance": 2
+      },
+      {
+        "verse": "Lamentações 3:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Salmos 13:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Salmos 83:1",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Reis 19:11",
+        "relevance": 1
+      },
+      {
+        "verse": "1 Reis 19:13",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_02",
+    "query": "sombra das coisas futuras",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "Colossenses 2:17",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 10:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 8:5",
+        "relevance": 3
+      },
+      {
+        "verse": "Exodo 25:40",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 9:23",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 9:9",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_03",
+    "query": "cegueira espiritual",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "2 Corintios 4:4",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 6:10",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 12:40",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 9:39",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 3:14",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 3:17",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 13:14",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 11:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 6:9",
+        "relevance": 1
+      },
+      {
+        "verse": "Joao 9:41",
+        "relevance": 1
+      },
+      {
+        "verse": "Mateus 13:15",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_04",
+    "query": "o descanso de Deus",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "Hebreus 4:10",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 4:9",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 95:11",
+        "relevance": 3
+      },
+      {
+        "verse": "Genesis 2:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 3:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 4:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 11:28",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 14:13",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 2:3",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 4:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 4:11",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 4:3",
+        "relevance": 1
+      },
+      {
+        "verse": "Mateus 11:29",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_05",
+    "query": "a loucura da pregação",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "1 Corintios 1:18",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Corintios 1:21",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Corintios 2:14",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Corintios 1:19",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Corintios 1:25",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Corintios 3:19",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Corintios 1:23",
+        "relevance": 1
+      },
+      {
+        "verse": "1 Corintios 1:27",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_06",
+    "query": "gemido da criação",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "Romanos 8:19",
+        "relevance": 3
+      },
+      {
+        "verse": "Romanos 8:22",
+        "relevance": 3
+      },
+      {
+        "verse": "Romanos 8:23",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 5:2",
+        "relevance": 2
+      },
+      {
+        "verse": "2 Corintios 5:4",
+        "relevance": 1
+      },
+      {
+        "verse": "Romanos 8:20",
+        "relevance": 1
+      },
+      {
+        "verse": "Romanos 8:21",
+        "relevance": 1
+      },
+      {
+        "verse": "Romanos 8:26",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_07",
+    "query": "a noiva e o noivo",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "2 Corintios 11:2",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 19:7",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 21:2",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 5:25",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 5:32",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 62:5",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 3:29",
+        "relevance": 2
+      },
+      {
+        "verse": "Oseias 2:19",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 19:9",
+        "relevance": 1
+      },
+      {
+        "verse": "Cantares 4:7",
+        "relevance": 1
+      },
+      {
+        "verse": "Efesios 5:27",
+        "relevance": 1
+      },
+      {
+        "verse": "Oseias 2:20",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_08",
+    "query": "esvaziamento de Cristo",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "Filipenses 2:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Filipenses 2:7",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 8:9",
+        "relevance": 2
+      },
+      {
+        "verse": "Filipenses 2:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 17:5",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 1:14",
+        "relevance": 2
+      },
+      {
+        "verse": "Filipenses 2:5",
+        "relevance": 1
+      },
+      {
+        "verse": "Filipenses 2:9",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 2:9",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_09",
+    "query": "o véu rasgado do templo",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "Hebreus 10:19",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 10:20",
+        "relevance": 3
+      },
+      {
+        "verse": "Mateus 27:51",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 6:19",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 9:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Marcos 15:38",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 4:16",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 23:45",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_ext_10",
+    "query": "eleição e predestinação",
+    "difficulty": "extreme",
+    "gold_references": [
+      {
+        "verse": "Efesios 1:4",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 1:5",
+        "relevance": 3
+      },
+      {
+        "verse": "Romanos 8:29",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Pedro 1:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Efesios 1:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 9:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 9:16",
+        "relevance": 2
+      },
+      {
+        "verse": "2 Tessalonicenses 2:13",
+        "relevance": 1
+      },
+      {
+        "verse": "Romanos 8:30",
+        "relevance": 1
+      },
+      {
+        "verse": "Romanos 9:13",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_01",
+    "query": "cordeiro de Deus",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "1 Corintios 5:7",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 5:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 53:7",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 1:29",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Pedro 1:19",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 8:32",
+        "relevance": 2
+      },
+      {
+        "verse": "Exodo 12:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Genesis 22:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Exodo 12:5",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_02",
+    "query": "pedra angular",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "Isaias 28:16",
+        "relevance": 3
+      },
+      {
+        "verse": "Mateus 21:42",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 118:22",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Pedro 2:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 4:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Efesios 2:20",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 9:33",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Pedro 2:7",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_03",
+    "query": "vasos de barro",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "2 Corintios 4:7",
+        "relevance": 3
+      },
+      {
+        "verse": "Jeremias 18:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 64:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 9:21",
+        "relevance": 2
+      },
+      {
+        "verse": "Jeremias 18:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Jeremias 18:4",
+        "relevance": 1
+      },
+      {
+        "verse": "Juizes 7:16",
+        "relevance": 1
+      },
+      {
+        "verse": "Juizes 7:20",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_04",
+    "query": "a videira e os ramos",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "Joao 15:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 15:5",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 5:7",
+        "relevance": 2
+      },
+      {
+        "verse": "Jeremias 2:21",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 15:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 15:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Salmos 80:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 5:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Isaias 5:2",
+        "relevance": 1
+      },
+      {
+        "verse": "Joao 15:8",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_05",
+    "query": "o pão da vida",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "Joao 6:35",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 6:51",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Corintios 10:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Deuteronomio 8:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Exodo 16:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 6:31",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 4:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Exodo 16:15",
+        "relevance": 1
+      },
+      {
+        "verse": "Joao 6:48",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_06",
+    "query": "a serpente de bronze",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "Joao 3:14",
+        "relevance": 3
+      },
+      {
+        "verse": "Numeros 21:9",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 12:32",
+        "relevance": 2
+      },
+      {
+        "verse": "Numeros 21:8",
+        "relevance": 2
+      },
+      {
+        "verse": "2 Reis 18:4",
+        "relevance": 1
+      },
+      {
+        "verse": "Joao 3:15",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_07",
+    "query": "água do rochedo",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "1 Corintios 10:4",
+        "relevance": 3
+      },
+      {
+        "verse": "Exodo 17:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 7:38",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 22:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 4:14",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 7:37",
+        "relevance": 1
+      },
+      {
+        "verse": "Numeros 20:11",
+        "relevance": 1
+      },
+      {
+        "verse": "Numeros 20:8",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_08",
+    "query": "o bode expiatório",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "1 Pedro 2:24",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 53:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Levitico 16:21",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 5:21",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 9:28",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 1:29",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 53:4",
+        "relevance": 1
+      },
+      {
+        "verse": "Levitico 16:10",
+        "relevance": 1
+      },
+      {
+        "verse": "Levitico 16:22",
+        "relevance": 1
+      },
+      {
+        "verse": "Levitico 16:8",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_09",
+    "query": "a escada de Jacó",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "Genesis 28:12",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 1:51",
+        "relevance": 3
+      },
+      {
+        "verse": "Genesis 28:17",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_hard_10",
+    "query": "a sarça ardente",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "Exodo 3:14",
+        "relevance": 3
+      },
+      {
+        "verse": "Exodo 3:2",
+        "relevance": 3
+      },
+      {
+        "verse": "Exodo 3:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Atos 7:30",
+        "relevance": 2
+      },
+      {
+        "verse": "Exodo 3:5",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 20:37",
+        "relevance": 2
+      },
+      {
+        "verse": "Marcos 12:26",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 7:33",
+        "relevance": 1
+      },
+      {
+        "verse": "Atos 7:34",
+        "relevance": 1
+      },
+      {
+        "verse": "Exodo 3:4",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_01",
+    "query": "espinho na carne",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "2 Corintios 12:10",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 12:7",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 12:9",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 11:30",
+        "relevance": 2
+      },
+      {
+        "verse": "2 Corintios 12:8",
+        "relevance": 1
+      },
+      {
+        "verse": "2 Corintios 4:7",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_02",
+    "query": "Melquisedeque",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Genesis 14:18",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 7:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 110:4",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 5:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 6:20",
+        "relevance": 2
+      },
+      {
+        "verse": "Genesis 14:19",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 14:20",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 5:10",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 7:17",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 7:3",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_03",
+    "query": "armadura de Deus",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "Efesios 6:11",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 6:13",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 6:14",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 6:16",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 6:17",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 59:17",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Tessalonicenses 5:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Efesios 6:10",
+        "relevance": 2
+      },
+      {
+        "verse": "Efesios 6:12",
+        "relevance": 2
+      },
+      {
+        "verse": "Efesios 6:15",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 13:12",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_04",
+    "query": "o cântico novo",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "Apocalipse 5:9",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 42:10",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 40:3",
+        "relevance": 3
+      },
+      {
+        "verse": "Salmos 96:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 14:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 15:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Salmos 149:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Salmos 33:3",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_05",
+    "query": "a nuvem de testemunhas",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "Hebreus 12:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 11:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 11:13",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 11:39",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 12:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 11:24",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 11:32",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 11:4",
+        "relevance": 1
+      },
+      {
+        "verse": "Hebreus 11:8",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_06",
+    "query": "o Servo Sofredor",
+    "difficulty": "hard",
+    "gold_references": [
+      {
+        "verse": "Isaias 50:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 53:5",
+        "relevance": 3
+      },
+      {
+        "verse": "Isaias 53:7",
+        "relevance": 3
+      },
+      {
+        "verse": "Atos 8:32",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 42:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 49:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 52:13",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 53:10",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 53:12",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 53:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 53:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Isaias 53:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 12:18",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 8:35",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_07",
+    "query": "o anjo do Senhor",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "Exodo 3:2",
+        "relevance": 3
+      },
+      {
+        "verse": "Juizes 6:22",
+        "relevance": 3
+      },
+      {
+        "verse": "Genesis 16:7",
+        "relevance": 2
+      },
+      {
+        "verse": "Genesis 22:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Josue 5:13-14",
+        "relevance": 2
+      },
+      {
+        "verse": "Juizes 13:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Juizes 2:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Juizes 6:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Zacarias 1:12",
+        "relevance": 2
+      },
+      {
+        "verse": "Genesis 22:15",
+        "relevance": 1
+      },
+      {
+        "verse": "Juizes 13:21",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_08",
+    "query": "a eira de Araúna",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "1 Cronicas 21:18",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Cronicas 22:1",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Cronicas 3:1",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Samuel 24:16",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Samuel 24:18",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Cronicas 21:26",
+        "relevance": 2
+      },
+      {
+        "verse": "2 Samuel 24:24",
+        "relevance": 2
+      },
+      {
+        "verse": "2 Samuel 24:25",
+        "relevance": 2
+      },
+      {
+        "verse": "Genesis 22:2",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Cronicas 21:28",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_09",
+    "query": "as sete igrejas da Ásia",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "Apocalipse 1:11",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 1:20",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 1:4",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 2:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 2:12",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 2:18",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 2:8",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 3:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 3:14",
+        "relevance": 2
+      },
+      {
+        "verse": "Apocalipse 3:7",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_mh_10",
+    "query": "o tabernáculo e o templo",
+    "difficulty": "medium_hard",
+    "gold_references": [
+      {
+        "verse": "1 Corintios 6:19",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 21:22",
+        "relevance": 3
+      },
+      {
+        "verse": "Apocalipse 21:3",
+        "relevance": 3
+      },
+      {
+        "verse": "Exodo 25:8",
+        "relevance": 3
+      },
+      {
+        "verse": "Hebreus 9:11",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 1:14",
+        "relevance": 3
+      },
+      {
+        "verse": "Exodo 25:9",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 8:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 8:5",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 9:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 2:19",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 2:21",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Reis 6:1",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_01",
+    "query": "olho por olho",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Mateus 5:38",
+        "relevance": 3
+      },
+      {
+        "verse": "Mateus 5:39",
+        "relevance": 3
+      },
+      {
+        "verse": "Deuteronomio 19:21",
+        "relevance": 2
+      },
+      {
+        "verse": "Exodo 21:24",
+        "relevance": 2
+      },
+      {
+        "verse": "Levitico 24:20",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_02",
+    "query": "fruto do Espírito",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Galatas 5:22",
+        "relevance": 3
+      },
+      {
+        "verse": "Galatas 5:23",
+        "relevance": 3
+      },
+      {
+        "verse": "Efesios 5:9",
+        "relevance": 2
+      },
+      {
+        "verse": "Galatas 5:16",
+        "relevance": 2
+      },
+      {
+        "verse": "Galatas 5:19",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 15:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 15:5",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 7:16",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 8:5",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 7:20",
+        "relevance": 1
+      },
+      {
+        "verse": "Romanos 8:8",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_03",
+    "query": "a mulher virtuosa",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Proverbios 31:10",
+        "relevance": 3
+      },
+      {
+        "verse": "Rute 3:11",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Pedro 3:3-4",
+        "relevance": 2
+      },
+      {
+        "verse": "Proverbios 12:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Proverbios 31:25",
+        "relevance": 2
+      },
+      {
+        "verse": "Proverbios 31:30",
+        "relevance": 2
+      },
+      {
+        "verse": "Proverbios 31:31",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_04",
+    "query": "Marta e Maria",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Joao 11:27",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 10:42",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 11:20",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 12:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 12:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 10:38",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 10:39",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 10:41",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 11:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 10:40",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_05",
+    "query": "circuncisão do coração",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Deuteronomio 30:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Romanos 2:29",
+        "relevance": 3
+      },
+      {
+        "verse": "Atos 7:51",
+        "relevance": 2
+      },
+      {
+        "verse": "Colossenses 2:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Deuteronomio 10:16",
+        "relevance": 2
+      },
+      {
+        "verse": "Ezequiel 36:26",
+        "relevance": 2
+      },
+      {
+        "verse": "Filipenses 3:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Jeremias 4:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 2:28",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_06",
+    "query": "o jugo suave",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Mateus 11:29",
+        "relevance": 3
+      },
+      {
+        "verse": "Mateus 11:30",
+        "relevance": 3
+      },
+      {
+        "verse": "Galatas 5:1",
+        "relevance": 2
+      },
+      {
+        "verse": "Jeremias 6:16",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 11:28",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Reis 12:4",
+        "relevance": 1
+      },
+      {
+        "verse": "Atos 15:10",
+        "relevance": 1
+      },
+      {
+        "verse": "Jeremias 2:20",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_07",
+    "query": "a viúva e o juiz injusto",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Lucas 18:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 18:7",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 18:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 18:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 18:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 18:8",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_08",
+    "query": "a carta e o espírito da lei",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "2 Corintios 3:3",
+        "relevance": 3
+      },
+      {
+        "verse": "2 Corintios 3:6",
+        "relevance": 3
+      },
+      {
+        "verse": "Jeremias 31:33",
+        "relevance": 3
+      },
+      {
+        "verse": "Ezequiel 36:26",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 2:29",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 7:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 8:2",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_09",
+    "query": "sal da terra",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Mateus 5:13",
+        "relevance": 3
+      },
+      {
+        "verse": "Colossenses 4:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Levitico 2:13",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 14:34",
+        "relevance": 2
+      },
+      {
+        "verse": "Marcos 9:49",
+        "relevance": 2
+      },
+      {
+        "verse": "Marcos 9:50",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 14:35",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_med_10",
+    "query": "o rico e Lázaro",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Lucas 16:23",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 16:25",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 16:19",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 16:24",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 16:26",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 16:29",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 6:24",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 16:22",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 16:31",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 6:20",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_01",
+    "query": "filho pródigo",
+    "difficulty": "medium",
+    "gold_references": [
+      {
+        "verse": "Lucas 15:20",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 15:24",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 15:11",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 15:32",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 15:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 15:13",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 15:17",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 15:2",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_02",
+    "query": "caminho estreito",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "Mateus 7:13",
+        "relevance": 3
+      },
+      {
+        "verse": "Mateus 7:14",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 10:9",
+        "relevance": 2
+      },
+      {
+        "verse": "Joao 14:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 13:24",
+        "relevance": 2
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_03",
+    "query": "quem é meu próximo",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "Lucas 10:33",
+        "relevance": 3
+      },
+      {
+        "verse": "Lucas 10:37",
+        "relevance": 3
+      },
+      {
+        "verse": "Levitico 19:18",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 10:27",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 10:29",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 10:30",
+        "relevance": 1
+      },
+      {
+        "verse": "Lucas 10:36",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_04",
+    "query": "Noé e o dilúvio",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "Genesis 7:17",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Pedro 3:20",
+        "relevance": 2
+      },
+      {
+        "verse": "Genesis 6:9",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 11:7",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 24:37",
+        "relevance": 2
+      },
+      {
+        "verse": "2 Pedro 2:5",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 7:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 8:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Mateus 24:38",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_05",
+    "query": "a criação do mundo",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "Genesis 1:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 1:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Joao 1:3",
+        "relevance": 3
+      },
+      {
+        "verse": "Colossenses 1:16",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 11:3",
+        "relevance": 2
+      },
+      {
+        "verse": "Hebreus 1:2",
+        "relevance": 2
+      },
+      {
+        "verse": "Colossenses 1:17",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 1:27",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 2:1",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_06",
+    "query": "os dez mandamentos",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "Exodo 20:1",
+        "relevance": 3
+      },
+      {
+        "verse": "Exodo 20:3",
+        "relevance": 3
+      },
+      {
+        "verse": "Deuteronomio 4:13",
+        "relevance": 2
+      },
+      {
+        "verse": "Deuteronomio 5:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Exodo 34:28",
+        "relevance": 2
+      },
+      {
+        "verse": "Mateus 22:37",
+        "relevance": 2
+      },
+      {
+        "verse": "Romanos 13:9",
+        "relevance": 2
+      },
+      {
+        "verse": "Deuteronomio 5:21",
+        "relevance": 1
+      },
+      {
+        "verse": "Exodo 20:13",
+        "relevance": 1
+      },
+      {
+        "verse": "Exodo 20:17",
+        "relevance": 1
+      },
+      {
+        "verse": "Mateus 22:39",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_07",
+    "query": "a última ceia",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "1 Corintios 11:23",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Corintios 11:25",
+        "relevance": 3
+      },
+      {
+        "verse": "Mateus 26:26",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Corintios 10:16",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 22:19",
+        "relevance": 2
+      },
+      {
+        "verse": "Marcos 14:22",
+        "relevance": 2
+      },
+      {
+        "verse": "Lucas 22:20",
+        "relevance": 1
+      },
+      {
+        "verse": "Marcos 14:24",
+        "relevance": 1
+      },
+      {
+        "verse": "Mateus 26:28",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_08",
+    "query": "a torre de Babel",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "Genesis 11:9",
+        "relevance": 3
+      },
+      {
+        "verse": "Atos 2:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Genesis 11:4",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 2:11",
+        "relevance": 1
+      },
+      {
+        "verse": "Atos 2:6",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 11:1",
+        "relevance": 1
+      },
+      {
+        "verse": "Genesis 11:7",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_09",
+    "query": "Davi e Golias",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "1 Samuel 17:45",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Samuel 17:47",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Samuel 17:49",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Samuel 17:37",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Samuel 17:4",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Samuel 17:51",
+        "relevance": 2
+      },
+      {
+        "verse": "1 Samuel 17:40",
+        "relevance": 1
+      },
+      {
+        "verse": "1 Samuel 17:50",
+        "relevance": 1
+      }
+    ]
+  },
+  {
+    "query_id": "v2_base_10",
+    "query": "a conversão de Paulo",
+    "difficulty": "baseline",
+    "gold_references": [
+      {
+        "verse": "Atos 26:15",
+        "relevance": 3
+      },
+      {
+        "verse": "Atos 9:4",
+        "relevance": 3
+      },
+      {
+        "verse": "Atos 9:5",
+        "relevance": 3
+      },
+      {
+        "verse": "1 Timoteo 1:15",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 22:6",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 9:15",
+        "relevance": 2
+      },
+      {
+        "verse": "Galatas 1:15",
+        "relevance": 2
+      },
+      {
+        "verse": "Atos 22:10",
+        "relevance": 1
+      },
+      {
+        "verse": "Atos 26:13",
+        "relevance": 1
+      },
+      {
+        "verse": "Atos 9:18",
+        "relevance": 1
+      },
+      {
+        "verse": "Atos 9:3",
+        "relevance": 1
+      },
+      {
+        "verse": "Atos 9:6",
+        "relevance": 1
+      },
+      {
+        "verse": "Galatas 1:16",
+        "relevance": 1
+      }
+    ]
+  }
+]

@@ -57,9 +57,13 @@ def resolve_language(request: HttpRequest) -> str:
                 logger.debug("Language resolved from Accept-Language header")
                 return validated_lang
 
-    # 3. Default fallback
+    # 3. Default fallback - try to find English in DB
     default_lang = getattr(settings, "DEFAULT_LANGUAGE_CODE", "en")
-    logger.debug("Language resolved to default fallback")
+    validated_default = _validate_language_code(default_lang)
+    if validated_default:
+        logger.debug("Language resolved to validated default")
+        return validated_default
+    logger.debug("Language resolved to hardcoded default")
     return default_lang
 
 
@@ -67,7 +71,7 @@ def _validate_language_code(lang_code: str) -> str | None:
     """
     Validate language code against Language model with fallback logic.
 
-    Implements fallback: pt-BR → pt → en
+    Implements fallback: pt-BR → pt → en (and vice-versa for regional variants)
 
     Args:
         lang_code: Language code to validate
@@ -90,25 +94,26 @@ def _validate_language_code(lang_code: str) -> str | None:
     # Normalize to lowercase for fallback logic
     lang_lower = lang_code.lower()
 
-    # Handle Portuguese variants (pt-BR → pt)
+    # Handle Portuguese variants (pt → pt-BR or pt-BR → pt)
     if lang_lower.startswith("pt"):
-        existing_lang = Language.objects.filter(code__iexact="pt").first()
+        # Try to find any Portuguese variant (pt, pt-BR, pt-PT, etc.)
+        existing_lang = Language.objects.filter(code__istartswith="pt").first()
         if existing_lang:
-            logger.debug("Language fallback applied: Portuguese variant to pt")
+            logger.debug(f"Language fallback applied: {lang_code} → {existing_lang.code}")
             return existing_lang.code
 
-    # Handle Spanish variants (es-ES → es)
+    # Handle Spanish variants (es → es-ES or es-ES → es)
     if lang_lower.startswith("es"):
-        existing_lang = Language.objects.filter(code__iexact="es").first()
+        existing_lang = Language.objects.filter(code__istartswith="es").first()
         if existing_lang:
-            logger.debug("Language fallback applied: Spanish variant to es")
+            logger.debug(f"Language fallback applied: {lang_code} → {existing_lang.code}")
             return existing_lang.code
 
-    # Handle English variants (en-US → en)
+    # Handle English variants (en → en-US or en-US → en)
     if lang_lower.startswith("en"):
-        existing_lang = Language.objects.filter(code__iexact="en").first()
+        existing_lang = Language.objects.filter(code__istartswith="en").first()
         if existing_lang:
-            logger.debug("Language fallback applied: English variant to en")
+            logger.debug(f"Language fallback applied: {lang_code} → {existing_lang.code}")
             return existing_lang.code
 
     # No fallback for completely invalid codes in validation

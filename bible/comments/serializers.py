@@ -1,13 +1,19 @@
 """Serializers for commentary domain."""
 
+from django.db.models import Count
 from rest_framework import serializers
 
-from bible.models import Author, CommentaryEntry, CommentarySource
+from bible.commentaries import Author, CommentaryEntry, CommentarySource
 from bible.verses.serializers import BookNestedSerializer
 
 
-class AuthorSerializer(serializers.ModelSerializer):
-    """Serializer for commentary authors."""
+# ─── Author Serializers ──────────────────────────────────────
+
+class AuthorListSerializer(serializers.ModelSerializer):
+    """Compact author for lists and nested use."""
+
+    person_id = serializers.IntegerField(source="person.id", read_only=True, default=None)
+    person_slug = serializers.CharField(source="person.slug", read_only=True, default=None)
 
     class Meta:
         model = Author
@@ -16,13 +22,54 @@ class AuthorSerializer(serializers.ModelSerializer):
             "name",
             "short_name",
             "author_type",
-            "period",
-            "century",
             "tradition",
-            "theological_school",
-            "biography_summary",
+            "portrait_image",
+            "person_id",
+            "person_slug",
         ]
 
+
+class AuthorDetailSerializer(serializers.ModelSerializer):
+    """Full author detail with all theological metadata."""
+
+    lifespan = serializers.CharField(read_only=True)
+    entry_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Author
+        fields = [
+            "id",
+            "name",
+            "short_name",
+            "author_type",
+            "birth_year",
+            "death_year",
+            "lifespan",
+            "birthplace",
+            "death_location",
+            "era",
+            "tradition",
+            "theological_school",
+            "primary_hermeneutic",
+            "orthodoxy_status",
+            "recognized_by",
+            "councils",
+            "is_saint",
+            "is_doctor_of_church",
+            "ecclesiastical_rank",
+            "major_works",
+            "biography_summary",
+            "theological_contributions",
+            "portrait_image",
+            "wikipedia_url",
+            "entry_count",
+        ]
+
+    def get_entry_count(self, obj):
+        return obj.commentary_entries.count()
+
+
+# ─── Source Serializers ───────────────────────────────────────
 
 class CommentarySourceSerializer(serializers.ModelSerializer):
     """Serializer for commentary sources."""
@@ -33,22 +80,28 @@ class CommentarySourceSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "short_code",
+            "source_type",
             "publication_year",
             "author_type",
             "description",
             "cover_image_url",
             "is_featured",
             "url",
+            "entry_count",
             "created_at",
         ]
 
 
-class CommentaryEntrySerializer(serializers.ModelSerializer):
-    """
-    Serializer for commentary entries with enrichment data.
-    """
+# ─── Entry Serializers ───────────────────────────────────────
 
-    author = AuthorSerializer(read_only=True)
+# Keep compact author for nested use in entries
+AuthorSerializer = AuthorListSerializer
+
+
+class CommentaryEntrySerializer(serializers.ModelSerializer):
+    """Commentary entry with author and source nested."""
+
+    author = AuthorListSerializer(read_only=True)
     source = CommentarySourceSerializer(read_only=True)
     book = BookNestedSerializer(read_only=True)
     reference = serializers.CharField(source="reference_display", read_only=True)
@@ -74,11 +127,6 @@ class CommentaryEntrySerializer(serializers.ModelSerializer):
             "is_complete",
             "confidence_score",
             "length_category",
-            # Enrichment fields
-            "ai_summary",
-            "argumentative_structure",
-            "theological_analysis",
-            "spiritual_insight",
             "created_at",
             "updated_at",
         ]

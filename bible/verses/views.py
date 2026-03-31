@@ -3,6 +3,7 @@
 import urllib.parse
 
 from django.db.models import Q
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import filters, generics, status
@@ -20,6 +21,7 @@ from common.pagination import StandardResultsSetPagination
 
 from ..models import Verse, Version
 from ..utils import get_canonical_book_by_name
+from ..versions.services import get_default_version_for_lang, get_version_by_ref
 from .filters import VerseFilter
 from .serializers import VerseSerializer
 
@@ -61,39 +63,12 @@ class VersesByChapterView(LanguageSensitiveMixin, generics.ListAPIView):
                 return qs
 
             lang_code = getattr(self.request, "lang_code", "en")
-
-            # Fallback logic aligned with VersionDefaultView
-            def pick_default_version(lang: str):
-                # exact language
-                v = Version.objects.filter(language__code=lang, is_active=True).order_by("name").first()
-                if v:
-                    return v
-                # base -> regional
-                if "-" not in lang:
-                    v = (
-                        Version.objects.filter(language__code__startswith=f"{lang}-", is_active=True)
-                        .order_by("name")
-                        .first()
-                    )
-                    if v:
-                        return v
-                # regional -> base
-                if "-" in lang:
-                    base = lang.split("-")[0]
-                    v = Version.objects.filter(language__code=base, is_active=True).order_by("name").first()
-                    if v:
-                        return v
-                # fallback to English
-                if lang != "en":
-                    return Version.objects.filter(language__code="en", is_active=True).order_by("name").first()
-                return None
-
-            default_version = pick_default_version(lang_code)
+            default_version = get_default_version_for_lang(lang_code)
             if default_version:
                 qs = qs.filter(version=default_version)
 
             return qs
-        except Exception:
+        except Http404:
             return Verse.objects.none()
 
     @extend_schema(
@@ -130,7 +105,7 @@ class VersesByChapterView(LanguageSensitiveMixin, generics.ListAPIView):
                 # URL decode the book_name parameter for error handling
                 book_name = urllib.parse.unquote(self.kwargs["book_name"])
                 get_canonical_book_by_name(book_name)
-            except Exception:
+            except Http404:
                 return build_error_response(
                     "Book not found",
                     "not_found",
@@ -148,7 +123,7 @@ class VerseListView(LanguageSensitiveMixin, generics.ListAPIView):
     serializer_class = VerseSerializer
     filterset_class = VerseFilter
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["text", "reference"]
+    search_fields = ["text"]
     ordering_fields = ["book__canonical_order", "chapter", "number", "created_at"]
     ordering = ["book__canonical_order", "chapter", "number"]
     pagination_class = StandardResultsSetPagination
@@ -164,7 +139,7 @@ class VerseListView(LanguageSensitiveMixin, generics.ListAPIView):
 
         if not version_param:
             lang_code = getattr(self.request, "lang_code", "en")
-            default_version = _pick_default_version_for_lang(lang_code)
+            default_version = get_default_version_for_lang(lang_code)
             if default_version:
                 qs = qs.filter(version=default_version)
 
@@ -281,26 +256,28 @@ class VersesByThemeView(LanguageSensitiveMixin, generics.ListAPIView):
         return super().get(request, *args, **kwargs)
 
 
-def _pick_default_version_for_lang(lang: str) -> Version | None:
-    # exact language
-    v = Version.objects.filter(language__code=lang, is_active=True).order_by("name").first()
-    if v:
-        return v
-    # base -> regional
-    if "-" not in lang:
-        v = Version.objects.filter(language__code__startswith=f"{lang}-", is_active=True).order_by("name").first()
+def _resolve_book(book_raw: str | None, lang: str):
+    """Resolve a book by alias first, then by canonical name. Returns CanonicalBook or None."""
+    book = resolve_book_by_alias(book_raw, lang) or None
+    if book is None:
+        try:
+            book = get_canonical_book_by_name(book_raw)
+        except Http404:
+            book = None
+    return book
+
+
+def _apply_version_filter(qs, version_param: str | None, lang: str):
+    """Apply version filter or default version to a queryset."""
+    if version_param:
+        v = get_version_by_ref(version_param)
         if v:
-            return v
-    # regional -> base
-    if "-" in lang:
-        base = lang.split("-")[0]
-        v = Version.objects.filter(language__code=base, is_active=True).order_by("name").first()
-        if v:
-            return v
-    # fallback to English
-    if lang != "en":
-        return Version.objects.filter(language__code="en", is_active=True).order_by("name").first()
-    return None
+            qs = qs.filter(version=v)
+    else:
+        default_v = get_default_version_for_lang(lang)
+        if default_v:
+            qs = qs.filter(version=default_v)
+    return qs
 
 
 class VersesByReferenceView(LanguageSensitiveMixin, generics.ListAPIView):
@@ -365,12 +342,7 @@ class VersesByReferenceView(LanguageSensitiveMixin, generics.ListAPIView):
             )
 
         entry = parsed["items"][0]
-        book = resolve_book_by_alias(entry.get("book_raw"), lang) or None
-        if book is None:
-            try:
-                book = get_canonical_book_by_name(entry.get("book_raw"))
-            except Exception:
-                book = None
+        book = _resolve_book(entry.get("book_raw"), lang)
         if book is None:
             return build_error_response(
                 "Book not found",
@@ -395,23 +367,7 @@ class VersesByReferenceView(LanguageSensitiveMixin, generics.ListAPIView):
             .order_by("book__canonical_order", "chapter", "number")
         )
 
-        if version_param:
-            try:
-                # try by id
-                version_id = int(version_param)
-                qs = qs.filter(version_id=version_id)
-            except (ValueError, TypeError):
-                # try by code exact, then by suffix
-                v = (
-                    Version.objects.filter(code__iexact=version_param).first()
-                    or Version.objects.filter(code__iendswith=f"_{version_param}").first()
-                )
-                if v:
-                    qs = qs.filter(version=v)
-        else:
-            default_v = _pick_default_version_for_lang(lang)
-            if default_v:
-                qs = qs.filter(version=default_v)
+        qs = _apply_version_filter(qs, version_param, lang)
 
         serializer = VerseSerializer(qs, many=True)
         return Response(serializer.data)
@@ -478,12 +434,7 @@ class VersesRangeView(LanguageSensitiveMixin, generics.ListAPIView):
             )
         entry = parsed["items"][0]
 
-        book = resolve_book_by_alias(entry.get("book_raw"), lang) or None
-        if book is None:
-            try:
-                book = get_canonical_book_by_name(entry.get("book_raw"))
-            except Exception:
-                book = None
+        book = _resolve_book(entry.get("book_raw"), lang)
         if book is None:
             return build_error_response(
                 "Book not found",
@@ -529,21 +480,7 @@ class VersesRangeView(LanguageSensitiveMixin, generics.ListAPIView):
                     qs = qs.filter(number__lte=end_v)
 
         # Version filtering
-        if version_param:
-            try:
-                version_id = int(version_param)
-                qs = qs.filter(version_id=version_id)
-            except (ValueError, TypeError):
-                v = (
-                    Version.objects.filter(code__iexact=version_param).first()
-                    or Version.objects.filter(code__iendswith=f"_{version_param}").first()
-                )
-                if v:
-                    qs = qs.filter(version=v)
-        else:
-            default_v = _pick_default_version_for_lang(lang)
-            if default_v:
-                qs = qs.filter(version=default_v)
+        qs = _apply_version_filter(qs, version_param, lang)
 
         # Safety limit: cap large ranges
         if qs.count() > 300:
@@ -630,12 +567,7 @@ class VersesCompareView(LanguageSensitiveMixin, APIView):
                 vary_accept_language=True,
             )
         entry = parsed["items"][0]
-        book = resolve_book_by_alias(entry.get("book_raw"), lang) or None
-        if book is None:
-            try:
-                book = get_canonical_book_by_name(entry.get("book_raw"))
-            except Exception:
-                book = None
+        book = _resolve_book(entry.get("book_raw"), lang)
         if book is None:
             return build_error_response(
                 "Book not found",
@@ -648,15 +580,7 @@ class VersesCompareView(LanguageSensitiveMixin, APIView):
         # For each version, get verses
         results = []
         for vref in versions_list:
-            v_obj = None
-            try:
-                v_id = int(vref)
-                v_obj = Version.objects.filter(pk=v_id).first()
-            except (ValueError, TypeError):
-                v_obj = (
-                    Version.objects.filter(code__iexact=vref).first()
-                    or Version.objects.filter(code__iendswith=f"_{vref}").first()
-                )
+            v_obj = get_version_by_ref(vref)
             if not v_obj:
                 results.append({"version": vref, "error": "version_not_found"})
                 continue

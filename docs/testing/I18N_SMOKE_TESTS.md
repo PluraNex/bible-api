@@ -176,6 +176,6 @@ Set up monitoring for:
 
 ## Related Documentation
 
-- [API Standards - I18n Section](../API_STANDARDS.md#6-internacionalizacao-i18n)
+- [API Standards - I18n Section](../api/API_STANDARDS.md#6-internacionalizacao-i18n)
 - [I18n Utilities](../../bible/utils/i18n.py)
 - [Language Resolution Middleware](../../bible/utils/i18n.py)

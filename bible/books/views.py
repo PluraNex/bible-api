@@ -1,6 +1,7 @@
 """Views for books domain."""
 
 from django.db.models import Q
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import filters, generics, status
@@ -108,7 +109,7 @@ class BookInfoView(LanguageSensitiveMixin, APIView):
             serializer = BookSerializer(book, context={"request": request})
             response = Response(serializer.data, status=status.HTTP_200_OK)
             return response
-        except Exception:
+        except Http404:
             return build_error_response(
                 "Book not found",
                 "not_found",
@@ -151,7 +152,7 @@ class ChaptersByBookView(LanguageSensitiveMixin, APIView):
             display_name = get_book_display_name(book, request.lang_code)
             response = Response({"book": display_name, "chapters": chapters}, status=status.HTTP_200_OK)
             return response
-        except Exception:
+        except Http404:
             return build_error_response(
                 "Book not found",
                 "not_found",
@@ -245,7 +246,7 @@ class BookOutlineView(LanguageSensitiveMixin, APIView):
 
             response = Response({"book": display_name, "outline": outline}, status=status.HTTP_200_OK)
             return response
-        except Exception:
+        except Http404:
             return build_error_response(
                 "Book not found",
                 "not_found",
@@ -292,7 +293,7 @@ class BookContextView(LanguageSensitiveMixin, APIView):
 
             response = Response({"book": display_name, "context": context}, status=status.HTTP_200_OK)
             return response
-        except Exception:
+        except Http404:
             return build_error_response(
                 "Book not found",
                 "not_found",
@@ -339,7 +340,7 @@ class BookStructureView(LanguageSensitiveMixin, APIView):
 
             response = Response({"book": display_name, "structure": structure}, status=status.HTTP_200_OK)
             return response
-        except Exception:
+        except Http404:
             return build_error_response(
                 "Book not found",
                 "not_found",
@@ -391,7 +392,7 @@ class BookStatisticsView(LanguageSensitiveMixin, APIView):
 
             response = Response({"book": display_name, "statistics": statistics}, status=status.HTTP_200_OK)
             return response
-        except Exception:
+        except Http404:
             return build_error_response(
                 "Book not found",
                 "not_found",
@@ -922,7 +923,7 @@ class BookNeighborsView(LanguageSensitiveMixin, APIView):
     def get(self, request, book_name, *args, **kwargs):
         try:
             book = get_canonical_book_by_name(book_name)
-        except Exception:
+        except Http404:
             return build_error_response(
                 f'Book "{book_name}" not found.',
                 "not_found",
@@ -1040,7 +1041,7 @@ class BookSectionsView(LanguageSensitiveMixin, APIView):
     def get(self, request, book_name, *args, **kwargs):
         try:
             book = get_canonical_book_by_name(book_name)
-        except Exception:
+        except Http404:
             return build_error_response(
                 f'Book "{book_name}" not found.',
                 "not_found",
@@ -1104,7 +1105,7 @@ class BookSectionDetailView(LanguageSensitiveMixin, APIView):
     def get(self, request, book_name, section_id, *args, **kwargs):
         try:
             book = get_canonical_book_by_name(book_name)
-        except Exception:
+        except Http404:
             return build_error_response(
                 f'Book "{book_name}" not found.',
                 "not_found",
@@ -1194,7 +1195,7 @@ class BookRestrictedSearchView(LanguageSensitiveMixin, APIView):
     def get(self, request, book_name, *args, **kwargs):
         try:
             book = get_canonical_book_by_name(book_name)
-        except Exception:
+        except Http404:
             return build_error_response(
                 f'Book "{book_name}" not found.',
                 "not_found",
@@ -1290,7 +1291,7 @@ class BookChapterVersesView(LanguageSensitiveMixin, APIView):
     def get(self, request, book_name, chapter, *args, **kwargs):
         try:
             book = get_canonical_book_by_name(book_name)
-        except Exception:
+        except Http404:
             return build_error_response(
                 f'Book "{book_name}" not found.',
                 "not_found",
@@ -1417,7 +1418,7 @@ class BookRangeView(LanguageSensitiveMixin, APIView):
     def get(self, request, book_name, *args, **kwargs):
         try:
             book = get_canonical_book_by_name(book_name)
-        except Exception:
+        except Http404:
             return build_error_response(
                 f'Book "{book_name}" not found.',
                 "not_found",

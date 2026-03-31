@@ -9,44 +9,69 @@ from rest_framework.views import APIView
 
 from common.openapi import LANG_PARAMETER, get_error_responses
 
-from ..models import CanonicalBook, Theme, VerseTheme
+from ..models import CanonicalBook
+from ..models import Theme as LegacyTheme
+from ..models import VerseTheme
+from .models import Theme
 from .serializers import (
     ConceptMapSerializer,
     ThemeAnalysisByBookSerializer,
+    ThemeDetailFullSerializer,
+    ThemeDetailSerializer,
+    ThemeListFullSerializer,
+    ThemeListSerializer,
     ThemeProgressionSerializer,
     ThemeSerializer,
     ThemeStatisticsSerializer,
 )
 
+DETAIL_PARAM = OpenApiParameter(
+    name="detail",
+    description="Set to 'full' to include research metadata (grades, evidence_score, etc.)",
+    required=False,
+    type=str,
+    enum=["full"],
+)
+
+
+def _is_full(request) -> bool:
+    return request.query_params.get("detail", "").lower() == "full"
+
 
 class ThemeListView(generics.ListAPIView):
-    queryset = Theme.objects.all()
-    serializer_class = ThemeSerializer
+    queryset = Theme.objects.all().order_by("-evidence_score")
+
+    def get_serializer_class(self):
+        if _is_full(self.request):
+            return ThemeListFullSerializer
+        return ThemeListSerializer
 
     @extend_schema(
         summary="List themes",
+        description="List curated biblical themes. Use ?detail=full for research metadata.",
         tags=["themes"],
-        responses={
-            200: ThemeSerializer(many=True),
-            **get_error_responses(),
-        },
+        parameters=[DETAIL_PARAM],
+        responses={200: ThemeListSerializer(many=True), **get_error_responses()},
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
 
 class ThemeDetailView(generics.RetrieveAPIView):
-    queryset = Theme.objects.all()
-    serializer_class = ThemeSerializer
+    queryset = Theme.objects.prefetch_related("verse_links__verse__book").all()
     lookup_field = "pk"
 
+    def get_serializer_class(self):
+        if _is_full(self.request):
+            return ThemeDetailFullSerializer
+        return ThemeDetailSerializer
+
     @extend_schema(
-        summary="Get theme detail",
+        summary="Get theme with verses",
+        description="Get theme detail with linked verses. Use ?detail=full for grades and research data.",
         tags=["themes"],
-        responses={
-            200: ThemeSerializer,
-            **get_error_responses(),
-        },
+        parameters=[DETAIL_PARAM],
+        responses={200: ThemeDetailSerializer, **get_error_responses()},
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -55,30 +80,21 @@ class ThemeDetailView(generics.RetrieveAPIView):
 class ThemeSearchView(generics.ListAPIView):
     """Search themes by name and description."""
 
-    serializer_class = ThemeSerializer
+    def get_serializer_class(self):
+        if _is_full(self.request):
+            return ThemeListFullSerializer
+        return ThemeListSerializer
 
     @extend_schema(
         summary="Search themes by text",
-        description="Search themes by name and description using full-text search",
+        description="Search themes by name (PT/EN). Use ?detail=full for research metadata.",
         tags=["themes"],
         parameters=[
-            OpenApiParameter(
-                name="q",
-                description="Search query for theme name and description",
-                required=True,
-                type=str,
-            ),
-            OpenApiParameter(
-                name="limit",
-                description="Limit number of results (default: 20)",
-                required=False,
-                type=int,
-            ),
+            OpenApiParameter(name="q", description="Search query", required=True, type=str),
+            OpenApiParameter(name="limit", description="Max results (default: 20)", required=False, type=int),
+            DETAIL_PARAM,
         ],
-        responses={
-            200: ThemeSerializer(many=True),
-            **get_error_responses(),
-        },
+        responses={200: ThemeListSerializer(many=True), **get_error_responses()},
     )
     def get(self, request, *args, **kwargs):
         query = request.query_params.get("q", "").strip()
@@ -87,11 +103,15 @@ class ThemeSearchView(generics.ListAPIView):
 
         limit = int(request.query_params.get("limit", 20))
 
-        # Full-text search on name and description
         themes = (
-            Theme.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
-            .annotate(verse_count=Count("verse_links", distinct=True))
-            .order_by("-verse_count", "name")[:limit]
+            Theme.objects.filter(
+                Q(name_pt__icontains=query)
+                | Q(name_en__icontains=query)
+                | Q(description_pt__icontains=query)
+                | Q(description_en__icontains=query)
+                | Q(semantic_keywords__contains=[query])
+            )
+            .order_by("-evidence_score")[:limit]
         )
 
         serializer = self.get_serializer(themes, many=True)
@@ -116,7 +136,7 @@ class ThemeStatisticsView(APIView):
 
         mark_response_language_sensitive(request)
 
-        theme = get_object_or_404(Theme, id=theme_id)
+        theme = get_object_or_404(LegacyTheme, id=theme_id)
 
         # Get basic counts
         verse_links = VerseTheme.objects.filter(theme=theme).select_related("verse__book", "verse__version")
@@ -307,7 +327,7 @@ class ThemeProgressionView(APIView):
 
         mark_response_language_sensitive(request)
 
-        theme = get_object_or_404(Theme, id=theme_id)
+        theme = get_object_or_404(LegacyTheme, id=theme_id)
 
         # Get verse-theme associations ordered by canonical book order
         verse_themes = (
@@ -434,7 +454,7 @@ class ConceptMapView(APIView):
     )
     def get(self, request, concept, *args, **kwargs):
         # Find the main theme by name (case-insensitive)
-        main_theme = Theme.objects.filter(name__icontains=concept).first()
+        main_theme = LegacyTheme.objects.filter(name__icontains=concept).first()
 
         if not main_theme:
             return Response({"detail": f'No theme found matching concept "{concept}".'}, status=404)

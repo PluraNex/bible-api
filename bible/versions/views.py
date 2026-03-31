@@ -10,6 +10,7 @@ from common.openapi import LANG_PARAMETER, get_error_responses
 
 from ..models import Version
 from .serializers import VersionSerializer
+from .services import get_default_version_for_lang
 
 
 class VersionListView(generics.ListAPIView):
@@ -124,42 +125,9 @@ class VersionDefaultView(APIView):
     def _get_default_version_for_language(self, lang_code):
         """Get default version with base → regional fallback logic.
 
-        When multiple versions exist for the same language, returns the first
-        version ordered alphabetically by name (ascending) for predictable results.
+        Delegates to the centralized service in bible.versions.services.
         """
-        # First, try to find active version for the exact language code
-        version = Version.objects.filter(language__code=lang_code, is_active=True).order_by("name").first()
-
-        if version:
-            return version
-
-        # If base language (e.g., 'pt'), try regional variants (e.g., 'pt-BR')
-        if "-" not in lang_code:
-            regional_version = (
-                Version.objects.filter(language__code__startswith=f"{lang_code}-", is_active=True)
-                .order_by("name")
-                .first()
-            )
-
-            if regional_version:
-                return regional_version
-
-        # If regional language (e.g., 'pt-BR'), try base (e.g., 'pt')
-        if "-" in lang_code:
-            base_lang = lang_code.split("-")[0]
-            base_version = Version.objects.filter(language__code=base_lang, is_active=True).order_by("name").first()
-
-            if base_version:
-                return base_version
-
-        # Finally, fallback to English
-        if lang_code != "en":
-            en_version = Version.objects.filter(language__code="en", is_active=True).order_by("name").first()
-
-            if en_version:
-                return en_version
-
-        return None
+        return get_default_version_for_lang(lang_code)
 
     @extend_schema(
         summary="Get default version for language",

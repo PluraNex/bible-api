@@ -9,6 +9,7 @@ services:
       POSTGRES_PASSWORD: bible_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - E:/embeding_bibles:/dumps:ro
     ports:
       - "5432:5432"
     healthcheck:

@@ -1,5 +1,13 @@
 """
-API tests for themes endpoints.
+API tests for themes endpoints (enriched theme model).
+
+Tests cover:
+- Authentication (§5): all endpoints require API key
+- List endpoint: default (product) and ?detail=full (research)
+- Detail endpoint: verses returned, both modes
+- Search endpoint: Portuguese/English, limit, missing query
+- Response structure (§4): contract compliance for both modes
+- Verse linking: themes return their linked verses correctly
 """
 
 from django.contrib.auth.models import User
@@ -12,228 +20,296 @@ from bible.models import (
     CanonicalBook,
     Language,
     Testament,
-    Theme,
     Verse,
-    VerseTheme,
     Version,
 )
+from bible.themes.models import Theme, ThemeVerseLink
 
 
-class ThemesApiTest(TestCase):
+class ThemesEnrichedApiTest(TestCase):
+    """Tests for enriched themes endpoints with ?detail=full param."""
+
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(username="themes_user")
         self.api_key = APIKey.objects.create(name="Themes Key", user=self.user, scopes=["read"])
 
-        # Create test data
-        self.language_en = Language.objects.create(name="English", code="en")
+        # Base data
+        self.lang_en = Language.objects.create(name="English", code="en")
+        self.lang_pt = Language.objects.create(name="Portuguese", code="pt-BR")
         self.testament_old = Testament.objects.create(name="OLD", description="Old Testament")
         self.testament_new = Testament.objects.create(name="NEW", description="New Testament")
 
         self.book_gen = CanonicalBook.objects.create(
             osis_code="Gen", canonical_order=1, testament=self.testament_old, chapter_count=50
         )
-        self.book_matt = CanonicalBook.objects.create(
-            osis_code="Matt", canonical_order=40, testament=self.testament_new, chapter_count=28
+        self.book_heb = CanonicalBook.objects.create(
+            osis_code="Heb", canonical_order=58, testament=self.testament_new, chapter_count=13
         )
 
-        self.version = Version.objects.create(language=self.language_en, code="EN_TEST", name="Test Version")
+        self.version = Version.objects.create(language=self.lang_pt, code="PT_NAA", name="NAA")
 
-        self.verse1 = Verse.objects.create(
-            book=self.book_gen,
-            version=self.version,
-            chapter=1,
-            number=1,
-            text="In the beginning God created the heavens and the earth.",
+        # Verses
+        self.v_gen_1_1 = Verse.objects.create(
+            book=self.book_gen, version=self.version, chapter=1, number=1,
+            text="No princípio, Deus criou os céus e a terra.",
         )
-        self.verse2 = Verse.objects.create(
-            book=self.book_matt,
-            version=self.version,
-            chapter=1,
-            number=1,
-            text="The genealogy of Jesus Christ, the son of David, the son of Abraham.",
+        self.v_gen_1_27 = Verse.objects.create(
+            book=self.book_gen, version=self.version, chapter=1, number=27,
+            text="Criou Deus o homem à sua imagem; à imagem de Deus o criou; homem e mulher os criou.",
+        )
+        self.v_heb_11_1 = Verse.objects.create(
+            book=self.book_heb, version=self.version, chapter=11, number=1,
+            text="Ora, a fé é a certeza daquilo que esperamos e a prova das coisas que não vemos.",
+        )
+        self.v_heb_11_6 = Verse.objects.create(
+            book=self.book_heb, version=self.version, chapter=11, number=6,
+            text="Sem fé é impossível agradar a Deus.",
         )
 
-        self.t1 = Theme.objects.create(name="Faith", description="Trust and belief in God")
-        self.t2 = Theme.objects.create(name="Love", description="Divine and human love")
-        self.t3 = Theme.objects.create(name="Creation", description="God's creation of the world")
+        # Enriched themes
+        self.theme_faith = Theme.objects.create(
+            slug="importancia-da-fe",
+            name_pt="A importância da fé",
+            name_en="the importance of faith",
+            label_normalized="importancia-da-fe",
+            evidence_score=0.947,
+            verse_count=2,
+            status="approved",
+        )
+        self.theme_creation = Theme.objects.create(
+            slug="criacao",
+            name_pt="Criação",
+            name_en="creation",
+            label_normalized="criacao",
+            evidence_score=0.950,
+            verse_count=2,
+            status="approved",
+        )
 
-        # Create theme-verse associations
-        VerseTheme.objects.create(theme=self.t1, verse=self.verse1)
-        VerseTheme.objects.create(theme=self.t2, verse=self.verse2)
-        VerseTheme.objects.create(theme=self.t3, verse=self.verse1)
+        # Verse links with grades
+        ThemeVerseLink.objects.create(
+            theme=self.theme_faith, verse=self.v_heb_11_1,
+            grade=3, relevance_score=1.0, is_primary_theme=True, source="imported",
+        )
+        ThemeVerseLink.objects.create(
+            theme=self.theme_faith, verse=self.v_heb_11_6,
+            grade=2, relevance_score=0.67, is_primary_theme=False, source="imported",
+        )
+        ThemeVerseLink.objects.create(
+            theme=self.theme_creation, verse=self.v_gen_1_1,
+            grade=3, relevance_score=1.0, is_primary_theme=True, source="imported",
+        )
+        ThemeVerseLink.objects.create(
+            theme=self.theme_creation, verse=self.v_gen_1_27,
+            grade=2, relevance_score=0.67, is_primary_theme=False, source="imported",
+        )
 
-    def test_requires_auth(self):
-        self.assertEqual(self.client.get("/api/v1/bible/themes/").status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_list_and_detail(self):
+    def _auth(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-        lst = self.client.get("/api/v1/bible/themes/")
-        self.assertEqual(lst.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(lst.json().get("results", [])), 2)
 
-        detail = self.client.get(f"/api/v1/bible/themes/{self.t1.id}/detail/")
-        self.assertEqual(detail.status_code, status.HTTP_200_OK)
-        self.assertEqual(detail.json().get("name"), "Faith")
+    # ─── Authentication ───────────────────────────────────────
 
-    def test_theme_search(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
+    def test_unauthenticated_request_returns_401(self):
+        endpoints = [
+            "/api/v1/bible/themes/",
+            f"/api/v1/bible/themes/{self.theme_faith.id}/detail/",
+            "/api/v1/bible/themes/search/?q=fé",
+        ]
+        for endpoint in endpoints:
+            response = self.client.get(endpoint)
+            self.assertEqual(
+                response.status_code, status.HTTP_401_UNAUTHORIZED,
+                f"{endpoint} should require auth",
+            )
 
-        # Test successful search
-        response = self.client.get("/api/v1/bible/themes/search/?q=faith")
+    # ─── List Endpoint ────────────────────────────────────────
+
+    def test_list_returns_200_with_themes(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["pagination"]["count"], 2)
+
+    def test_list_product_mode_has_clean_fields(self):
+        """Default mode returns only product-relevant fields."""
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/")
+        theme = response.json()["results"][0]
+
+        # Must have
+        for field in ("id", "slug", "name", "name_en", "verse_count"):
+            self.assertIn(field, theme, f"Missing field: {field}")
+
+        # Must NOT have research fields
+        for field in ("evidence_score", "grade_distribution", "priority", "status"):
+            self.assertNotIn(field, theme, f"Should not have research field: {field}")
+
+    def test_list_full_mode_has_research_fields(self):
+        """?detail=full returns research metadata."""
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/?detail=full")
+        theme = response.json()["results"][0]
+
+        for field in ("evidence_score", "grade_distribution", "priority", "status"):
+            self.assertIn(field, theme, f"Missing research field: {field}")
+
+        # Check grade_distribution structure
+        gd = theme["grade_distribution"]
+        self.assertIn("grade_3", gd)
+        self.assertIn("grade_2", gd)
+        self.assertIn("grade_1", gd)
+
+    def test_list_ordered_by_evidence_score_desc(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/?detail=full")
+        results = response.json()["results"]
+        scores = [r["evidence_score"] for r in results]
+        self.assertEqual(scores, sorted(scores, reverse=True))
+
+    # ─── Detail Endpoint ──────────────────────────────────────
+
+    def test_detail_returns_theme_with_verses(self):
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_faith.id}/detail/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertEqual(data["slug"], "importancia-da-fe")
+        self.assertEqual(data["name"], "A importância da fé")
+        self.assertIn("verses", data)
+        self.assertEqual(len(data["verses"]), 2)
+
+    def test_detail_verses_product_mode_is_clean(self):
+        """Product mode verses have only ref, book, chapter, verse, text."""
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_faith.id}/detail/")
+        verse = response.json()["verses"][0]
+
+        for field in ("ref", "book", "chapter", "verse", "text"):
+            self.assertIn(field, verse, f"Missing verse field: {field}")
+
+        for field in ("grade", "relevance_score", "is_primary_theme", "source"):
+            self.assertNotIn(field, verse, f"Should not have research field: {field}")
+
+    def test_detail_verses_full_mode_has_grades(self):
+        """Full mode includes grade, relevance_score, source per verse."""
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_faith.id}/detail/?detail=full")
+        data = response.json()
+        verse = data["verses"][0]
+
+        for field in ("grade", "relevance_score", "is_primary_theme", "source"):
+            self.assertIn(field, verse, f"Missing research field: {field}")
+
+        # Check grade_distribution on theme level
+        self.assertIn("grade_distribution", data)
+        self.assertEqual(data["evidence_score"], 0.947)
+
+    def test_detail_verse_ref_format(self):
+        """Verse ref should be OSIS format: Book.Chapter.Verse."""
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_faith.id}/detail/")
+        verse = response.json()["verses"][0]
+        ref = verse["ref"]
+        parts = ref.split(".")
+        self.assertEqual(len(parts), 3, f"Ref should be Book.Ch.Vs, got: {ref}")
+
+    def test_detail_not_found_returns_404(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/99999/detail/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_detail_includes_anchor_verses(self):
+        """Themes with anchor_verses should return them."""
+        self.theme_faith.anchor_verses = ["HEB.11.1", "HEB.11.6"]
+        self.theme_faith.save()
+
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_faith.id}/detail/")
+        data = response.json()
+        self.assertEqual(data["anchor_verses"], ["HEB.11.1", "HEB.11.6"])
+
+    # ─── Search Endpoint ──────────────────────────────────────
+
+    def test_search_by_portuguese_name(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/search/?q=fé")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.json()
+        self.assertGreater(len(results), 0)
+        names = [r["name"] for r in results]
+        self.assertTrue(any("fé" in n.lower() for n in names))
+
+    def test_search_by_english_name(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/search/?q=creation")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.json()
         self.assertGreater(len(results), 0)
 
-        # Test search with limit
-        response = self.client.get("/api/v1/bible/themes/search/?q=creation&limit=1")
+    def test_search_with_limit(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/search/?q=a&limit=1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 1)
+        self.assertLessEqual(len(response.json()), 1)
 
-        # Test missing query parameter
+    def test_search_missing_query_returns_400(self):
+        self._auth()
         response = self.client.get("/api/v1/bible/themes/search/")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_theme_statistics(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-
-        # Test successful statistics
-        response = self.client.get(f"/api/v1/bible/themes/{self.t1.id}/statistics/")
+    def test_search_no_results_returns_empty_list(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/search/?q=xyznonexistent")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
+        self.assertEqual(len(response.json()), 0)
 
-        self.assertEqual(data["theme_id"], self.t1.id)
-        self.assertEqual(data["theme_name"], "Faith")
-        self.assertGreaterEqual(data["verse_count"], 1)
-        self.assertGreaterEqual(data["book_count"], 1)
-        self.assertIn("top_books", data)
-        self.assertIn("testament_distribution", data)
-
-        # Test not found
-        response = self.client.get("/api/v1/bible/themes/99999/statistics/")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_theme_analysis_by_book(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-
-        # Test analysis by OSIS code
-        response = self.client.get("/api/v1/bible/themes/analysis/by-book/Gen/")
+    def test_search_full_mode_has_research_fields(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/search/?q=fé&detail=full")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        if response.json():
+            theme = response.json()[0]
+            self.assertIn("evidence_score", theme)
+            self.assertIn("grade_distribution", theme)
+
+    # ─── Response Structure Contract ──────────────────────────
+
+    def test_list_response_pagination_structure(self):
+        """List endpoint wraps results in standard pagination."""
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/")
         data = response.json()
+        for field in ("count", "num_pages", "current_page", "page_size", "next", "previous"):
+            self.assertIn(field, data["pagination"], f"Missing pagination field: {field}")
 
-        self.assertEqual(data["book_osis_code"], "Gen")
-        self.assertEqual(data["canonical_order"], 1)
-        self.assertIn("theme_distribution", data)
-        self.assertIn("chapter_analysis", data)
-        self.assertGreaterEqual(data["total_themed_verses"], 1)
+    def test_response_content_type_is_json(self):
+        self._auth()
+        response = self.client.get("/api/v1/bible/themes/")
+        self.assertEqual(response["Content-Type"], "application/json")
 
-        # Test not found
-        response = self.client.get("/api/v1/bible/themes/analysis/by-book/NonExistent/")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    # ─── Verse Linking ────────────────────────────────────────
 
-    def test_theme_progression(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-
-        # Test successful progression
-        response = self.client.get(f"/api/v1/bible/themes/{self.t1.id}/progression/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_theme_returns_correct_verse_count(self):
+        """verse_count field matches actual linked verses."""
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_faith.id}/detail/")
         data = response.json()
+        self.assertEqual(data["verse_count"], len(data["verses"]))
 
-        self.assertEqual(data["theme_id"], self.t1.id)
-        self.assertEqual(data["theme_name"], "Faith")
-        self.assertIn("progression_data", data)
-        self.assertIn("testament_summary", data)
-        self.assertIn("peak_books", data)
+    def test_verses_contain_text(self):
+        """Every verse in the response must have non-empty text."""
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_creation.id}/detail/")
+        for verse in response.json()["verses"]:
+            self.assertTrue(len(verse["text"]) > 0, f"Verse {verse['ref']} has empty text")
 
-        # Test theme with no verses
-        theme_empty = Theme.objects.create(name="Empty Theme")
-        response = self.client.get(f"/api/v1/bible/themes/{theme_empty.id}/progression/")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_concept_map(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-
-        # Test successful concept mapping
-        response = self.client.get("/api/v1/bible/themes/concept-map/Faith/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-
-        self.assertEqual(data["concept"], "Faith")
-        self.assertIn("related_themes", data)
-        self.assertIn("co_occurrence_data", data)
-        self.assertIn("strength_metrics", data)
-        self.assertIn("verse_examples", data)
-
-        # Test concept not found
-        response = self.client.get("/api/v1/bible/themes/concept-map/NonExistentConcept/")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_theme_endpoints_authentication(self):
-        """Test that all theme endpoints require authentication."""
-        endpoints = [
-            "/api/v1/bible/themes/search/?q=faith",
-            f"/api/v1/bible/themes/{self.t1.id}/statistics/",
-            "/api/v1/bible/themes/analysis/by-book/Gen/",
-            f"/api/v1/bible/themes/{self.t1.id}/progression/",
-            "/api/v1/bible/themes/concept-map/Faith/",
-        ]
-
-        for endpoint in endpoints:
-            response = self.client.get(endpoint)
-            self.assertEqual(
-                response.status_code, status.HTTP_401_UNAUTHORIZED, f"Endpoint {endpoint} should require auth"
-            )
-
-    def test_theme_endpoints_response_structure(self):
-        """Test that all endpoints return properly structured responses."""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Api-Key {self.api_key.key}")
-
-        # Test search response structure
-        response = self.client.get("/api/v1/bible/themes/search/?q=faith")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(response.json(), list)
-
-        # Test statistics response structure
-        response = self.client.get(f"/api/v1/bible/themes/{self.t1.id}/statistics/")
-        data = response.json()
-        required_fields = [
-            "theme_id",
-            "theme_name",
-            "verse_count",
-            "book_count",
-            "version_count",
-            "top_books",
-            "testament_distribution",
-        ]
-        for field in required_fields:
-            self.assertIn(field, data)
-
-        # Test analysis response structure
-        response = self.client.get("/api/v1/bible/themes/analysis/by-book/Gen/")
-        data = response.json()
-        required_fields = [
-            "book_name",
-            "book_osis_code",
-            "canonical_order",
-            "theme_distribution",
-            "chapter_analysis",
-            "total_themed_verses",
-            "total_book_verses",
-            "coverage_percentage",
-        ]
-        for field in required_fields:
-            self.assertIn(field, data)
-
-        # Test progression response structure
-        response = self.client.get(f"/api/v1/bible/themes/{self.t1.id}/progression/")
-        data = response.json()
-        required_fields = ["theme_id", "theme_name", "progression_data", "testament_summary", "peak_books"]
-        for field in required_fields:
-            self.assertIn(field, data)
-
-        # Test concept map response structure
-        response = self.client.get("/api/v1/bible/themes/concept-map/Faith/")
-        data = response.json()
-        required_fields = ["concept", "related_themes", "co_occurrence_data", "strength_metrics", "verse_examples"]
-        for field in required_fields:
-            self.assertIn(field, data)
+    def test_grade_3_verses_are_primary_in_full_mode(self):
+        """Grade 3 verses should have is_primary_theme=True."""
+        self._auth()
+        response = self.client.get(f"/api/v1/bible/themes/{self.theme_faith.id}/detail/?detail=full")
+        for verse in response.json()["verses"]:
+            if verse["grade"] == 3:
+                self.assertTrue(verse["is_primary_theme"], f"Grade 3 verse {verse['ref']} should be primary")

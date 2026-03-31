@@ -3,7 +3,7 @@ Bible API views.
 """
 
 from django.core.cache import cache
-from django.db import connections
+from django.db import DatabaseError, OperationalError, connections
 from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -88,14 +88,14 @@ class ReadinessCheckView(APIView):
                 cursor.execute("SELECT 1")
                 cursor.fetchone()
             db_ok = True
-        except Exception:
+        except (DatabaseError, OperationalError):
             db_ok = False
 
         # Cache check
         try:
             cache.set("__readiness_probe__", "ok", 5)
             cache_ok = cache.get("__readiness_probe__") == "ok"
-        except Exception:
+        except (ConnectionError, TimeoutError, OSError):
             cache_ok = False
 
         checks["database"] = db_ok

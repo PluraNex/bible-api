@@ -1,6 +1,7 @@
 """Views for cross-references domain."""
 
 from django.db.models import Avg, Count, Exists, Max, Min, OuterRef
+from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
@@ -92,7 +93,7 @@ class ReferenceResolutionMixin:
         if book is None:
             try:
                 book = get_canonical_book_by_name(entry.get("book_raw"))
-            except Exception:
+            except Http404:
                 book = None
         if book is None:
             raise ValidationError({self.ref_param: f"Unknown book '{entry.get('book_raw')}'."})

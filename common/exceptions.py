@@ -93,17 +93,17 @@ def _log(
     error_code: str | None = None,
     exc_info: bool = False,
 ) -> None:
-    meta = {
-        "request_id": getattr(request, "request_id", None),
+    from .logging import get_context_extra
+
+    # Merge contextvars context with exception-specific metadata
+    meta = get_context_extra()
+    meta.update({
         "error_code": error_code,
         "status_code": status_code,
-        "path": getattr(request, "path", None),
         "method": getattr(request, "method", None),
-        "user_id": getattr(getattr(request, "user", None), "id", None),
         "view": context.get("view").__class__.__name__ if context.get("view") else None,
-    }
+    })
     log = logger.error if level == "error" else logger.warning
-    # Lazy logging with formatting args
     log(fmt, *args, extra=meta, exc_info=exc_info)
 
 

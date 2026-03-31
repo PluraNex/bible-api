@@ -24,8 +24,11 @@ urlpatterns = [
         views.AgentRunCancelView.as_view(),
         name="ai_run_cancel",
     ),
-    # RAG retrieve endpoint
+    # RAG endpoints
     path("rag/retrieve/", views.RagRetrieveView.as_view(), name="rag_retrieve"),
-    # RAG search (simples)
     path("rag/search/", views.RagSearchView.as_view(), name="rag_search"),
+    path("rag/hybrid/", views.RagHybridSearchView.as_view(), name="rag_hybrid"),
+    path("rag/similar/", views.RagSimilarView.as_view(), name="rag_similar"),
+    path("rag/health/", views.RagHealthView.as_view(), name="rag_health"),
+    path("rag/stats/", views.RagStatsView.as_view(), name="rag_stats"),
 ]

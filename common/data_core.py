@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from django.core.exceptions import FieldError
 from django.db import transaction
 
 from bible.models import CanonicalBook, CrossReference, Language, License, Testament, Verse, Version
@@ -486,7 +487,7 @@ class BibleDataEngine:
         Args:
             languages: List of language codes to process
         """
-        from bible.models import CommentarySource
+        from bible.commentaries import CommentarySource
 
         total_entries = 0
         total_authors = 0
@@ -539,7 +540,7 @@ class BibleDataEngine:
 
     def _process_commentary_files(self, scraped_dir: Path, source, language) -> int:
         """Process individual commentary JSON files."""
-        from bible.models import CommentaryEntry
+        from bible.commentaries import CommentaryEntry
 
         entries_created = 0
         commentary_batch = []
@@ -651,13 +652,13 @@ class BibleDataEngine:
             # Try alternative lookups
             try:
                 return CanonicalBook.objects.filter(names__abbreviation=book_code).first()
-            except Exception:
+            except (FieldError, ValueError, AttributeError):
                 logger.warning(f"⚠️ Book not found: {book_code}")
                 return None
 
     def _get_or_create_author(self, author_name: str, commentary_data: dict):
         """Get or create author with multilingual support."""
-        from bible.models import Author
+        from bible.commentaries import Author
 
         # Extract period from commentary (e.g., "AD397")
         period = commentary_data.get("period", "")

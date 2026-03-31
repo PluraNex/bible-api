@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 # Configuração via env
 HYBRID_ENABLED = os.getenv("RAG_HYBRID", "0") == "1"
-HYBRID_ALPHA = float(os.getenv("RAG_HYBRID_ALPHA", "0.5"))
+HYBRID_ALPHA = float(os.getenv("RAG_HYBRID_ALPHA", "0.7"))
 
 # Cache TTL para dados de livros (1 hora)
 BOOK_CACHE_TTL = 3600
@@ -236,10 +236,13 @@ def search_hybrid(
     min_score: float | None = None,
     expand_query: bool = False,
     expand_mode: str = "auto",
+    max_synonyms: int = 3,
     rerank: bool = False,
     mmr_lambda: float | None = None,
     deduplicate_versions: bool = False,
     embedding_source: str = "verse",
+    embedding_model: str = "large",
+    reembed_after_expansion: bool = False,
 ) -> RagSearchResult:
     """
     Executa busca híbrida: BM25 (lexical) + Vetorial (semântica) com RRF fusion.
@@ -286,11 +289,13 @@ def search_hybrid(
     
     query = query.strip()
     top_k = max(1, min(top_k, 50))
+    alpha_user_provided = alpha is not None
     alpha = alpha if alpha is not None else HYBRID_ALPHA
     
-    # Obter embedding da query
-    query_embedding, _ = embedding_cache.get_embedding(query, model="text-embedding-3-small")
-    
+    # Obter embedding da query (model depends on embedding_model param)
+    embed_model_name = "text-embedding-3-large" if embedding_model == "large" else "text-embedding-3-small"
+    query_embedding, _ = embedding_cache.get_embedding(query, model=embed_model_name)
+
     # Buscar dados auxiliares
     book_data = _get_book_data_cached()
     version_data = _get_version_data_cached()
@@ -301,16 +306,21 @@ def search_hybrid(
             query=query,
             query_embedding=query_embedding,
             top_k=top_k * 2 if min_score else top_k,
-            pool_size=100,
+            pool_size=300,
             versions=versions,
             book_id=book_id,
             alpha=alpha,
+            alpha_user_provided=alpha_user_provided,
             expand_query_flag=expand_query,
             expand_mode=expand_mode,
+            max_synonyms=max_synonyms,
             rerank_with_large=rerank,
             mmr_lambda=mmr_lambda,
             deduplicate_versions=deduplicate_versions,
             embedding_source=embedding_source,
+            embedding_model=embedding_model,
+            reembed_after_expansion=reembed_after_expansion,
+            embed_model_name=embed_model_name,
         )
     except (ConnectionError, TimeoutError, OSError) as e:
         logger.warning(f"Busca híbrida falhou por conexão/timeout, fallback para vetorial: {e}")

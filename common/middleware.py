@@ -4,6 +4,8 @@ Middleware for Bible API.
 
 import uuid
 
+from .logging import clear_request_context, set_request_context
+
 
 class RequestIDMiddleware:
     """
@@ -12,6 +14,7 @@ class RequestIDMiddleware:
     The request ID is added to:
     - Request object (request.request_id)
     - Response headers (X-Request-ID)
+    - Logging context via contextvars (available in all downstream logs)
     """
 
     def __init__(self, get_response):
@@ -24,22 +27,22 @@ class RequestIDMiddleware:
         # Validate request ID format (must be valid UUID)
         if request_id:
             try:
-                # Test if it's a valid UUID - use the provided one if valid
                 uuid.UUID(request_id)
-                # Valid UUID, use it as-is
             except ValueError:
-                # Invalid format, generate new one
                 request_id = str(uuid.uuid4())
         else:
-            # No request ID provided, generate new one
             request_id = str(uuid.uuid4())
 
         request.request_id = request_id
+
+        # Propagate context to all downstream loggers
+        user_id = getattr(getattr(request, "user", None), "id", None)
+        set_request_context(request_id, user_id=user_id, path=request.path)
+
         response = self.get_response(request)
-        # Always add to response headers (either reused or generated)
+
+        # Always add to response headers
         response["X-Request-ID"] = request_id
+
+        clear_request_context()
         return response
-
-
-# Note: logging context helpers removed to keep middleware minimal. Logs include
-# request_id via the centralized exception handler.

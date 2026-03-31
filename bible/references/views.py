@@ -2,6 +2,8 @@
 
 import re
 
+from django.http import Http404
+
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -134,7 +136,7 @@ class ReferenceResolveView(APIView):
                     # Fallback to global resolver (any language) as last resort
                     try:
                         book = get_canonical_book_by_name(book_raw)
-                    except Exception:
+                    except Http404:
                         book = None
                 if book is None:
                     results.append({"input": s, "raw": entry.get("raw"), "error": "book_not_found"})
@@ -188,7 +190,7 @@ class ReferenceNormalizeView(APIView):
             if book is None:
                 try:
                     book = get_canonical_book_by_name(book_raw)
-                except Exception:
+                except Http404:
                     book = None
             if book is None:
                 normalized.append({"input": s, "book_raw": book_raw, "error": "book_not_found"})
